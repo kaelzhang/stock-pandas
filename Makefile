@@ -2,7 +2,7 @@ test:
 	pytest -s -v test/test_*.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
-	flake8 stock_pandas test
+	flake8 stock_pandas
 
 install:
 	pip install -r requirements.txt -r test-requirements.txt

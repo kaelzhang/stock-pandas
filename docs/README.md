@@ -14,5 +14,35 @@ pip install stock-pandas
 ## Usage
 
 ```py
-from stock-pandas import StockDataFrame
+import pandas as pd
+
+from stock_pandas import StockDataFrame
 ```
+
+```py
+stock = StockDataFrame.retype(pd.read_csv('stock.csv'))
+```
+
+```
+{type}[.{sub_type}]:{arg1}[,{arg2},{arg3}] {operator}
+```
+
+```py
+stock['kdjk']
+
+# kdjj less than 0
+stock['kdjj < 0']
+
+# 9-day kdjk cross up 3-day kdjd
+stock['kdjk:9 / kdjd:3']
+
+# 5-day simple moving average
+stock['sma:5']
+
+stock['macd.s']
+
+stock['boll']
+
+stock['boll.u']
+```
+
