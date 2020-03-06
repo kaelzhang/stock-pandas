@@ -1,0 +1,7 @@
+codecov
+coverage
+flake8
+pytest
+pytest-cov
+setuptools
+twine
