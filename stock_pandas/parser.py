@@ -1,12 +1,21 @@
 import re
 
-from .utils import join_list
+from .common import (
+    join_list,
+    memoize
+)
 
 DEFAULT_ARG_VALUE = ''
 
 def coerce_args(command_name, args, arg_settings):
     coerced = []
     length = len(args)
+
+    max_args_length = len(arg_settings)
+
+    if length > max_args_length:
+        raise ValueError(
+            f'command "{command_name}" accepts max {max_args_length} args, but got {length}')
 
     for index, (default, setter) in enumerate(arg_settings):
         # Suppose command `foo` has two args
@@ -36,6 +45,7 @@ class Command:
         self.name = command
         self.sub = sub
         self.args = args
+        self.formula = None
 
     def __str__(self):
         name = f'{self.name}.{self.sub}' if self.sub else self.name
@@ -43,8 +53,9 @@ class Command:
         return f'{name}:{join_list(self.args, ARGS_SEPARATOR)}' \
             if self.args else name
 
-    def apply_args_settings(self, args_settings):
-        self.args = coerce_args(self.name, self.args, args_settings)
+    def apply_preset(self, preset):
+        self.args = coerce_args(self.name, self.args, preset.args)
+        self.formula = preset.formula
 
     @staticmethod
     def from_string(name: str):
@@ -89,6 +100,19 @@ def check_operator(operator: str):
 
     raise ValueError(f'"{operator}" is an invalid operator')
 
+def check_and_apply_command_preset(command, presets):
+    if command.formula:
+        return
+
+    name = command.name
+
+    command_preset = presets.get(name, None)
+
+    if not command_preset:
+        raise ValueError(f'command "{name}" is not supported')
+
+    command.apply_preset(command_preset)
+
 REGEX_COLUMN_NAME = r'^([a-z0-9.:,\s]+)(?:([=<>/\\]+)([\S\s]+))?$'
 
 class ColumnName:
@@ -100,6 +124,12 @@ class ColumnName:
     def __str__(self):
         return f'{self.command}{self.operator}{self.expression}' \
             if self.operator else str(self.command)
+
+    def apply_presets(self, presets):
+        check_and_apply_command_preset(self.command, presets)
+
+        if type(self.expression) is Command:
+            check_and_apply_command_preset(self.expression, presets)
 
     @staticmethod
     def from_string(name: str):

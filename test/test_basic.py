@@ -5,7 +5,9 @@ from stock_pandas import StockDataFrame
 def test_basic_sma():
     l = [2, 3, 4, 5, 6, 7]
 
-    data = pd.DataFrame({
+    # data = pd.DataFrame()
+
+    stock = StockDataFrame({
         'open': l,
         'close': [x + 1 for x in l],
         'high': [x + 10 for x in l],
@@ -13,8 +15,19 @@ def test_basic_sma():
         'volume': [x * 100 for x in l]
     })
 
-    stock = StockDataFrame.retype(data)
+    sma = stock['sma:2']
 
-    print(stock)
+    print('sma', sma)
+    print('type sma', type(sma))
 
-    print(stock['sma:2'])
+    new = pd.DataFrame(dict(
+        open = [8],
+        close = [9],
+        high = [18],
+        low = [7],
+        volume = [800]
+    ))
+
+    stock = stock.append(new)
+
+    print('>>>>>>>>>>', stock, type(stock))

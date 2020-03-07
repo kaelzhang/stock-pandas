@@ -33,3 +33,12 @@ def is_valid_stat_column(column: str):
 
 def join_list(l: list, separator: str):
     return separator.join([str(x) for x in l])
+
+
+def memoize(f):
+    memo = {}
+    def helper(x):
+        if x not in memo:
+            memo[x] = f(x)
+        return memo[x]
+    return helper

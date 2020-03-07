@@ -1,10 +1,14 @@
-from .utils import (
+from .common import (
     period_to_int,
     is_valid_stat_column
 )
 
-INDICATORS = {}
+class CommandPreset:
+    def __init__(self, formula, args, ):
+        self.formula = formula
+        self.args = args
 
+COMMAND_PRESETS = {}
 
 def sma(df, s, period, column):
     """Gets simple moving average
@@ -27,7 +31,7 @@ def sma(df, s, period, column):
     ).mean()
 
 
-INDICATORS['sma'] = (
+COMMAND_PRESETS['sma'] = CommandPreset(
     # formula
     sma,
     [

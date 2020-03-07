@@ -1,53 +1,111 @@
-import pandas as pd
-import numpy as np
-
-from .indicators import INDICATORS
-from .series import StockSeries
-from .mutations import (
-    init_columns,
-    fulfill_series
+from pandas import (
+    DataFrame,
+    Series
 )
 
+from .presets import COMMAND_PRESETS
+from .parser import ColumnName
 
-class StockDataFrame(pd.DataFrame):
 
-    INDICATORS = INDICATORS
+class StockDataFrame(DataFrame):
 
-    def __getitem__(self, item):
-        try:
-            result = self.retype(super().__getitem__(item))
-        except KeyError:
-            # This method might raise
-            real_name = init_columns(self, item)
+    COMMAND_PRESETS = COMMAND_PRESETS
 
-            result = self.retype(super().__getitem__(real_name))
+    def __init__(self, *args,
+        date_column = 'date',
+        **kwargs
+    ):
+        DataFrame.__init__(self, *args, **kwargs)
 
-        return fulfill_series(result) if isinstance(
-            result, StockSeries
-        ) else result
+        # if date_column:
+        #     self.set_index()
 
-    @staticmethod
-    def retype(data_frame, index_column='date'):
-        """Converts `pandas.DataFrame` instance to `StockDataFrame`
+        self._stock_aliases = {}
+        self._stock_columns = {}
+
+    def alias(self, as_name, src_name) -> None:
+        """Defines column alias
 
         Args:
-            data_frame (pd.DataFrame):
-            index_column (:obj:`str`, optional): name of the column that will be used as index. Defaults to `date`
+            as_name (str): the alias name
+            src_name (str): the name of the original column
 
         Returns:
-            StockDataFrame
+            None
+        """
+        columns = self.columns
+        if as_name in columns:
+            raise ValueError(f'column "{as_name}" already exists')
+
+        if src_name not in columns:
+            raise ValueError(f'column "{src_name}" not exists')
+
+        self._stock_aliases[as_name] = src_name
+
+    def _map_alias(self, item):
+        if type(item) is not str:
+            return item
+
+        return self._stock_aliases.get(item, item)
+
+    def _map_aliases(self, item):
+        if isinstance(item, list):
+            return [self._map_alias(x) for x in item]
+
+        return self._map_alias(item)
+
+
+    def __getitem__(self, item):
+        item = self._map_aliases(item)
+
+        try:
+            result = super().__getitem__(item)
+        except KeyError:
+            # This method might raise
+            real_name = self._init_columns(item)
+
+            result = super().__getitem__(real_name)
+
+        if isinstance(result, Series):
+            return result
+
+        return StockDataFrame(result)
+
+        # return fulfill_series(result) if isinstance(
+        #     result, StockSeries
+        # ) else result
+
+    def _init_columns(self, columns):
+        """
+        Returns:
+            str: the real column names
+            list: the list of real column names
+        """
+        if isinstance(columns, list):
+            return [self._init_column(column) for column in columns]
+        else:
+            return self._init_column(columns)
+
+    def _apply_command_preset(self, command):
+        if command.formula:
+            return
+            name = command.name
+
+    def _init_column(self, raw_column):
+        """
+        Returns:
+            str: the real column name
         """
 
-        if not isinstance(data_frame, pd.DataFrame):
-            data_frame = pd.DataFrame(data_frame)
+        column = ColumnName.from_string(raw_column)
+        column.apply_presets(self.COMMAND_PRESETS)
 
-        # use all lower case for column name
-        data_frame.columns = map(lambda c: c.lower(), data_frame.columns)
-        index_column = index_column.lower()
+        command = column.command
+        formula = command.formula
 
-        if index_column in data_frame.columns:
-            data_frame.set_index(index_column, inplace=True)
+        real_column_name = str(column)
 
-        data_frame = StockDataFrame(data_frame)
+        # TODO
+        self[real_column_name] = formula(self, slice(None), *command.args)
 
-        return data_frame
+        return real_column_name
