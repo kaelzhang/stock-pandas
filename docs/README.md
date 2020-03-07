@@ -36,10 +36,14 @@ indicator := alphabets | alphabets.alphabets
 arguments := string | arguments , string
 ```
 
-For example
+#### Column Name Example
+
+Here lists several use cases of column names
 
 ```py
-stock['kdj.k']
+# The 20-day(default) moving average
+#   which is the mid band of bollinger bands
+stock['boll']
 
 # kdjj less than 0
 stock['kdj.j < 0']
@@ -50,10 +54,33 @@ stock['kdj.k:9 / kdj.d:3']
 # 5-day simple moving average
 stock['sma:5']
 
-stock['macd.s']
-
-stock['boll']
-
-stock['boll.u']
+# 10-day simple moving average on open prices
+stock['sma:10,open']
 ```
 
+```
+# macd
+stock['macd']
+stock['macd.dif']
+
+# macd signal band, which is a shortcut for stock['macd.signal']
+stock['macd.s']
+stock['macd.signal']
+stock['macd.dea']
+
+# macd histogram band, which is equivalent to stock['macd.h']
+stock['macd.histogram']
+stock['macd.h']
+stock['macd.macd']
+
+# boll
+stock['boll']
+
+# bollinger upper band, a shortcut for stock['boll.upper']
+stock['boll.u']
+stock['boll.upper]
+
+# bollinger lower band, which is equivalent to stock['boll.l']
+stock['boll.lower']
+stock['boll.l']
+```
