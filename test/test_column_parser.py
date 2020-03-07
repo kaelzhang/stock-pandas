@@ -1,6 +1,6 @@
 import pytest
 
-from stock_pandas.parser import ColumnName
+from stock_pandas.parser import Directive
 
 def test_valid_columns():
     CASES = [
@@ -54,7 +54,7 @@ def test_valid_columns():
     ]
 
     for c, cc, sc, a, o, e, s in CASES:
-        column = ColumnName.from_string(c)
+        column = Directive.from_string(c)
 
         command = column.command
         operator = column.operator
@@ -68,7 +68,7 @@ def test_valid_columns():
         assert s == str(column)
 
 def test_column_with_two_command():
-    column = ColumnName.from_string('foo.bar: 1, 2 ,3 / baz.qux :1 ,2,3')
+    column = Directive.from_string('foo.bar: 1, 2 ,3 / baz.qux :1 ,2,3')
     c = column.command
     o = column.operator
     cc = column.expression
@@ -84,13 +84,13 @@ def test_column_with_two_command():
 
 def test_invalid_columns():
     with pytest.raises(ValueError, match='invalid column'):
-        ColumnName.from_string('a >')
+        Directive.from_string('a >')
 
     with pytest.raises(ValueError, match='invalid column'):
-        ColumnName.from_string('>')
+        Directive.from_string('>')
 
     with pytest.raises(ValueError, match='invalid command'):
-        ColumnName.from_string('a1')
+        Directive.from_string('a1')
 
     with pytest.raises(ValueError, match='invalid operator'):
-        ColumnName.from_string('a1 >> 1')
+        Directive.from_string('a1 >> 1')

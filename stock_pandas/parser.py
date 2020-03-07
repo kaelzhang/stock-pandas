@@ -113,9 +113,9 @@ def check_and_apply_command_preset(command, presets):
 
     command.apply_preset(command_preset)
 
-REGEX_COLUMN_NAME = r'^([a-z0-9.:,\s]+)(?:([=<>/\\]+)([\S\s]+))?$'
+REGEX_DIRECTIVE = r'^([a-z0-9.:,\s]+)(?:([=<>/\\]+)([\S\s]+))?$'
 
-class ColumnName:
+class Directive:
     def __init__(self, command, operator, expression):
         self.command = command
         self.operator = operator
@@ -134,7 +134,7 @@ class ColumnName:
     @staticmethod
     def from_string(name: str):
         name = name.strip()
-        match = re.match(REGEX_COLUMN_NAME, name)
+        match = re.match(REGEX_DIRECTIVE, name)
 
         if not match:
             raise ValueError(f'invalid column name `{name}`')
@@ -144,7 +144,7 @@ class ColumnName:
         if operator:
             check_operator(operator)
 
-        return ColumnName(
+        return Directive(
             Command.from_string(raw_command),
             operator,
             parse_expression(expression)

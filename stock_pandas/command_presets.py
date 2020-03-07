@@ -22,7 +22,6 @@ def sma(df, s, period, column):
     Returns:
         pandas.Series
     """
-    period = period_to_int(period)
 
     return df[column][s].rolling(
         min_periods=period,
@@ -35,6 +34,7 @@ COMMAND_PRESETS['sma'] = CommandPreset(
     # formula
     sma,
     [
+        # period
         (
             # Default value for the first argument,
             # `None` indicates that it is not an optional argument
@@ -43,6 +43,7 @@ COMMAND_PRESETS['sma'] = CommandPreset(
             # The function could throw
             period_to_int
         ),
+        # column
         (
             'close',
             # If the command use the default value,
