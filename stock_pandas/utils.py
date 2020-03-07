@@ -22,4 +22,14 @@ def is_ohlc_column(column: str):
     return column in COLUMNS
 
 
-def
+def is_valid_stat_column(column: str):
+    if is_ohlc_column(column):
+        return column
+
+    raise ValueError(
+        f'"{column}" is not a valid column for statistics'
+    )
+
+
+def join_list(l: list, separator: str):
+    return separator.join([str(x) for x in l])

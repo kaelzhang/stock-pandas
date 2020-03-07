@@ -1,5 +1,7 @@
 import re
 
+from .utils import join_list
+
 DEFAULT_ARG_VALUE = ''
 
 def coerce_args(command_name, args, arg_settings):
@@ -38,7 +40,8 @@ class Command:
     def __str__(self):
         name = f'{self.name}.{self.sub}' if self.sub else self.name
 
-        return f'{name}:{ARGS_SEPARATOR.join(self.args)}' if self.args else name
+        return f'{name}:{join_list(self.args, ARGS_SEPARATOR)}' \
+            if self.args else name
 
     def apply_args_settings(self, args_settings):
         self.args = coerce_args(self.name, self.args, args_settings)

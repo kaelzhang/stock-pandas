@@ -1,6 +1,6 @@
 from .utils import (
     period_to_int,
-    is_ohlc_column
+    is_valid_stat_column
 )
 
 INDICATORS = {}
@@ -43,7 +43,7 @@ INDICATORS['sma'] = (
             'close',
             # If the command use the default value,
             # then it will skip validating
-            is_ohlc_column
+            is_valid_stat_column
         )
     ]
 )
