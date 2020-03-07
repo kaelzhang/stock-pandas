@@ -19,13 +19,24 @@ import pandas as pd
 from stock_pandas import StockDataFrame
 ```
 
+### StockDataFrame
+
 ```py
 stock = StockDataFrame.retype(pd.read_csv('stock.csv'))
 ```
 
+#### Syntax of Column Name
+
+```ebnf
+column_name := command_name | command_name operator expression
+operator := '/' | '\' | '<' | '<=' | '==' | '>=' | '>' | '><'
+expression := float | command_name
+command_name := indicator | indicator : arguments
+indicator := alphabets | alphabets.alphabets
+arguments := string | arguments , string
 ```
-{type}[.{sub_type}]:{arg1}[,{arg2},{arg3}] {operator}
-```
+
+For example
 
 ```py
 stock['kdj.k']
