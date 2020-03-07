@@ -23,7 +23,7 @@ from stock_pandas import StockDataFrame
 
 ### StockDataFrame
 
-`StockDataFrame` inherits from `pandas.DataFrame`
+`StockDataFrame` inherits from `pandas.DataFrame`, so if you are familiar with `pandas.DataFrame`, you are already ready to use `stock-pandas`
 
 ```py
 stock = StockDataFrame.retype(pd.read_csv('stock.csv'))
