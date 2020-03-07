@@ -31,11 +31,9 @@ settings = dict(
     url = 'https://github.com/kaelzhang/stock-pandas',
     long_description=read('docs', 'README.md'),
     long_description_content_type='text/markdown',
-    python_requires='>=2.7',
+    python_requires='>=3.6',
     classifiers=[
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",

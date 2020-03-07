@@ -5,6 +5,8 @@
 
 # stock-pandas
 
+The wrapper of `pandas.DataFrame` with stock statistics and indicators support for automatical trading
+
 ## Install
 
 ```sh
