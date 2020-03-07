@@ -25,7 +25,7 @@ def parse_command(name: str):
     match = re.match(REGEX_COMMAND, name)
 
     if not match:
-        raise ValueError('invalid command `{}`'.format(name))
+        raise ValueError(f'invalid command `{name}`')
 
     command, sub, args = match.group(1, 2, 3)
     sub = sub[1:].strip() if sub else None
@@ -50,7 +50,7 @@ def parse_column_name(name: str):
     match = re.match(REGEX_COLUMN_NAME, name)
 
     if not match:
-        raise ValueError('invalid column name `{}`'.format(name))
+        raise ValueError(f'invalid column name `{name}`')
 
     raw_command, operator, expression = match.group(1, 2, 3)
 
