@@ -1,3 +1,11 @@
+# Pandoc
+README.rst
+
+# Sphinx
+docs/_build
+docs/_templates
+build_docs
+
 # Python
 __pycache__
 *.pyc
@@ -53,10 +61,10 @@ thumbs.db
 .CVS
 .idea
 node_modules
-old/
-*-old/
 *-notrack/
-no-track/
+no_track
+no_track.*
+*.no_track.*
 build/
 combo/
 reference/
