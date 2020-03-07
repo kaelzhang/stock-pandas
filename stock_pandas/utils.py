@@ -10,15 +10,3 @@ def period_to_int(period: str):
         raise IndexError('period must be greater than 0')
 
     return period
-
-
-COLUMNS = [
-    'open',
-    'high',
-    'low',
-    'close'
-]
-
-
-def is_valid_column(column: str):
-    return column in COLUMNS

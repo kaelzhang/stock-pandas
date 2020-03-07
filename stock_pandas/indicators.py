@@ -27,7 +27,7 @@ def sma(df, s, period, column):
 
 
 INDICATORS['sma'] = (
-    #
+    # mutations
     sma,
     [
         (

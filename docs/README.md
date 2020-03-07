@@ -28,13 +28,13 @@ stock = StockDataFrame.retype(pd.read_csv('stock.csv'))
 ```
 
 ```py
-stock['kdjk']
+stock['kdj.k']
 
 # kdjj less than 0
-stock['kdjj < 0']
+stock['kdj.j < 0']
 
 # 9-day kdjk cross up 3-day kdjd
-stock['kdjk:9 / kdjd:3']
+stock['kdj.k:9 / kdj.d:3']
 
 # 5-day simple moving average
 stock['sma:5']
