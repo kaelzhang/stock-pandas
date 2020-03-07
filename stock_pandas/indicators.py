@@ -1,5 +1,6 @@
 from .utils import (
-    period_to_int, is_valid_column
+    period_to_int,
+    is_ohlc_column
 )
 
 INDICATORS = {}
@@ -27,21 +28,22 @@ def sma(df, s, period, column):
 
 
 INDICATORS['sma'] = (
-    # mutations
+    # formula
     sma,
     [
         (
             # Default value for the first argument,
             # `None` indicates that it is not an optional argument
             None,
-            # Validator for the first argument
+            # Validator and setter for the first argument.
+            # The function could throw
             period_to_int
         ),
         (
             'close',
             # If the command use the default value,
             # then it will skip validating
-            is_valid_column
+            is_ohlc_column
         )
     ]
 )

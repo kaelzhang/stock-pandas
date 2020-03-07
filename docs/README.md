@@ -23,11 +23,17 @@ from stock_pandas import StockDataFrame
 
 ### StockDataFrame
 
+`StockDataFrame` inherits from `pandas.DataFrame`
+
 ```py
 stock = StockDataFrame.retype(pd.read_csv('stock.csv'))
+
+stock[column_name]
+
+stock[[column_name0, column_name1]]
 ```
 
-#### Syntax of Column Name
+#### Syntax of `column_name`
 
 ```ebnf
 column_name := command_name | command_name operator expression
@@ -38,7 +44,7 @@ indicator := alphabets | alphabets.alphabets
 arguments := string | arguments , string
 ```
 
-#### Column Name Example
+#### `column_name` Example
 
 Here lists several use cases of column names
 

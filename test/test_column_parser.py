@@ -1,8 +1,6 @@
 import pytest
 
-from stock_pandas.column import (
-    parse_column_name
-)
+from stock_pandas.parser import ColumnName
 
 def test_valid_columns():
     CASES = [
@@ -18,7 +16,9 @@ def test_valid_columns():
             # operator
             None,
             # expression
-            None
+            None,
+            # to string
+            'foo'
         ),
         (
             'foo.bar',
@@ -26,7 +26,8 @@ def test_valid_columns():
             'bar',
             [],
             None,
-            None
+            None,
+            'foo.bar'
         ),
         (
             'foo.bar:1',
@@ -34,32 +35,43 @@ def test_valid_columns():
             'bar',
             ['1'],
             None,
-            None
+            None,
+            'foo.bar:1'
         ),
         (
             # redundant whitespaces
-            ' foo.bar:1,2  >>  0 ',
+            ' foo.bar:1,2  >  0 ',
             'foo',
             'bar',
             ['1', '2'],
             # invalid operator actually
-            '>>',
-            0
+            '>',
+            0,
+
+            # 0 will convert to float
+            'foo.bar:1,2>0.0'
         )
     ]
 
-    for c, cc, sc, a, o, e in CASES:
-        command, operator, value = parse_column_name(c)
+    for c, cc, sc, a, o, e, s in CASES:
+        column = ColumnName.from_string(c)
+
+        command = column.command
+        operator = column.operator
+        value = column.expression
 
         assert command.name == cc
         assert command.sub == sc
         assert command.args == a
         assert operator == o
         assert e == value
+        assert s == str(column)
 
 def test_column_with_two_command():
-    c, o, cc = parse_column_name(
-        'foo.bar: 1, 2 ,3 / baz.qux :1 ,2,3')
+    column = ColumnName.from_string('foo.bar: 1, 2 ,3 / baz.qux :1 ,2,3')
+    c = column.command
+    o = column.operator
+    cc = column.expression
 
     assert c.name == 'foo'
     assert c.sub == 'bar'
@@ -68,13 +80,17 @@ def test_column_with_two_command():
     assert cc.name == 'baz'
     assert cc.sub == 'qux'
     assert cc.args == ['1', '2', '3']
+    assert str(column) == 'foo.bar:1,2,3/baz.qux:1,2,3'
 
 def test_invalid_columns():
     with pytest.raises(ValueError, match='invalid column'):
-        parse_column_name('a >')
+        ColumnName.from_string('a >')
 
     with pytest.raises(ValueError, match='invalid column'):
-        parse_column_name('>')
+        ColumnName.from_string('>')
 
     with pytest.raises(ValueError, match='invalid command'):
-        parse_column_name('a1')
+        ColumnName.from_string('a1')
+
+    with pytest.raises(ValueError, match='invalid operator'):
+        ColumnName.from_string('a1 >> 1')
