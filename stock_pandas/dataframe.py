@@ -3,7 +3,7 @@ from pandas import (
     Series
 )
 
-from .presets import COMMAND_PRESETS
+from .command_presets import COMMAND_PRESETS
 from .parser import ColumnName
 
 
@@ -21,6 +21,8 @@ class StockDataFrame(DataFrame):
         #     self.set_index()
 
         self._stock_aliases = {}
+
+        # TODO:
         self._stock_columns = {}
 
     def alias(self, as_name, src_name) -> None:
@@ -66,14 +68,13 @@ class StockDataFrame(DataFrame):
 
             result = super().__getitem__(real_name)
 
+        # TODO: check if fulfilled
         if isinstance(result, Series):
             return result
 
         return StockDataFrame(result)
 
-        # return fulfill_series(result) if isinstance(
-        #     result, StockSeries
-        # ) else result
+    # TODO: append should maintain StockDataFrame type
 
     def _init_columns(self, columns):
         """
