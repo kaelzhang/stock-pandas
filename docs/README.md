@@ -26,14 +26,40 @@ from stock_pandas import StockDataFrame
 `StockDataFrame` inherits from `pandas.DataFrame`, so if you are familiar with `pandas.DataFrame`, you are already ready to use `stock-pandas`
 
 ```py
-stock = StockDataFrame.retype(pd.read_csv('stock.csv'))
-
-stock[column_name]
-
-stock[[column_name0, column_name1]]
+stock = StockDataFrame(pd.read_csv('stock.csv'))
 ```
 
-#### Syntax of `column_name`
+As we know, we could use `[]`, which called **pandas indexing** (a.k.a. `__getitem__` in python) to select out lower-dimensional slices. In addition to indexing with `colname` (column name of the `DataFrame`), we could also do indexing by `directive`s.
+
+```py
+stock[directive]
+
+stock[[directive0, directive1]]
+```
+
+We have an example to show the most basic indexing using `[directive]`
+
+```py
+stock = StockDataFrame({
+    'open' : ...,
+    'high' : ...,
+    'loc'  : ...,
+    'close': [5, 6, 7, 8, 9]
+})
+
+stock['sma:2']
+
+# 0    NaN
+# 3    5.5
+# 4    6.5
+# 5    7.5
+# 0    8.5
+# Name: sma:2,close, dtype: float64
+```
+
+Which prints the 2-period simple moving average on close column
+
+#### Syntax of `directive`
 
 ```ebnf
 column_name := command_name | command_name operator expression
@@ -44,7 +70,7 @@ indicator := alphabets | alphabets.alphabets
 arguments := string | arguments , string
 ```
 
-#### `column_name` Example
+#### `directive` Example
 
 Here lists several use cases of column names
 
