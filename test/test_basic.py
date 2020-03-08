@@ -29,9 +29,11 @@ def test_basic_sma(stock):
         volume = [800]
     ))
 
-    stock = stock.append(new)
+    stock = StockDataFrame(stock.append(new))
 
     print('>>>>>>>>>>', stock, type(stock))
+    print(stock.calc('sma:2'))
+    print(stock)
 
 def test_aliases(stock):
     stock.alias('Open', 'open')

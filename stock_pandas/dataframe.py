@@ -8,9 +8,10 @@ from .parser import Directive
 
 
 class ColumnInfo:
-    def __init__(self, size, directive):
+    def __init__(self, size, directive, period):
         self.size = size
         self.directive = directive
+        self.period = period
 
 class StockDataFrame(DataFrame):
 
@@ -27,6 +28,7 @@ class StockDataFrame(DataFrame):
 
         self._stock_aliases = {}
         self._stock_columns = {}
+        self._create_column = False
 
     def alias(self, as_name, src_name) -> None:
         """Defines column alias
@@ -59,6 +61,10 @@ class StockDataFrame(DataFrame):
 
         return self._map_alias(item)
 
+    def _parse_directive(self, directive):
+        directive = Directive.from_string(directive)
+        directive.apply_presets(self.COMMAND_PRESETS)
+        return directive
 
     def __getitem__(self, item):
         item = self._map_aliases(item)
@@ -67,7 +73,9 @@ class StockDataFrame(DataFrame):
             result = super().__getitem__(item)
         except KeyError:
             # This method might raise
+            self._create_column = True
             real_name = self._init_columns(item)
+            self._create_column = False
 
             result = super().__getitem__(real_name)
 
@@ -79,43 +87,79 @@ class StockDataFrame(DataFrame):
 
     # TODO: append should maintain StockDataFrame type
 
-    def _calc(self, directive, create_column=False):
-        directive = Directive.from_string(directive)
-        directive.apply_presets(self.COMMAND_PRESETS)
+    def _fulfill_series(self, column_name):
+        column_info = self._stock_columns.get(column_name)
+        size = len(self)
+
+        series = self[column_name]
+
+        if size == column_info.size:
+            # Already fulfilled
+            return series
+
+        delta = size - column_info.size
+        offset_slice = slice(- column_info.period - delta + 1, None)
+        fulfill_slice = slice(- delta, None)
+
+        partial, _ = column_info.directive.run(self, offset_slice)
+        series[fulfill_slice] = partial[fulfill_slice]
+
+        column_info.size = size
+
+        return series
+
+    def _calc(self, directive):
+        directive = self._parse_directive(directive)
 
         command = directive.command
 
         column_name = str(directive)
 
+        # TODO: column deletion by pandas
         if column_name in self._stock_columns:
             return self._fulfill_series(column_name)
 
-        formula = command.formula
-        series = formula(self, slice(None), *command.args)
+        series, period = command.run(
+            self,
+            # create the whole series
+            slice(None)
+        )
 
-        if create_column:
+        if self._create_column:
             self._stock_columns[column_name] = ColumnInfo(
                 len(self),
-                directive
+                directive,
+                period
             )
             self[column_name] = series
 
         return series, directive, column_name
 
-    # Returns: Series
-    def _fulfill_series(self, column_name):
-        # TODO
-        return self[column_name]
+    def calc(self, directive, create_column=None):
+        """Calculates according to the directive.
 
-    def calc(self, *args):
-        """Calculates according to the directive
+        This method is **NOT** Thread-safe.
 
         Args:
             directive (str): directive
             create_column (:obj:`bool`, optional):
         """
 
-        series, *_ = self._calc(*args)
+        # We should call self.calc() without `create_column`
+        # inside command formulas
+
+        if create_column == None:
+            # cases
+            # 1. called by users
+            # 2. or called by command formulas
+            create_column = self._create_column
+        else:
+            self._create_column = create_column
+
+        series, *_ = self._calc(directive)
+
+        # Set back to default value
+        self._create_column = False
 
         return series
 
@@ -136,5 +180,5 @@ class StockDataFrame(DataFrame):
             str: the real column name
         """
 
-        *_, column_name = self._calc(raw_column, True)
+        *_, column_name = self._calc(raw_column)
         return column_name

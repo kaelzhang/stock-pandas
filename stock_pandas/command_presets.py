@@ -27,7 +27,7 @@ def sma(df, s, period, column):
         min_periods=period,
         window=period,
         center=False
-    ).mean()
+    ).mean(), period
 
 
 COMMAND_PRESETS['sma'] = CommandPreset(

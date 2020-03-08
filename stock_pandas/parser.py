@@ -57,7 +57,11 @@ class Command:
         self.args = coerce_args(self.name, self.args, preset.args)
         self.formula = preset.formula
 
+    def run(self, df, s: slice):
+        return self.formula(df, s, *self.args)
+
     @staticmethod
+    @memoize
     def from_string(name: str):
         name = name.strip()
         match = re.match(REGEX_COMMAND, name)
@@ -130,6 +134,10 @@ class Directive:
 
         if type(self.expression) is Command:
             check_and_apply_command_preset(self.expression, presets)
+
+    def run(self, df, s: slice):
+        # TODO: support operator
+        return self.command.run(df, s)
 
     @staticmethod
     def from_string(name: str):
