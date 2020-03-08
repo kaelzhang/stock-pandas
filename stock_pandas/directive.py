@@ -140,7 +140,7 @@ class Directive:
         return self.command.run(df, s)
 
     @staticmethod
-    def from_string(name: str, strict: bool=True):
+    def from_string(name: str, strict: bool):
         name = name.strip()
         match = re.match(REGEX_DIRECTIVE, name)
 

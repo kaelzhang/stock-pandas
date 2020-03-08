@@ -58,7 +58,7 @@ def test_valid_columns():
     for c, cc, sc, a, o, e, s in CASES:
         print('directive:', c)
 
-        column = Directive.from_string(c)
+        column = Directive.from_string(c, True)
         command = column.command
         operator = column.operator
         value = column.expression
@@ -71,7 +71,7 @@ def test_valid_columns():
         assert s == str(column)
 
 def test_column_with_two_command():
-    column = Directive.from_string('sma.bar: 1, 2 ,3 / boll.qux :1 ,2,3')
+    column = Directive.from_string('sma.bar: 1, 2 ,3 / boll.qux :1 ,2,3', True)
     c = column.command
     o = column.operator
     cc = column.expression
@@ -87,16 +87,16 @@ def test_column_with_two_command():
 
 def test_invalid_columns():
     with pytest.raises(ValueError, match='invalid directive'):
-        Directive.from_string('a >')
+        Directive.from_string('a >', True)
 
     with pytest.raises(ValueError, match='invalid directive'):
-        Directive.from_string('>')
+        Directive.from_string('>', True)
 
     with pytest.raises(ValueError, match='invalid command'):
-        Directive.from_string('a1')
+        Directive.from_string('a1', True)
 
     with pytest.raises(ValueError, match='unknown command'):
-        Directive.from_string('foo')
+        Directive.from_string('foo', True)
 
     with pytest.raises(ValueError, match='invalid operator'):
-        Directive.from_string('sma >> 1')
+        Directive.from_string('sma >> 1', True)
