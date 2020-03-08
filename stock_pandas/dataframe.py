@@ -4,7 +4,10 @@ from pandas import (
 )
 
 from .command_presets import COMMAND_PRESETS
-from .parser import Directive
+from .directive import Directive
+from .common import (
+    copy_stock_metas
+)
 
 
 class ColumnInfo:
@@ -17,17 +20,25 @@ class StockDataFrame(DataFrame):
 
     COMMAND_PRESETS = COMMAND_PRESETS
 
-    def __init__(self, *args,
-        date_column = 'date',
+    def __init__(self,
+        data = None,
+        # date_column = 'date',
+        stock_aliases = {},
+        stock_columns = {},
+        *args,
         **kwargs
     ):
-        DataFrame.__init__(self, *args, **kwargs)
+        DataFrame.__init__(self, data, *args, **kwargs)
 
         # if date_column:
         #     self.set_index()
 
-        self._stock_aliases = {}
-        self._stock_columns = {}
+        if isinstance(data, StockDataFrame):
+            copy_stock_metas(data, self)
+        else:
+            self._stock_aliases = stock_aliases
+            self._stock_columns = stock_columns
+
         self._create_column = False
 
     def alias(self, as_name, src_name) -> None:
@@ -82,10 +93,19 @@ class StockDataFrame(DataFrame):
         # TODO: check if fulfilled
         if isinstance(result, Series):
             return result
+            # return self._fulfill_series(result)
 
         return StockDataFrame(result)
 
-    # TODO: append should maintain StockDataFrame type
+    def _ensure_stock_type(self, df):
+        return StockDataFrame(
+            df,
+            stock_aliases=self._stock_aliases,
+            stock_columns=self._stock_columns
+        )
+
+    def append(self, *args, **kwargs):
+        return self._ensure_stock_type(super().append(*args))
 
     def _fulfill_series(self, column_name):
         column_info = self._stock_columns.get(column_name)
@@ -102,6 +122,7 @@ class StockDataFrame(DataFrame):
         fulfill_slice = slice(- delta, None)
 
         partial, _ = column_info.directive.run(self, offset_slice)
+
         series[fulfill_slice] = partial[fulfill_slice]
 
         column_info.size = size
@@ -111,15 +132,13 @@ class StockDataFrame(DataFrame):
     def _calc(self, directive):
         directive = self._parse_directive(directive)
 
-        command = directive.command
-
         column_name = str(directive)
 
         # TODO: column deletion by pandas
         if column_name in self._stock_columns:
-            return self._fulfill_series(column_name)
+            return self._fulfill_series(column_name), directive, column_name
 
-        series, period = command.run(
+        series, period = directive.run(
             self,
             # create the whole series
             slice(None)
@@ -142,24 +161,29 @@ class StockDataFrame(DataFrame):
 
         Args:
             directive (str): directive
-            create_column (:obj:`bool`, optional):
+            create_column (:obj:`bool`, optional): whether we should create a column for the calculated series.
+
+        Returns:
+            pandas.Series
         """
 
         # We should call self.calc() without `create_column`
         # inside command formulas
+        explicit_create_column = type(create_column) is bool
 
-        if create_column == None:
+        if explicit_create_column:
+            self._create_column = create_column
+        else:
             # cases
             # 1. called by users
             # 2. or called by command formulas
             create_column = self._create_column
-        else:
-            self._create_column = create_column
 
         series, *_ = self._calc(directive)
 
-        # Set back to default value
-        self._create_column = False
+        if explicit_create_column:
+            # Set back to default value, since we complete calculatiing
+            self._create_column = False
 
         return series
 

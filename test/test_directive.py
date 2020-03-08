@@ -1,6 +1,6 @@
 import pytest
 
-from stock_pandas.parser import Directive
+from stock_pandas.directive import Directive
 
 def test_valid_columns():
     CASES = [

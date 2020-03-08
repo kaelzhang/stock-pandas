@@ -42,3 +42,7 @@ def memoize(f):
             memo[x] = f(x)
         return memo[x]
     return helper
+
+def copy_stock_metas(source, target):
+    target._stock_aliases = source._stock_aliases
+    target._stock_columns = source._stock_columns

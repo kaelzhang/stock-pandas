@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pytest
 
 from stock_pandas import StockDataFrame
@@ -18,8 +19,10 @@ def stock():
 def test_basic_sma(stock):
     sma = stock['sma:2']
 
-    print('sma', sma)
-    print('type sma', type(sma))
+    list_sma0 = [3.5, 4.5, 5.5, 6.5, 7.5]
+
+    assert np.isnan(sma[0])
+    assert list(sma[1:]) == list_sma0
 
     new = pd.DataFrame(dict(
         open = [8],
@@ -29,13 +32,12 @@ def test_basic_sma(stock):
         volume = [800]
     ))
 
-    stock = StockDataFrame(stock.append(new))
+    stock = stock.append(new)
+    sma2 = stock.calc('sma:2')
 
-    print('>>>>>>>>>>', stock, type(stock))
-    print(stock.calc('sma:2'))
-    print(stock)
+    assert list(sma2[1:]) == [*list_sma0, 8.5]
+
 
 def test_aliases(stock):
     stock.alias('Open', 'open')
-
     assert list(stock['Open']) == l
