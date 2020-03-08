@@ -87,9 +87,8 @@ Defines column alias or directive alias
 - **name** `str` the name of an existing column or the directive string
 
 ```py
-# Some plot library such as `mplfinance` which
-# requires a column named capitalized `Open`,
-# So we could create an alias
+# Some plot library such as `mplfinance` requires a column named capitalized `Open`,
+# but it is ok, we could create an alias.
 stock.alias('Open', 'open')
 
 stock.alias('buy_point', 'kdj.j < 0')
