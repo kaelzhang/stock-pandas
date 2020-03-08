@@ -6,7 +6,8 @@ from pandas import (
 from .command_presets import COMMAND_PRESETS
 from .directive import Directive
 from .common import (
-    copy_stock_metas
+    copy_stock_metas,
+    set_stock_metas
 )
 
 
@@ -18,14 +19,17 @@ class ColumnInfo:
 
 
 class StockDataFrame(DataFrame):
+    """
+    """
 
     COMMAND_PRESETS = COMMAND_PRESETS
 
     def __init__(self,
                  data=None,
                  # date_column = 'date',
-                 stock_aliases={},
+                 create_stock_metas=True,
                  stock_columns={},
+                 stock_directives_cache={},
                  *args,
                  **kwargs
                  ):
@@ -36,12 +40,8 @@ class StockDataFrame(DataFrame):
 
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
-        else:
-            # Use `object.__setattr__` to avoid pandas UserWarning:
-            # > Pandas doesn't allow columns to be created via a new
-            # > attribute name
-            object.__setattr__(self, '_stock_aliases', stock_aliases)
-            object.__setattr__(self, '_stock_columns', stock_columns)
+        elif create_stock_metas:
+            set_stock_metas(self)
 
         self._create_column = False
 
@@ -102,11 +102,9 @@ class StockDataFrame(DataFrame):
         return StockDataFrame(result)
 
     def _ensure_stock_type(self, df):
-        return StockDataFrame(
-            df,
-            stock_aliases=self._stock_aliases,
-            stock_columns=self._stock_columns
-        )
+        new = StockDataFrame(df, create_stock_metas=False)
+        copy_stock_metas(self, new)
+        return new
 
     def append(self, *args, **kwargs):
         return self._ensure_stock_type(super().append(*args))

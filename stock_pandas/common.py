@@ -47,8 +47,23 @@ def memoize(f):
     return helper
 
 
-def copy_stock_metas(source, target):
+def set_stock_metas(
+    target,
+    aliases={},
+    columns={},
+    directives_cache={}
+):
     # Use `object.__setattr__` to avoid pandas UserWarning:
     # > Pandas doesn't allow columns to be created via a new attribute name
-    object.__setattr__(target, '_stock_aliases', source._stock_aliases)
-    object.__setattr__(target, '_stock_columns', source._stock_columns)
+    object.__setattr__(target, '_stock_aliases', aliases)
+    object.__setattr__(target, '_stock_columns', columns)
+    object.__setattr__(target, '_stock_directives_cache', directives_cache)
+
+
+def copy_stock_metas(source, target):
+    set_stock_metas(
+        target,
+        source._stock_aliases,
+        source._stock_columns,
+        source._stock_directives_cache
+    )

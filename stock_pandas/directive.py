@@ -16,7 +16,8 @@ def coerce_args(command_name, args, arg_settings):
 
     if length > max_args_length:
         raise ValueError(
-            f'command "{command_name}" accepts max {max_args_length} args, but got {length}')
+            f'command "{command_name}" accepts max {max_args_length} args, but got {length}' # noqa
+        )
 
     for index, (default, setter) in enumerate(arg_settings):
         # Suppose command `foo` has two args
