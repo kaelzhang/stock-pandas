@@ -3,12 +3,15 @@ from .common import (
     is_valid_stat_column
 )
 
+
 class CommandPreset:
     def __init__(self, formula, args, ):
         self.formula = formula
         self.args = args
 
+
 COMMAND_PRESETS = {}
+
 
 def sma(df, s, period, column):
     """Gets simple moving average

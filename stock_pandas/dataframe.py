@@ -16,18 +16,19 @@ class ColumnInfo:
         self.directive = directive
         self.period = period
 
+
 class StockDataFrame(DataFrame):
 
     COMMAND_PRESETS = COMMAND_PRESETS
 
     def __init__(self,
-        data = None,
-        # date_column = 'date',
-        stock_aliases = {},
-        stock_columns = {},
-        *args,
-        **kwargs
-    ):
+                 data=None,
+                 # date_column = 'date',
+                 stock_aliases={},
+                 stock_columns={},
+                 *args,
+                 **kwargs
+                 ):
         DataFrame.__init__(self, data, *args, **kwargs)
 
         # if date_column:
@@ -61,7 +62,7 @@ class StockDataFrame(DataFrame):
         self._stock_aliases[as_name] = src_name
 
     def _map_alias(self, item):
-        if type(item) is not str:
+        if not isinstance(item, str):
             return item
 
         return self._stock_aliases.get(item, item)
@@ -169,7 +170,7 @@ class StockDataFrame(DataFrame):
 
         # We should call self.calc() without `create_column`
         # inside command formulas
-        explicit_create_column = type(create_column) is bool
+        explicit_create_column = isinstance(create_column, bool)
 
         if explicit_create_column:
             self._create_column = create_column

@@ -7,6 +7,7 @@ from .common import (
 
 DEFAULT_ARG_VALUE = ''
 
+
 def coerce_args(command_name, args, arg_settings):
     coerced = []
     length = len(args)
@@ -28,7 +29,7 @@ def coerce_args(command_name, args, arg_settings):
             setter(arg) if setter else arg
         )
 
-        if arg == None:
+        if arg is None:
             raise ValueError(
                 f'args[{index}] is required for command "{command_name}"'
             )
@@ -37,8 +38,10 @@ def coerce_args(command_name, args, arg_settings):
 
     return coerced
 
+
 REGEX_COMMAND = r'^([a-z]+)(\.[a-z]+)?\s*(:[a-z0-9-.\s]+(?:,[a-z0-9-.\s]+)*)?$'
 ARGS_SEPARATOR = ','
+
 
 class Command:
     def __init__(self, command, sub, args):
@@ -87,6 +90,7 @@ def parse_expression(expression):
     except ValueError:
         return Command.from_string(expression)
 
+
 OPERATORS = [
     '/',
     '\\',
@@ -98,11 +102,13 @@ OPERATORS = [
     '><'
 ]
 
+
 def check_operator(operator: str):
     if operator in OPERATORS:
         return
 
     raise ValueError(f'"{operator}" is an invalid operator')
+
 
 def check_and_apply_command_preset(command, presets):
     if command.formula:
@@ -117,7 +123,9 @@ def check_and_apply_command_preset(command, presets):
 
     command.apply_preset(command_preset)
 
+
 REGEX_DIRECTIVE = r'^([a-z0-9.:,\s]+)(?:([=<>/\\]+)([\S\s]+))?$'
+
 
 class Directive:
     def __init__(self, command, operator, expression):
@@ -132,7 +140,7 @@ class Directive:
     def apply_presets(self, presets):
         check_and_apply_command_preset(self.command, presets)
 
-        if type(self.expression) is Command:
+        if isinstance(self.expression, Command):
             check_and_apply_command_preset(self.expression, presets)
 
     def run(self, df, s: slice):

@@ -4,6 +4,9 @@ test:
 lint:
 	flake8 stock_pandas
 
+fix:
+	autopep8 --in-place --aggressive -r stock_pandas
+
 install:
 	pip install -r requirements.txt -r test-requirements.txt
 

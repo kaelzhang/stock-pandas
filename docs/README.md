@@ -5,7 +5,7 @@
 
 # stock-pandas
 
-The wrapper of `pandas.DataFrame` with stock statistics and indicators support for automatical trading
+The wrapper of `pandas.DataFrame` with stock statistics and indicators support for automatical trading.
 
 ## Install
 
@@ -18,6 +18,8 @@ pip install stock-pandas
 ```py
 from stock_pandas import StockDataFrame
 ```
+
+We also have some examples with annotations in the [`example`](https://github.com/kaelzhang/stock-pandas/tree/master/example) directory, you could use [JupyterLab](https://jupyter.org/) or Jupyter notebook to play with them.
 
 ### StockDataFrame
 

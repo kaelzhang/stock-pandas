@@ -11,12 +11,14 @@ def period_to_int(period: str):
 
     return period
 
+
 COLUMNS = [
     'open',
     'high',
     'low',
     'close'
 ]
+
 
 def is_ohlc_column(column: str):
     return column in COLUMNS
@@ -37,11 +39,13 @@ def join_list(l: list, separator: str):
 
 def memoize(f):
     memo = {}
+
     def helper(x):
         if x not in memo:
             memo[x] = f(x)
         return memo[x]
     return helper
+
 
 def copy_stock_metas(source, target):
     target._stock_aliases = source._stock_aliases
