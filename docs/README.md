@@ -16,8 +16,6 @@ pip install stock-pandas
 ## Usage
 
 ```py
-import pandas as pd
-
 from stock_pandas import StockDataFrame
 ```
 
@@ -26,6 +24,7 @@ from stock_pandas import StockDataFrame
 `StockDataFrame` inherits from `pandas.DataFrame`, so if you are familiar with `pandas.DataFrame`, you are already ready to use `stock-pandas`
 
 ```py
+import pandas as pd
 stock = StockDataFrame(pd.read_csv('stock.csv'))
 ```
 
@@ -43,7 +42,7 @@ We have an example to show the most basic indexing using `[directive]`
 stock = StockDataFrame({
     'open' : ...,
     'high' : ...,
-    'loc'  : ...,
+    'low'  : ...,
     'close': [5, 6, 7, 8, 9]
 })
 
@@ -59,7 +58,7 @@ stock['sma:2']
 
 Which prints the 2-period simple moving average on close column
 
-#### Syntax of `directive`
+## Syntax of `directive`
 
 ```ebnf
 column_name := command_name | command_name operator expression
@@ -92,7 +91,13 @@ stock['sma:5']
 stock['sma:10,open']
 ```
 
-```
+## Built-in Commands
+
+### `sma`, simple moving averages
+
+### `macd`
+
+```py
 # macd
 stock['macd']
 stock['macd.dif']
@@ -106,7 +111,11 @@ stock['macd.dea']
 stock['macd.histogram']
 stock['macd.h']
 stock['macd.macd']
+```
 
+### `boll`, bollinger bands
+
+```py
 # boll
 stock['boll']
 
@@ -118,3 +127,18 @@ stock['boll.upper]
 stock['boll.lower']
 stock['boll.l']
 ```
+
+## Operators
+
+- **`/`**:
+- **`\`**:
+- **`<`**:
+- **`<=`**:
+- **`==`**:
+- **`>=`**:
+- **`>`**:
+- **`><`**:
+
+****
+
+## Advanced Sections
