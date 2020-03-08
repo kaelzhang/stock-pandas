@@ -6,9 +6,9 @@ def test_valid_columns():
     CASES = [
         (
             # columnn name
-            'foo',
+            'sma',
             # command name
-            'foo',
+            'sma',
             # sub command
             None,
             # arguments
@@ -18,30 +18,30 @@ def test_valid_columns():
             # expression
             None,
             # to string
-            'foo'
+            'sma'
         ),
         (
-            'foo.bar',
-            'foo',
+            'sma.bar',
+            'sma',
             'bar',
             [],
             None,
             None,
-            'foo.bar'
+            'sma.bar'
         ),
         (
-            'foo.bar:1',
-            'foo',
+            'sma.bar:1',
+            'sma',
             'bar',
             ['1'],
             None,
             None,
-            'foo.bar:1'
+            'sma.bar:1'
         ),
         (
             # redundant whitespaces
-            ' foo.bar:1,2  >  0 ',
-            'foo',
+            ' sma.bar:1,2  >  0 ',
+            'sma',
             'bar',
             ['1', '2'],
             # invalid operator actually
@@ -49,13 +49,16 @@ def test_valid_columns():
             0,
 
             # 0 will convert to float
-            'foo.bar:1,2>0.0'
+            'sma.bar:1,2>0.0'
         )
     ]
 
-    for c, cc, sc, a, o, e, s in CASES:
-        column = Directive.from_string(c)
+    print()
 
+    for c, cc, sc, a, o, e, s in CASES:
+        print('directive:', c)
+
+        column = Directive.from_string(c)
         command = column.command
         operator = column.operator
         value = column.expression
@@ -68,29 +71,32 @@ def test_valid_columns():
         assert s == str(column)
 
 def test_column_with_two_command():
-    column = Directive.from_string('foo.bar: 1, 2 ,3 / baz.qux :1 ,2,3')
+    column = Directive.from_string('sma.bar: 1, 2 ,3 / boll.qux :1 ,2,3')
     c = column.command
     o = column.operator
     cc = column.expression
 
-    assert c.name == 'foo'
+    assert c.name == 'sma'
     assert c.sub == 'bar'
     assert c.args == ['1', '2', '3']
     assert o == '/'
-    assert cc.name == 'baz'
+    assert cc.name == 'boll'
     assert cc.sub == 'qux'
     assert cc.args == ['1', '2', '3']
-    assert str(column) == 'foo.bar:1,2,3/baz.qux:1,2,3'
+    assert str(column) == 'sma.bar:1,2,3/boll.qux:1,2,3'
 
 def test_invalid_columns():
-    with pytest.raises(ValueError, match='invalid column'):
+    with pytest.raises(ValueError, match='invalid directive'):
         Directive.from_string('a >')
 
-    with pytest.raises(ValueError, match='invalid column'):
+    with pytest.raises(ValueError, match='invalid directive'):
         Directive.from_string('>')
 
     with pytest.raises(ValueError, match='invalid command'):
         Directive.from_string('a1')
 
+    with pytest.raises(ValueError, match='unknown command'):
+        Directive.from_string('foo')
+
     with pytest.raises(ValueError, match='invalid operator'):
-        Directive.from_string('a1 >> 1')
+        Directive.from_string('sma >> 1')

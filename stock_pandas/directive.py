@@ -2,8 +2,9 @@ import re
 
 from .common import (
     join_list,
-    memoize
+    raise_if
 )
+from .command_presets import COMMAND_PRESETS
 
 DEFAULT_ARG_VALUE = ''
 
@@ -57,23 +58,37 @@ class Command:
         return f'{name}:{join_list(self.args, ARGS_SEPARATOR)}' \
             if self.args else name
 
-    def apply_preset(self, preset):
-        self.args = coerce_args(self.name, self.args, preset.args)
+    def apply_preset(self):
+        if self.formula:
+            return
+
+        name = self.name
+        preset = COMMAND_PRESETS.get(name)
+
+        self.args = coerce_args(name, self.args, preset.args)
         self.formula = preset.formula
 
     def run(self, df, s: slice):
         return self.formula(df, s, *self.args)
 
     @staticmethod
-    @memoize
-    def from_string(name: str):
+    def from_string(name: str, strict: bool):
         name = name.strip()
         match = re.match(REGEX_COMMAND, name)
 
         if not match:
-            raise ValueError(f'invalid command `{name}`')
+            return raise_if(
+                strict,
+                ValueError(f'invalid command `{name}`')
+            )
 
         command, sub, args = match.group(1, 2, 3)
+        if command not in COMMAND_PRESETS:
+            return raise_if(
+                strict,
+                ValueError(f'unknown command "{command}"')
+            )
+
         sub = sub[1:].strip() if sub else None
         args = [
             a.strip() for a in args[1:].split(ARGS_SEPARATOR)
@@ -82,14 +97,11 @@ class Command:
         return Command(command, sub, args)
 
 
-def parse_expression(expression):
-    if not expression:
-        return
-
+def parse_expression(expression, strict: bool):
     try:
         return float(expression)
     except ValueError:
-        return Command.from_string(expression)
+        return Command.from_string(expression, strict)
 
 
 OPERATORS = [
@@ -102,27 +114,6 @@ OPERATORS = [
     '>',
     '><'
 ]
-
-
-def check_operator(operator: str):
-    if operator in OPERATORS:
-        return
-
-    raise ValueError(f'"{operator}" is an invalid operator')
-
-
-def check_and_apply_command_preset(command, presets):
-    if command.formula:
-        return
-
-    name = command.name
-
-    command_preset = presets.get(name, None)
-
-    if not command_preset:
-        raise ValueError(f'command "{name}" is not supported')
-
-    command.apply_preset(command_preset)
 
 
 REGEX_DIRECTIVE = r'^([a-z0-9.:,\s]+)(?:([=<>/\\]+)([\S\s]+))?$'
@@ -138,31 +129,42 @@ class Directive:
         return f'{self.command}{self.operator}{self.expression}' \
             if self.operator else str(self.command)
 
-    def apply_presets(self, presets):
-        check_and_apply_command_preset(self.command, presets)
+    def apply_presets(self):
+        self.command.apply_preset()
 
         if isinstance(self.expression, Command):
-            check_and_apply_command_preset(self.expression, presets)
+            self.expression.apply_preset()
 
     def run(self, df, s: slice):
         # TODO: support operator
         return self.command.run(df, s)
 
     @staticmethod
-    def from_string(name: str):
+    def from_string(name: str, strict: bool=True):
         name = name.strip()
         match = re.match(REGEX_DIRECTIVE, name)
 
         if not match:
-            raise ValueError(f'invalid column name `{name}`')
+            return raise_if(
+                strict,
+                ValueError(f'invalid directive `{name}`')
+            )
 
         raw_command, operator, expression = match.group(1, 2, 3)
 
-        if operator:
-            check_operator(operator)
+        command = Command.from_string(raw_command, strict)
+        if command is None:
+            return
 
-        return Directive(
-            Command.from_string(raw_command),
-            operator,
-            parse_expression(expression)
-        )
+        if operator and operator not in OPERATORS:
+            return raise_if(
+                strict,
+                ValueError(f'"{operator}" is an invalid operator')
+            )
+
+        if expression:
+            expression = parse_expression(expression, strict)
+            if expression is None:
+                return
+
+        return Directive(command, operator, expression)

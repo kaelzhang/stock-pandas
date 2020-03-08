@@ -5,7 +5,7 @@ from .common import (
 
 
 class CommandPreset:
-    def __init__(self, formula, args, ):
+    def __init__(self, formula, args):
         self.formula = formula
         self.args = args
 
@@ -55,3 +55,5 @@ COMMAND_PRESETS['sma'] = CommandPreset(
         )
     ]
 )
+
+COMMAND_PRESETS['boll'] = True

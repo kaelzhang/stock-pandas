@@ -22,8 +22,6 @@ class StockDataFrame(DataFrame):
     """
     """
 
-    COMMAND_PRESETS = COMMAND_PRESETS
-
     def __init__(self,
                  data=None,
                  # date_column = 'date',
@@ -76,20 +74,36 @@ class StockDataFrame(DataFrame):
 
         return self._map_alias(item)
 
-    def _parse_directive(self, directive):
-        directive = Directive.from_string(directive)
-        directive.apply_presets(self.COMMAND_PRESETS)
+    def _parse_directive(self, directive_str: str):
+        # A simple cache
+        if directive_str in self._stock_directives_cache:
+            return self._stock_directives_cache[directive_str]
+
+        directive = Directive.from_string(directive_str)
+        directive.apply_presets()
+        self._stock_directives_cache[directive_str] = directive
+
         return directive
 
-    def __getitem__(self, item):
-        item = self._map_aliases(item)
+    def _map_key(self, key):
+        if type(key) is str:
+            return self._map_keys([key])[0]
+
+        if isinstance(key, list):
+            return self._map_keys(key)
+
+        return key
+
+    def __getitem__(self, key):
+        key = self._map_aliases(key)
 
         try:
-            result = super().__getitem__(item)
+            result = super().__getitem__(key)
         except KeyError:
+
             # This method might raise
             self._create_column = True
-            real_name = self._init_columns(item)
+            real_name = self._init_columns(key)
             self._create_column = False
 
             result = super().__getitem__(real_name)

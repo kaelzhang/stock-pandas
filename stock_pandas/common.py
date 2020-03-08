@@ -67,3 +67,7 @@ def copy_stock_metas(source, target):
         source._stock_columns,
         source._stock_directives_cache
     )
+
+def raise_if(strict: bool, err):
+    if strict:
+        raise err
