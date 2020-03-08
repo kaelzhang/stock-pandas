@@ -19,6 +19,8 @@ def stock():
 def test_basic_sma(stock):
     sma = stock['sma:2']
 
+    stock = StockDataFrame(stock)
+
     list_sma0 = [3.5, 4.5, 5.5, 6.5, 7.5]
 
     assert np.isnan(sma[0])

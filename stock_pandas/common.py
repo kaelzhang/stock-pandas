@@ -48,5 +48,7 @@ def memoize(f):
 
 
 def copy_stock_metas(source, target):
-    target._stock_aliases = source._stock_aliases
-    target._stock_columns = source._stock_columns
+    # Use `object.__setattr__` to avoid pandas UserWarning:
+    # > Pandas doesn't allow columns to be created via a new attribute name
+    object.__setattr__(target, '_stock_aliases', source._stock_aliases)
+    object.__setattr__(target, '_stock_columns', source._stock_columns)

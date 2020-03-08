@@ -37,8 +37,11 @@ class StockDataFrame(DataFrame):
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
         else:
-            self._stock_aliases = stock_aliases
-            self._stock_columns = stock_columns
+            # Use `object.__setattr__` to avoid pandas UserWarning:
+            # > Pandas doesn't allow columns to be created via a new
+            # > attribute name
+            object.__setattr__(self, '_stock_aliases', stock_aliases)
+            object.__setattr__(self, '_stock_columns', stock_columns)
 
         self._create_column = False
 
@@ -162,7 +165,8 @@ class StockDataFrame(DataFrame):
 
         Args:
             directive (str): directive
-            create_column (:obj:`bool`, optional): whether we should create a column for the calculated series.
+            create_column (:obj:`bool`, optional): whether we should create a
+            column for the calculated series.
 
         Returns:
             pandas.Series
