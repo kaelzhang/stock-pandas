@@ -5,7 +5,11 @@
 
 # stock-pandas
 
-The wrapper of `pandas.DataFrame` with stock statistics and indicators support for automatical trading.
+A wrapper and a subtle class of `pandas.DataFrame` which supports:
+- stock statistics
+- all kinds of stock indicators
+
+`stock-pandas` makes automatical trading much easier.
 
 ## Install
 
@@ -59,6 +63,37 @@ stock['sma:2']
 ```
 
 Which prints the 2-period simple moving average on close column
+
+#### stock.calc(directive: str, create_column: bool=False) -> Series
+
+Calculates series according to the directive.
+
+```py
+stock['sma:2']
+# is equivalent to:
+stock.calc('sma:2', create_column=True)
+```
+
+```py
+# This will only calculate without creating a new column in the dataframe
+stock.calc('sma:20')
+```
+
+#### stock.alias(alias: str, name: str) -> None
+
+Defines column alias or directive alias
+
+- **alias** `str` the alias name
+- **name** `str` the name of an existing column or the directive string
+
+```py
+# Some plot library such as `mplfinance` which
+# requires a column named capitalized `Open`,
+# So we could create an alias
+stock.alias('Open', 'open')
+
+stock.alias('buy_point', 'kdj.j < 0')
+```
 
 ## Syntax of `directive`
 

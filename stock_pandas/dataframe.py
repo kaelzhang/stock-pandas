@@ -56,7 +56,7 @@ class StockDataFrame(DataFrame):
         return StockDataFrame(result)
 
     def calc(self, directive_str: str, create_column=None):
-        """Calculates according to the directive.
+        """Calculates series according to the directive.
 
         This method is **NOT** Thread-safe.
 
@@ -90,7 +90,7 @@ class StockDataFrame(DataFrame):
         return series
 
     def alias(self, as_name, src_name) -> None:
-        """Defines column alias
+        """Defines column alias or directive alias
 
         Args:
             as_name (str): the alias name
