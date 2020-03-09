@@ -11,6 +11,12 @@ A wrapper and a subtle class of `pandas.DataFrame` which supports:
 
 `stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6**
 
+With the help of `stock-pandas` and mplfinance, we could easily draw something like:
+
+![](boll.png)
+
+The code example is available at [here](https://github.com/kaelzhang/stock-pandas/blob/master/example/bollinger_bands.ipynb).
+
 ## Install
 
 ```sh
