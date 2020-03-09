@@ -19,6 +19,7 @@ def coerce_args(command_name, args, arg_settings):
     max_args_length = len(arg_settings)
 
     if length > max_args_length:
+        # TODO: use warning instead
         raise ValueError(
             f'command "{command_name}" accepts max {max_args_length} args, but got {length}'  # noqa
         )
@@ -56,10 +57,14 @@ class Command:
         self.formula = None
 
     def __str__(self):
-        name = f'{self.name}.{self.sub}' if self.sub else self.name
+        name = self.full_name
 
         return f'{name}:{join_list(self.args, ARGS_SEPARATOR)}' \
             if self.args else name
+
+    @property
+    def full_name(self):
+        return f'{self.name}.{self.sub}' if self.sub else self.name
 
     def _get_preset(self):
         name = self.name
@@ -75,6 +80,11 @@ class Command:
 
         # apply sub aliases
         sub = sub if sub_aliases_map is None else sub_aliases_map.get(sub, sub)
+
+        # macd.dif -> macd
+        if sub is None:
+            return preset
+
         self.sub = sub
 
         if subs_map is None:
@@ -93,7 +103,7 @@ class Command:
 
         preset = self._get_preset()
 
-        self.args = coerce_args(self.name, self.args, preset.args)
+        self.args = coerce_args(self.full_name, self.args, preset.args)
         self.formula = preset.formula
 
     def run(self, df, s: slice):
@@ -129,6 +139,7 @@ class Command:
                 )
             )
 
+        # TODO: support `()`
         args = [
             a.strip() for a in args[1:].split(ARGS_SEPARATOR)
         ] if args else []

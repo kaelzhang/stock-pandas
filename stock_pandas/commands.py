@@ -44,6 +44,7 @@ def ma(df, s, period, column):
         center=False
     ).mean(), period
 
+
 arg_period = (
     # Default value for the first argument,
     # `None` indicates that it is not an optional argument
@@ -69,7 +70,7 @@ COMMANDS['ma'] = CommandPreset(ma, ma_args)
 
 
 def smma(df, s, period, column):
-    """Gets
+    """Gets Smoothed Moving Average
     """
 
     return df[column][s].ewm(
@@ -79,7 +80,27 @@ def smma(df, s, period, column):
         adjust=True
     ).mean(), period
 
+
 COMMANDS['smma'] = CommandPreset(smma, ma_args)
+
+
+def calc_ema(series, period):
+    return series.ewm(
+        min_periods=period,
+        ignore_na=False,
+        span=period,
+        adjust=True
+    ).mean()
+
+
+def ema(df, s, period, column):
+    """Gets Exponential Moving Average
+    """
+
+    return calc_ema(df[column][s], period), period
+
+
+COMMANDS['ema'] = CommandPreset(ema, ma_args)
 
 
 def mstd(df, s, period, column):
@@ -173,21 +194,20 @@ COMMANDS['column'] = CommandPreset(
 )
 
 
-
 def rsv(df, s, period):
     """Gets RSV (Raw Stochastic Value)
     """
 
     # Lowest Low Value
     llv = df['low'][s].rolling(
-        min_periods=1,
+        min_periods=period,
         window=period,
         center=False
     ).min()
 
     # Highest High Value
     hhv = df['high'][s].rolling(
-        min_periods=1,
+        min_periods=period,
         window=period,
         center=False
     ).max()
@@ -197,6 +217,7 @@ def rsv(df, s, period):
     ).fillna(0).astype('float64') * 100
 
     return v, period
+
 
 COMMANDS['rsv'] = CommandPreset(
     rsv,
@@ -224,18 +245,25 @@ def kdj_k(df, s, period):
     """Gets KDJ K
     """
 
-    return list(kd(df[f'rsv:{period}'][s])), period
+    rsv = df.calc(f'rsv:{period}')[s]
+
+    return list(kd(rsv)), period
 
 
 def kdj_d(df, s, period):
-    return list(kd(df[f'kdj.k:{period}'][s])), period
+    k = df.calc(f'kdj.k:{period}')[s]
+
+    return list(kd(k)), period
 
 
 def kdj_j(df, s, period):
-    k = df[f'kdj.k:{period}'][s]
-    d = df[f'kdj.d:{period}'][s]
+    k = df.calc(f'kdj.k:{period}')[s]
+    d = df.calc(f'kdj.d:{period}')[s]
+
     return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period
 
+
+kdj_arg_period = [(9, period_to_int)]
 
 COMMANDS['kdj'] = CommandPreset(
     # We must specify sub command for kdj, such as
@@ -243,19 +271,71 @@ COMMANDS['kdj'] = CommandPreset(
     subs_map=dict(
         k=CommandPreset(
             kdj_k,
-            [(9, period_to_int)]
+            kdj_arg_period
         ),
 
         d=CommandPreset(
             kdj_d,
-            [(9, period_to_int)]
+            kdj_arg_period
         ),
 
         j=CommandPreset(
             kdj_j,
-            [(9, period_to_int)]
+            kdj_arg_period
         )
     )
 )
 
 
+def macd(df, s, fast_period, slow_period):
+    fast = df.calc(f'ema:{fast_period},close', False)[s]
+    slow = df.calc(f'ema:{slow_period},close', False)[s]
+
+    return fast - slow, fast_period
+
+
+def macd_signal(df, s, fast_period, slow_period, signal_period):
+    macd = df.calc(f'macd:{fast_period},{slow_period}')[s]
+
+    return calc_ema(macd, signal_period), fast_period
+
+
+def macd_histogram(df, s, fast_period, slow_period, signal_period):
+    macd = df.calc(f'macd:{fast_period},{slow_period}')[s]
+    macd_s = df.calc(
+        f'macd.signal:{fast_period},{slow_period},{signal_period}'
+    )[s]
+
+    return macd - macd_s, fast_period
+
+
+macd_args = [
+    # Fast period
+    (26, period_to_int),
+    # Slow period
+    (12, period_to_int)
+]
+
+macd_args_all = [
+    *macd_args,
+    (9, period_to_int)
+]
+
+COMMANDS['macd'] = CommandPreset(
+    macd,
+    macd_args,
+    dict(
+        signal=CommandPreset(macd_signal, macd_args_all),
+        histogram=CommandPreset(macd_histogram, macd_args_all)
+    ),
+    dict(
+        s='signal',
+        h='histogram',
+
+        # In some countries, such as China,
+        # the three series are commonly known as:
+        dif=None,
+        dea='signal',
+        macd='histogram'
+    )
+)

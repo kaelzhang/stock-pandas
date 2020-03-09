@@ -28,7 +28,7 @@ class StockDataFrame(DataFrame):
     def __init__(
         self,
         data=None,
-        date_column = None,
+        date_column=None,
         create_stock_metas=True,
         *args,
         **kwargs
@@ -72,9 +72,13 @@ class StockDataFrame(DataFrame):
             pandas.Series
         """
 
+        if self._is_normal_column(directive_str):
+            return self[directive_str]
+
         # We should call self.calc() without `create_column`
         # inside command formulas
         explicit_create_column = isinstance(create_column, bool)
+        original_create_column = self._create_column
 
         if explicit_create_column:
             self._create_column = create_column
@@ -88,13 +92,13 @@ class StockDataFrame(DataFrame):
 
         if explicit_create_column:
             # Set back to default value, since we complete calculatiing
-            self._create_column = False
+            self._create_column = original_create_column
 
         return series
 
     def recalc(
         self,
-        directive_str: str=None
+        directive_str: str = None
     ):
         """
         """
@@ -249,6 +253,10 @@ class StockDataFrame(DataFrame):
         column_info.size = size
 
         return series
+
+    def _is_normal_column(self, column_name):
+        return column_name in self.columns and \
+            column_name not in self._stock_columns
 
     def _calc(self, directive_str: str):
         directive = self._parse_directive(directive_str, True)
