@@ -1,4 +1,6 @@
 from functools import partial
+import re
+
 from pandas import DataFrame, Series
 import numpy as np
 
@@ -114,3 +116,44 @@ def is_not_nan(subject):
         subject = subject.values
 
     return ~ np.isnan(subject)
+
+
+# left parentheses
+PARAN_L = '('
+PARAN_R = ')'
+
+def balance(l: list):
+    balanced = []
+
+    pending = None
+
+    for item in l:
+        if pending is None:
+            if item.startswith(PARAN_L):
+                pending = item[1:]
+            else:
+                balanced.append(item)
+        else:
+            if item.endswith(PARAN_R):
+                balanced.append(pending + item[:- 1])
+                pending = None
+            else:
+                pending += item
+
+    if pending is not None:
+        raise ValueError(f'unbalanced argument paranthesis "({pending}"')
+
+    return balanced
+
+
+ARGS_SEPARATOR = ','
+REGEX_HAS_PARAN_L = r'\('
+
+def split_and_balance(args_str: str):
+    splitted = [
+        a.strip() for a in args_str.split(ARGS_SEPARATOR)
+    ]
+
+    no_paran = re.search(REGEX_HAS_PARAN_L, args_str) is None
+
+    return splitted if no_paran else balance(splitted)

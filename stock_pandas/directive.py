@@ -4,7 +4,9 @@ import numpy as np
 from .common import (
     join_list,
     raise_if,
-    is_not_nan
+    is_not_nan,
+    split_and_balance,
+    ARGS_SEPARATOR
 )
 from .commands import COMMANDS
 from .operators import OPERATORS
@@ -19,7 +21,6 @@ def coerce_args(command_name, args, arg_settings):
     max_args_length = len(arg_settings)
 
     if length > max_args_length:
-        # TODO: use warning instead
         raise ValueError(
             f'command "{command_name}" accepts max {max_args_length} args, but got {length}'  # noqa
         )
@@ -46,7 +47,6 @@ def coerce_args(command_name, args, arg_settings):
 
 
 REGEX_COMMAND = r'^([a-z]+)(\.[a-z]+)?\s*(:[a-z0-9-.\s]+(?:,[a-z0-9-.\s]+)*)?$'
-ARGS_SEPARATOR = ','
 
 
 class Command:
@@ -80,12 +80,11 @@ class Command:
 
         # apply sub aliases
         sub = sub if sub_aliases_map is None else sub_aliases_map.get(sub, sub)
+        self.sub = sub
 
         # macd.dif -> macd
         if sub is None:
             return preset
-
-        self.sub = sub
 
         if subs_map is None:
             raise ValueError(f'command "{name}" has no sub commands')
@@ -139,10 +138,7 @@ class Command:
                 )
             )
 
-        # TODO: support `()`
-        args = [
-            a.strip() for a in args[1:].split(ARGS_SEPARATOR)
-        ] if args else []
+        args = split_and_balance(args[1:]) if args else []
 
         return Command(command, sub, args)
 
