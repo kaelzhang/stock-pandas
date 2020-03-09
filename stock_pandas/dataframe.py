@@ -90,6 +90,13 @@ class StockDataFrame(DataFrame):
 
         return series
 
+    def recalc(
+        self,
+        directive_str: str=None
+    ):
+        """
+        """
+
     def alias(self, as_name, src_name) -> None:
         """Defines column alias or directive alias
 

@@ -10,7 +10,7 @@ def cross_up(left, right):
 
 def cross_down(left, right):
     cross, less = compare_cross(left, right)
-    return cross & ~less
+    return cross & ~ less
 
 def less_than(left, right):
     return left < right

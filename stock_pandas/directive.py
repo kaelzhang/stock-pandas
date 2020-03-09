@@ -1,8 +1,10 @@
 import re
+import numpy as np
 
 from .common import (
     join_list,
-    raise_if
+    raise_if,
+    is_not_nan
 )
 from .commands import COMMANDS
 from .operators import OPERATORS
@@ -170,17 +172,26 @@ class Directive:
             self.expression.apply_preset()
 
     def run(self, df, s: slice):
-        left = self.command.run(df, s)
+        left, period_left = self.command.run(df, s)
 
         if not self.operator:
-            return left
+            return left, period_left
 
         expr = self.expression
 
-        right = expr.run(df, s) if isinstance(expr, Command) \
-            else expr
+        right, period_right = expr.run(df, s) if isinstance(expr, Command) \
+            else (expr, 0)
 
-        return self.operator.formula(left, right)
+        operated = self.operator.formula(left, right)
+
+        # Plan.A: `np.nan` makes non-sense, so mark them all as False
+        # or Plan.B: mark as `np.nan` ?
+        # Plan.A has better compatibility,
+        #   and `operated` is often used as condition indexer,
+        #   so it must be of bool type
+        operated = operated & is_not_nan(left) & is_not_nan(right)
+
+        return operated, max(period_left, period_right)
 
     @staticmethod
     def from_string(name: str, strict: bool):

@@ -1,5 +1,5 @@
 from functools import partial
-from pandas import DataFrame
+from pandas import DataFrame, Series
 import numpy as np
 
 
@@ -100,10 +100,17 @@ def compare_cross(left, right):
     less = right < left
 
     # matrix or vector of all False value
-    cross = np.zero_like(less)
+    cross = np.zeros_like(less)
 
     if len(cross) > 1:
         # Find cross
         cross[1:] = np.diff(less)
 
     return cross, less
+
+
+def is_not_nan(subject):
+    if isinstance(subject, Series):
+        subject = subject.values
+
+    return ~ np.isnan(subject)

@@ -95,17 +95,24 @@ COMMANDS['mstd'] = CommandPreset(
 
 
 def boll(df, s, period, column):
+    """Gets the mid band of bollinger bands
+    """
     return df.calc(f'sma:{period},{column}')[s], period
 
 
-def boll_band(add: bool, df, s, period, times, column):
+def boll_band(upper: bool, df, s, period, times, column):
+    """Gets the upper band or the lower band of bolinger bands
+
+    Args:
+        upper (bool): Get the upper band if True else the lower band
+    """
     sma = df.calc(f'sma:{period},{column}')[s]
     mstd = df.calc(f'mstd:{period},{column}')[s]
 
     sma = list(map(np.float64, sma))
     mstd = list(map(np.float64, mstd))
 
-    if add:
+    if upper:
         return np.add(sma, np.multiply(times, mstd)), period
     else:
         return np.subtract(sma, np.multiply(times, mstd)), period
@@ -138,3 +145,20 @@ COMMANDS['boll'] = CommandPreset(
         l='lower'   # noqa
     )
 )
+
+
+def column(df, s, column):
+    """Gets the series of the column named `column`
+    """
+
+    return df.loc[s, column], 0
+
+
+COMMANDS['column'] = CommandPreset(
+    column,
+    [
+        (None, None)
+    ]
+)
+
+
