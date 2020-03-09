@@ -1,4 +1,5 @@
 from functools import partial
+from pandas import DataFrame
 
 
 def to_int(name: str, value: str):
@@ -13,6 +14,7 @@ def to_int(name: str, value: str):
         raise IndexError(f'{name} must be greater than 0')
 
     return value
+
 
 period_to_int = partial(to_int, 'period')
 times_to_int = partial(to_int, 'times')
@@ -73,6 +75,21 @@ def copy_stock_metas(source, target):
         source._stock_directives_cache
     )
 
+
 def raise_if(strict: bool, err):
     if strict:
         raise err
+
+
+def ensure_return_type(cls, method):
+    def helper(self, *args, **kwargs):
+        ret = getattr(super(cls, self), method)(*args, **kwargs)
+
+        if isinstance(ret, DataFrame):
+            return self._ensure_stock_type(ret)
+
+        return ret
+
+    helper.__doc__ = getattr(DataFrame, method).__doc__
+
+    setattr(cls, method, helper)

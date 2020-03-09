@@ -7,3 +7,4 @@ pytest-cov
 setuptools
 twine
 PyHamcrest
+mplfinance

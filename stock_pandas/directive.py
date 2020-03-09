@@ -18,7 +18,7 @@ def coerce_args(command_name, args, arg_settings):
 
     if length > max_args_length:
         raise ValueError(
-            f'command "{command_name}" accepts max {max_args_length} args, but got {length}' # noqa
+            f'command "{command_name}" accepts max {max_args_length} args, but got {length}'  # noqa
         )
 
     for index, (default, setter) in enumerate(arg_settings):
@@ -59,14 +59,39 @@ class Command:
         return f'{name}:{join_list(self.args, ARGS_SEPARATOR)}' \
             if self.args else name
 
+    def _get_preset(self):
+        name = self.name
+        preset = COMMANDS.get(name)
+
+        sub = self.sub
+
+        if self.sub is None:
+            return preset
+
+        sub_aliases_map = preset.sub_aliases_map
+        subs_map = preset.subs_map
+
+        # apply sub aliases
+        sub = sub if sub_aliases_map is None else sub_aliases_map.get(sub, sub)
+        self.sub = sub
+
+        if subs_map is None:
+            raise ValueError(f'command "{name}" has no sub commands')
+
+        if sub not in subs_map:
+            raise ValueError(
+                f'unknown sub command "{sub}" for command "{name}"'
+            )
+
+        return subs_map.get(sub)
+
     def apply_preset(self):
         if self.formula:
             return
 
-        name = self.name
-        preset = COMMANDS.get(name)
+        preset = self._get_preset()
 
-        self.args = coerce_args(name, self.args, preset.args)
+        self.args = coerce_args(self.name, self.args, preset.args)
         self.formula = preset.formula
 
     def run(self, df, s: slice):

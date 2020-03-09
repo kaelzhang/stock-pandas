@@ -6,7 +6,8 @@ from pandas import (
 from .directive import Directive
 from .common import (
     copy_stock_metas,
-    set_stock_metas
+    set_stock_metas,
+    ensure_return_type
 )
 
 
@@ -116,7 +117,7 @@ class StockDataFrame(DataFrame):
         self._stock_aliases[as_name] = src_name
 
     def _map_key(self, key):
-        if type(key) is str:
+        if isinstance(key, str):
             return self._map_keys([key])[0]
 
         if isinstance(key, list):
@@ -130,7 +131,7 @@ class StockDataFrame(DataFrame):
         mapped = []
 
         for key in keys:
-            if type(key) is not str:
+            if not isinstance(key, str):
                 # It might be an `pandas.DataFrame` indexer type
                 mapped.append(key)
                 continue
@@ -247,24 +248,17 @@ class StockDataFrame(DataFrame):
 
         return series
 
-    # TODO: use factory
-    def append(self, *args, **kwargs):
-        return self._ensure_stock_type(super().append(*args))
-
     def _ensure_stock_type(self, df):
         new = StockDataFrame(df, create_stock_metas=False)
         # TODO: check columns and alises
         copy_stock_metas(self, new)
         return new
 
-    # def _init_columns(self, columns):
-    #     """
-    #     Returns:
-    #         str: the real column names
-    #         list: the list of real column names
-    #     """
-    #     if isinstance(columns, list):
-    #         return [self._init_column(column) for column in columns]
-    #     else:
-    #         return self._init_column(columns)
 
+METHODS_TO_ENSURE_RETURN_TYPE = [
+    'append',
+    'set_index'
+]
+
+for method in METHODS_TO_ENSURE_RETURN_TYPE:
+    ensure_return_type(StockDataFrame, method)

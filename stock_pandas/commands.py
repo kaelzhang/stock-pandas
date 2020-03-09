@@ -13,12 +13,12 @@ class CommandPreset:
         formula,
         args,
         subs_map=None,
-        aliases_map=None
+        sub_aliases_map=None
     ):
         self.formula = formula
         self.args = args
         self.subs_map = subs_map
-        self.aliases_map = aliases_map
+        self.sub_aliases_map = sub_aliases_map
 
 
 COMMANDS = {}
@@ -95,7 +95,8 @@ COMMANDS['mstd'] = CommandPreset(
 
 
 def boll(df, s, period, column):
-    return df.calc(f'sma:{period},{column}')[s]
+    return df.calc(f'sma:{period},{column}')[s], period
+
 
 def boll_band(add: bool, df, s, period, times, column):
     sma = df.calc(f'sma:{period},{column}')[s]
@@ -105,9 +106,10 @@ def boll_band(add: bool, df, s, period, times, column):
     mstd = list(map(np.float64, mstd))
 
     if add:
-        return np.add(sma, np.multiply(times, mstd))
+        return np.add(sma, np.multiply(times, mstd)), period
     else:
-        return np.subtract(sma, np.multiply(times, mstd))
+        return np.subtract(sma, np.multiply(times, mstd)), period
+
 
 boll_band_args = [
     (20, period_to_int),

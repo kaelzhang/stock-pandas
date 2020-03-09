@@ -1,6 +1,9 @@
 # Pandoc
 README.rst
 
+# Jupyter
+.ipynb_*
+
 # Sphinx
 docs/_build
 docs/_templates
