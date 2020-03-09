@@ -123,6 +123,26 @@ class Command:
         return Command(command, sub, args)
 
 
+class Operator:
+    def __init__(self, name, formula):
+        self.name = name
+        self.formula = formula
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def from_string(name: str, strict: bool):
+        if name not in OPERATORS:
+            return raise_if(
+                strict,
+                ValueError(f'"{name}" is an invalid operator')
+            )
+
+        formula = OPERATORS.get(name)
+        return Operator(name, formula)
+
+
 def parse_expression(expression, strict: bool):
     try:
         return float(expression)
@@ -150,8 +170,17 @@ class Directive:
             self.expression.apply_preset()
 
     def run(self, df, s: slice):
-        # TODO: support operator
-        return self.command.run(df, s)
+        left = self.command.run(df, s)
+
+        if not self.operator:
+            return left
+
+        expr = self.expression
+
+        right = expr.run(df, s) if isinstance(expr, Command) \
+            else expr
+
+        return self.operator.formula(left, right)
 
     @staticmethod
     def from_string(name: str, strict: bool):
@@ -170,11 +199,10 @@ class Directive:
         if command is None:
             return
 
-        if operator and operator not in OPERATORS:
-            return raise_if(
-                strict,
-                ValueError(f'"{operator}" is an invalid operator')
-            )
+        if operator:
+            operator = Operator.from_string(operator, strict)
+            if operator is None:
+                return
 
         if expression:
             expression = parse_expression(expression, strict)

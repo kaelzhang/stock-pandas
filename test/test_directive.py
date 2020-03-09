@@ -58,17 +58,22 @@ def test_valid_columns():
     for c, cc, sc, a, o, e, s in CASES:
         print('directive:', c)
 
-        column = Directive.from_string(c, True)
-        command = column.command
-        operator = column.operator
-        value = column.expression
+        directive = Directive.from_string(c, True)
+        command = directive.command
+        operator = directive.operator
+        value = directive.expression
 
         assert command.name == cc
         assert command.sub == sc
         assert command.args == a
-        assert operator == o
+
+        if o is None:
+            assert operator == o
+        else:
+            assert operator.name == o
+
         assert e == value
-        assert s == str(column)
+        assert s == str(directive)
 
 def test_column_with_two_command():
     column = Directive.from_string('sma.bar: 1, 2 ,3 / boll.qux :1 ,2,3', True)
@@ -79,7 +84,7 @@ def test_column_with_two_command():
     assert c.name == 'sma'
     assert c.sub == 'bar'
     assert c.args == ['1', '2', '3']
-    assert o == '/'
+    assert o.name == '/'
     assert cc.name == 'boll'
     assert cc.sub == 'qux'
     assert cc.args == ['1', '2', '3']

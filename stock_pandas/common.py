@@ -1,5 +1,6 @@
 from functools import partial
 from pandas import DataFrame
+import numpy as np
 
 
 def to_int(name: str, value: str):
@@ -93,3 +94,16 @@ def ensure_return_type(cls, method):
     helper.__doc__ = getattr(DataFrame, method).__doc__
 
     setattr(cls, method, helper)
+
+
+def compare_cross(left, right):
+    less = right < left
+
+    # matrix or vector of all False value
+    cross = np.zero_like(less)
+
+    if len(cross) > 1:
+        # Find cross
+        cross[1:] = np.diff(less)
+
+    return cross, less

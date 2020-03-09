@@ -134,7 +134,7 @@ COMMANDS['boll'] = CommandPreset(
         ),
     ),
     dict(
-        u='upper',
-        l='lower'
+        u='upper',  # noqa
+        l='lower'   # noqa
     )
 )
