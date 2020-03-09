@@ -58,31 +58,31 @@ stock = StockDataFrame({
     'close': [5, 6, 7, 8, 9]
 })
 
-stock['sma:2']
+stock['ma:2']
 
 # 0    NaN
 # 1    5.5
 # 2    6.5
 # 3    7.5
 # 4    8.5
-# Name: sma:2,close, dtype: float64
+# Name: ma:2,close, dtype: float64
 ```
 
-Which prints the 2-period simple moving average on close column
+Which prints the 2-period simple moving average on column `"close"`.
 
 #### stock.calc(directive: str, create_column: bool=False) -> Series
 
 Calculates series according to the directive.
 
 ```py
-stock['sma:2']
+stock['ma:2']
 # is equivalent to:
-stock.calc('sma:2', create_column=True)
+stock.calc('ma:2', create_column=True)
 ```
 
 ```py
 # This will only calculate without creating a new column in the dataframe
-stock.calc('sma:20')
+stock.calc('ma:20')
 ```
 
 #### stock.alias(alias: str, name: str) -> None
@@ -127,15 +127,15 @@ stock['kdj.j < 0']
 stock['kdj.k:9 / kdj.d:3']
 
 # 5-day simple moving average
-stock['sma:5']
+stock['ma:5']
 
 # 10-day simple moving average on open prices
-stock['sma:10,open']
+stock['ma:10,open']
 ```
 
 ## Built-in Commands
 
-### `sma`, simple moving averages
+### `ma`, simple moving averages
 
 ### `macd`
 

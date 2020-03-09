@@ -16,15 +16,15 @@ def stock():
         'volume': [x * 100 for x in l]
     })
 
-def test_basic_sma(stock):
-    sma = stock['sma:2']
+def test_basic_ma(stock):
+    ma = stock['ma:2']
 
     stock = StockDataFrame(stock)
 
-    list_sma0 = [3.5, 4.5, 5.5, 6.5, 7.5]
+    list_ma0 = [3.5, 4.5, 5.5, 6.5, 7.5]
 
-    assert np.isnan(sma[0])
-    assert list(sma[1:]) == list_sma0
+    assert np.isnan(ma[0])
+    assert list(ma[1:]) == list_ma0
 
     new = pd.DataFrame(dict(
         open = [8],
@@ -35,9 +35,9 @@ def test_basic_sma(stock):
     ))
 
     stock = stock.append(new)
-    sma2 = stock.calc('sma:2')
+    ma2 = stock.calc('ma:2')
 
-    assert list(sma2[1:]) == [*list_sma0, 8.5]
+    assert list(ma2[1:]) == [*list_ma0, 8.5]
 
 
 def test_aliases(stock):

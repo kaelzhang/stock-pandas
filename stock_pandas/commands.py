@@ -10,8 +10,8 @@ from .common import (
 class CommandPreset:
     def __init__(
         self,
-        formula,
-        args,
+        formula=None,
+        args=None,
         subs_map=None,
         sub_aliases_map=None
     ):
@@ -24,7 +24,7 @@ class CommandPreset:
 COMMANDS = {}
 
 
-def sma(df, s, period, column):
+def ma(df, s, period, column):
     """Gets simple moving average
 
     Args:
@@ -44,35 +44,48 @@ def sma(df, s, period, column):
         center=False
     ).mean(), period
 
-
-COMMANDS['sma'] = CommandPreset(
-    # formula
-    sma,
-    [
-        # period
-        (
-            # Default value for the first argument,
-            # `None` indicates that it is not an optional argument
-            None,
-            # Validator and setter for the first argument.
-            # The function could throw
-            period_to_int
-        ),
-        # column
-        (
-            'close',
-            # If the command use the default value,
-            # then it will skip validating
-            is_valid_stat_column
-        )
-    ]
+arg_period = (
+    # Default value for the first argument,
+    # `None` indicates that it is not an optional argument
+    None,
+    # Validator and setter for the first argument.
+    # The function could throw
+    period_to_int
 )
+
+ma_args = [
+    # period
+    arg_period,
+    # column
+    (
+        'close',
+        # If the command use the default value,
+        # then it will skip validating
+        is_valid_stat_column
+    )
+]
+
+COMMANDS['ma'] = CommandPreset(ma, ma_args)
+
+
+def smma(df, s, period, column):
+    """Gets
+    """
+
+    return df[column][s].ewm(
+        min_periods=period,
+        ignore_na=False,
+        alpha=1.0 / period,
+        adjust=True
+    ).mean(), period
+
+COMMANDS['smma'] = CommandPreset(smma, ma_args)
 
 
 def mstd(df, s, period, column):
     """Gets moving standard deviation
 
-    Args the same as `sma`
+    Args the same as `ma`
 
     Returns:
         Tuple[pandas.Series, int]
@@ -88,7 +101,7 @@ def mstd(df, s, period, column):
 COMMANDS['mstd'] = CommandPreset(
     mstd,
     [
-        (None, period_to_int),
+        arg_period,
         ('close', is_valid_stat_column)
     ]
 )
@@ -97,7 +110,7 @@ COMMANDS['mstd'] = CommandPreset(
 def boll(df, s, period, column):
     """Gets the mid band of bollinger bands
     """
-    return df.calc(f'sma:{period},{column}')[s], period
+    return df.calc(f'ma:{period},{column}')[s], period
 
 
 def boll_band(upper: bool, df, s, period, times, column):
@@ -106,16 +119,16 @@ def boll_band(upper: bool, df, s, period, times, column):
     Args:
         upper (bool): Get the upper band if True else the lower band
     """
-    sma = df.calc(f'sma:{period},{column}')[s]
+    ma = df.calc(f'ma:{period},{column}')[s]
     mstd = df.calc(f'mstd:{period},{column}')[s]
 
-    sma = list(map(np.float64, sma))
+    ma = list(map(np.float64, ma))
     mstd = list(map(np.float64, mstd))
 
     if upper:
-        return np.add(sma, np.multiply(times, mstd)), period
+        return np.add(ma, np.multiply(times, mstd)), period
     else:
-        return np.subtract(sma, np.multiply(times, mstd)), period
+        return np.subtract(ma, np.multiply(times, mstd)), period
 
 
 boll_band_args = [
@@ -156,9 +169,93 @@ def column(df, s, column):
 
 COMMANDS['column'] = CommandPreset(
     column,
-    [
-        (None, None)
-    ]
+    [(None, None)]
+)
+
+
+
+def rsv(df, s, period):
+    """Gets RSV (Raw Stochastic Value)
+    """
+
+    # Lowest Low Value
+    llv = df['low'][s].rolling(
+        min_periods=1,
+        window=period,
+        center=False
+    ).min()
+
+    # Highest High Value
+    hhv = df['high'][s].rolling(
+        min_periods=1,
+        window=period,
+        center=False
+    ).max()
+
+    v = (
+        (df['close'][s] - llv) / (hhv - llv)
+    ).fillna(0).astype('float64') * 100
+
+    return v, period
+
+COMMANDS['rsv'] = CommandPreset(
+    rsv,
+    [arg_period]
+)
+
+
+KDJ_WEIGHT_K = 3.0
+KDJ_WEIGHT_D = 2.0
+KDJ_WEIGHT_BASE = KDJ_WEIGHT_D / KDJ_WEIGHT_K
+KDJ_WEIGHT_INCREASE = 1.0 / KDJ_WEIGHT_K
+
+
+def kd(series):
+    # If there is no value k or value d of the previous day,
+    # then use 50.0
+    k = 50.0
+
+    for i in KDJ_WEIGHT_INCREASE * series:
+        k = KDJ_WEIGHT_BASE * k + i
+        yield k
+
+
+def kdj_k(df, s, period):
+    """Gets KDJ K
+    """
+
+    return list(kd(df[f'rsv:{period}'][s])), period
+
+
+def kdj_d(df, s, period):
+    return list(kd(df[f'kdj.k:{period}'][s])), period
+
+
+def kdj_j(df, s, period):
+    k = df[f'kdj.k:{period}'][s]
+    d = df[f'kdj.d:{period}'][s]
+    return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period
+
+
+COMMANDS['kdj'] = CommandPreset(
+    # We must specify sub command for kdj, such as
+    # 'kdj.k'
+    subs_map=dict(
+        k=CommandPreset(
+            kdj_k,
+            [(9, period_to_int)]
+        ),
+
+        d=CommandPreset(
+            kdj_d,
+            [(9, period_to_int)]
+        ),
+
+        j=CommandPreset(
+            kdj_j,
+            [(9, period_to_int)]
+        )
+    )
 )
 
 

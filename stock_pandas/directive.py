@@ -117,7 +117,18 @@ class Command:
                 ValueError(f'unknown command "{command}"')
             )
 
+        preset = COMMANDS.get(command)
+
         sub = sub[1:].strip() if sub else None
+
+        if preset.formula is None and sub is None:
+            return raise_if(
+                strict,
+                ValueError(
+                    f'sub command should be specified for command "{command}"'
+                )
+            )
+
         args = [
             a.strip() for a in args[1:].split(ARGS_SEPARATOR)
         ] if args else []
