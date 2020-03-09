@@ -3,7 +3,6 @@ from pandas import (
     Series
 )
 
-from .command_presets import COMMAND_PRESETS
 from .directive import Directive
 from .common import (
     copy_stock_metas,
@@ -24,13 +23,14 @@ class StockDataFrame(DataFrame):
     Args definitions are the same as `pandas.DataFrame`
     """
 
-    def __init__(self,
-                 data=None,
-                 # date_column = 'date',
-                 create_stock_metas=True,
-                 *args,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        data=None,
+        # date_column = 'date',
+        create_stock_metas=True,
+        *args,
+        **kwargs
+    ):
         DataFrame.__init__(self, data, *args, **kwargs)
 
         # if date_column:

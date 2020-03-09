@@ -1,16 +1,21 @@
-def period_to_int(period: str):
+from functools import partial
+
+
+def to_int(name: str, value: str):
     try:
-        period = int(period)
+        value = int(value)
     except ValueError:
         raise ValueError(
-            'period must be a positive int, but got `{}`'.format(period)
+            f'{name} must be a positive int, but got `{value}`'
         )
 
-    if period <= 0:
-        raise IndexError('period must be greater than 0')
+    if value <= 0:
+        raise IndexError(f'{name} must be greater than 0')
 
-    return period
+    return value
 
+period_to_int = partial(to_int, 'period')
+times_to_int = partial(to_int, 'times')
 
 COLUMNS = [
     'open',

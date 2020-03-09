@@ -9,7 +9,7 @@ A wrapper and a subtle class of `pandas.DataFrame` which supports:
 - stock statistics
 - all kinds of stock indicators
 
-`stock-pandas` makes automatical trading much easier.
+`stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6**
 
 ## Install
 
@@ -55,10 +55,10 @@ stock = StockDataFrame({
 stock['sma:2']
 
 # 0    NaN
-# 3    5.5
-# 4    6.5
-# 5    7.5
-# 0    8.5
+# 1    5.5
+# 2    6.5
+# 3    7.5
+# 4    8.5
 # Name: sma:2,close, dtype: float64
 ```
 

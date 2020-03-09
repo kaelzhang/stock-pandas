@@ -4,7 +4,8 @@ from .common import (
     join_list,
     raise_if
 )
-from .command_presets import COMMAND_PRESETS
+from .commands import COMMANDS
+from .operators import OPERATORS
 
 DEFAULT_ARG_VALUE = ''
 
@@ -63,7 +64,7 @@ class Command:
             return
 
         name = self.name
-        preset = COMMAND_PRESETS.get(name)
+        preset = COMMANDS.get(name)
 
         self.args = coerce_args(name, self.args, preset.args)
         self.formula = preset.formula
@@ -83,7 +84,7 @@ class Command:
             )
 
         command, sub, args = match.group(1, 2, 3)
-        if command not in COMMAND_PRESETS:
+        if command not in COMMANDS:
             return raise_if(
                 strict,
                 ValueError(f'unknown command "{command}"')
@@ -102,18 +103,6 @@ def parse_expression(expression, strict: bool):
         return float(expression)
     except ValueError:
         return Command.from_string(expression, strict)
-
-
-OPERATORS = [
-    '/',
-    '\\',
-    '<',
-    '<=',
-    '==',
-    '>=',
-    '>',
-    '><'
-]
 
 
 REGEX_DIRECTIVE = r'^([a-z0-9.:,\s]+)(?:([=<>/\\]+)([\S\s]+))?$'
