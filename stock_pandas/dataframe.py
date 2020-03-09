@@ -1,6 +1,7 @@
 from pandas import (
     DataFrame,
-    Series
+    Series,
+    to_datetime
 )
 
 from .directive import Directive
@@ -27,15 +28,12 @@ class StockDataFrame(DataFrame):
     def __init__(
         self,
         data=None,
-        # date_column = 'date',
+        date_column = None,
         create_stock_metas=True,
         *args,
         **kwargs
     ):
         DataFrame.__init__(self, data, *args, **kwargs)
-
-        # if date_column:
-        #     self.set_index()
 
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
@@ -43,6 +41,10 @@ class StockDataFrame(DataFrame):
             set_stock_metas(self)
 
         self._create_column = False
+
+        if date_column:
+            self[date_column] = to_datetime(self[date_column])
+            self.set_index(date_column, inplace=True)
 
     def __getitem__(self, key):
         key = self._map_key(key)
