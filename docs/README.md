@@ -43,9 +43,9 @@ stock = StockDataFrame(pd.read_csv('stock.csv'))
 As we know, we could use `[]`, which called **pandas indexing** (a.k.a. `__getitem__` in python) to select out lower-dimensional slices. In addition to indexing with `colname` (column name of the `DataFrame`), we could also do indexing by `directive`s.
 
 ```py
-stock[directive]
+stock[directive] # Gets a series
 
-stock[[directive0, directive1]]
+stock[[directive0, directive1]] # Gets a data frame
 ```
 
 We have an example to show the most basic indexing using `[directive]`
@@ -113,7 +113,7 @@ main_command_name := alphabets
 sub_command_name := alphabets
 
 arguments := argument | argument , arguments
-argument := string | ( arguments )
+argument := empty_string | string | ( arguments )
 ```
 
 #### `directive` Example
@@ -121,29 +121,45 @@ argument := string | ( arguments )
 Here lists several use cases of column names
 
 ```py
-# The 20-day(default) moving average
+# The 20-period (default) moving average
 #   which is the mid band of bollinger bands
 stock['boll']
 
 # kdjj less than 0
 stock['kdj.j < 0']
 
-# 9-day kdjk cross up 3-day kdjd
+# 9-period kdjk cross up 3-day kdjd
 stock['kdj.k:9 / kdj.d:3']
 
-# 5-day simple moving average
+# 5-period simple moving average
 stock['ma:5']
 
-# 10-day simple moving average on open prices
+# 10-period simple moving average on open prices
 stock['ma:10,open']
+
+# Dataframe of 5-period, 10-period, 30-period ma
+stock[[
+    'ma:5',
+    'ma:10',
+    'ma:30'
+]]
+
+# Which means we use the default values of the first and the second parameters,
+# and specify the third parameter
+stock['macd:,,10']
+
+# We should wrap a parameter with parantheses if it contains `,`
+stock['increase:(ma:20,close),3']
 ```
 
-## Built-in Commands
+## Built-in Commands of Indicators
 
 Document syntax explanation:
 
-- **param** `str` which means a required parameter of type `str`.
-- **param?** `str='close'` which means parameter `param` is optional with default value `'close'`.
+- **param0** `str` which means `param0` is a required parameter of type `str`.
+- **param1?** `str='close'` which means parameter `param1` is optional with default value `'close'`.
+
+Actually, all parameters of a command are of string type, so the `str` here means an interger-like string.
 
 ### `ma`, simple Moving Averages
 
@@ -158,7 +174,7 @@ Gets the `period`-period simple moving average on column named `column`.
 So `stock-pandas` will use `ma` for simple moving average and `smma` for smoothed moving average.
 
 - **period** `int` (required)
-- **column?** `str='close'` Which column should the calculation based on. Defaults to `'close'`
+- **column?** `enum<'open'|'high'|'low'|'close'>='close'` Which column should the calculation based on. Defaults to `'close'`
 
 ```py
 # which is equivalent to `stock['ma:5,close']`
@@ -236,6 +252,40 @@ stock['kdj.k']
 
 # The KDJ serieses of with parameters 9, 3, and 3
 stock[['kdj.k', 'kdj.d:3', 'kdj.j:3']]
+```
+
+## Built-in Commands for Statistics
+
+### `column`
+
+```
+column:<name>
+```
+
+Just gets the series of a column. This command is designed to be used together with an operator to compare with another command or as a parameter of some statistics command.
+
+- **name** `str` the name of the column
+
+### `increase`
+
+```
+increase:<on_what>,<period>,<step>
+```
+
+Gets a `bool`-type series each item of is `True` if the value of indicator `on_what` increases in the last `period`-period.
+
+- **on_what** `str` the command name of an indicator. If we want calculate on a normal column such as `'close'`, we should use `'column:close'`
+- **period?** `int=1`
+- **direction?** `1 | -1` the direction of "increase". `-1` means decreasing
+
+For example:
+
+```py
+# Which means whether the `ma:20,close` line (20-period simple moving average on column `'close'`) has been increasing for 3 periods.
+stock['increase:(ma:20,close),3']
+
+# If the close price has been decreasinng for 5 periods(maybe days)
+stock['increase:column:close,5,-1']
 ```
 
 ## Operators

@@ -56,13 +56,13 @@ def test_valid_columns():
             'ma.bar'
         ),
         (
-            'ma.bar:1',
+            'ma.bar:-1',
             'ma',
             'bar',
-            ['1'],
+            ['-1'],
             None,
             None,
-            'ma.bar:1'
+            'ma.bar:-1'
         ),
         (
             # redundant whitespaces

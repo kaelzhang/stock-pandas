@@ -175,7 +175,7 @@ def parse_expression(expression, strict: bool):
         return Command.from_string(expression, strict)
 
 
-REGEX_DIRECTIVE = r'^([a-z0-9.:,\s()]+)(?:([=<>/\\]+)([\S\s]+))?$'
+REGEX_DIRECTIVE = r'^([a-z0-9-.:,\s()]+)(?:([=<>/\\]+)([\S\s]+))?$'
 
 
 class Directive:
