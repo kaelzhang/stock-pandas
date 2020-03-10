@@ -126,6 +126,7 @@ Here lists several use cases of column names
 stock['boll']
 
 # kdjj less than 0
+# This returns a series of bool type
 stock['kdj.j < 0']
 
 # 9-period kdjk cross up 3-day kdjd
@@ -149,6 +150,7 @@ stock[[
 stock['macd:,,10']
 
 # We should wrap a parameter with parantheses if it contains `,`
+# This returns a series of bool type
 stock['increase:(ma:20,close),3']
 ```
 
@@ -272,7 +274,7 @@ Just gets the series of a column. This command is designed to be used together w
 increase:<on_what>,<period>,<step>
 ```
 
-Gets a `bool`-type series each item of is `True` if the value of indicator `on_what` increases in the last `period`-period.
+Gets a `bool`-type series each item of which is `True` if the value of indicator `on_what` increases in the last `period`-period.
 
 - **on_what** `str` the command name of an indicator. If we want calculate on a normal column such as `'close'`, we should use `'column:close'`
 - **period?** `int=1`
@@ -281,10 +283,12 @@ Gets a `bool`-type series each item of is `True` if the value of indicator `on_w
 For example:
 
 ```py
-# Which means whether the `ma:20,close` line (20-period simple moving average on column `'close'`) has been increasing for 3 periods.
+# Which means whether the `ma:20,close` line
+# (a.k.a. 20-period simple moving average on column `'close'`)
+# has been increasing for 3 periods.
 stock['increase:(ma:20,close),3']
 
-# If the close price has been decreasinng for 5 periods(maybe days)
+# If the close price has been decreasing for 5 periods (maybe days)
 stock['increase:column:close,5,-1']
 ```
 
@@ -296,7 +300,7 @@ left operator right
 
 - **`/`**: whether `left` crosses through `right` from the down side of `right` to the upper side which we call it as "cross up".
 - **`\`**: whether `left` crosses down `right`.
-- **`><`**: whether `left` crosses `right`.
+- **`><`**: whether `left` crosses `right`, either up or down.
 - **`<`** / **`<=`** / **`==`** / **`>=`** / **`>`**: For a certain record of the same time, whether the value of `left` is less than / less than or equal to / equal to / larger than or equal to / larger than the value of `right`.
 
 ****
