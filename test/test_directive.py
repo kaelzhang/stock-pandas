@@ -10,6 +10,7 @@ def run_case(case, apply=False):
 
     if apply:
         directive.apply_presets()
+        directive.apply_presets()
 
     command = directive.command
     operator = directive.operator
@@ -127,7 +128,7 @@ def test_valid_columns_after_apply():
     for case in CASES:
         run_case(case, True)
 
-def test_column_with_two_command():
+def test_column_with_two_command_fake_case():
     column = Directive.from_string('ma.bar: 1, 2 ,3 / boll.qux :1 ,2,3', True)
     c = column.command
     o = column.operator
@@ -142,24 +143,35 @@ def test_column_with_two_command():
     assert cc.args == ['1', '2', '3']
     assert str(column) == 'ma.bar:1,2,3/boll.qux:1,2,3'
 
+
+def test_column_with_two_command_real_case():
+    directive = Directive.from_string('ma:10 > boll.upper:20', True)
+    directive.apply_presets()
+
+    expr = directive.expression
+
+    assert expr.name == 'boll'
+    assert expr.sub == 'upper'
+    assert expr.args == [20, 2, 'close']
+
+
 def test_invalid_columns():
-    with pytest.raises(ValueError, match='invalid directive'):
-        Directive.from_string('a >', True)
+    CASES = [
+        ('a >', 'invalid directive'),
+        ('>', 'invalid directive'),
+        ('a1', 'invalid command'),
+        ('foo', 'unknown command'),
+        ('ma >> 1', 'invalid operator'),
+        ('ma:(abc', 'unbalanced'),
+        ('kdj', 'sub command should be specified'),
+        ('ma > foo', 'unknown command')
+    ]
 
-    with pytest.raises(ValueError, match='invalid directive'):
-        Directive.from_string('>', True)
+    for directive_str, err_msg in CASES:
+        assert Directive.from_string(directive_str, False) is None
 
-    with pytest.raises(ValueError, match='invalid command'):
-        Directive.from_string('a1', True)
-
-    with pytest.raises(ValueError, match='unknown command'):
-        Directive.from_string('foo', True)
-
-    with pytest.raises(ValueError, match='invalid operator'):
-        Directive.from_string('ma >> 1', True)
-
-    with pytest.raises(ValueError, match='unbalanced'):
-        Directive.from_string('ma:(abc', True)
+        with pytest.raises(ValueError, match=err_msg):
+            Directive.from_string(directive_str, True)
 
     with pytest.raises(ValueError, match='accepts max'):
         directive = Directive.from_string('ma:1,close,3', True)

@@ -119,7 +119,7 @@ PARAN_L = '('
 PARAN_R = ')'
 ARGS_SEPARATOR = ','
 
-def balance(l: list):
+def balance(l: list, strict: bool):
     balanced = []
 
     pending = None
@@ -144,21 +144,20 @@ def balance(l: list):
                 pending += ARGS_SEPARATOR + item
 
     if pending is not None:
-        raise ValueError(f'unbalanced argument paranthesis "({pending}"')
+        return raise_if(
+            strict,
+            ValueError(f'unbalanced argument paranthesis "({pending}"')
+        )
 
     return balanced
 
 
-REGEX_HAS_PARAN_L = r'\('
-
-def split_and_balance(args_str: str):
+def split_and_balance(args_str: str, strict: bool):
     splitted = [
         a.strip() for a in args_str.split(ARGS_SEPARATOR)
     ]
 
-    no_paran = re.search(REGEX_HAS_PARAN_L, args_str) is None
-
-    return splitted if no_paran else balance(splitted)
+    return balance(splitted, strict) if PARAN_L in args_str else splitted
 
 
 def quote_arg(arg):

@@ -140,7 +140,10 @@ class Command:
                 )
             )
 
-        args = split_and_balance(args[1:]) if args else []
+        args = split_and_balance(args[1:], strict) if args else []
+
+        if args is None:
+            return
 
         return Command(command, sub, args)
 
