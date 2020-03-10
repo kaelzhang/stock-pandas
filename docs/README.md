@@ -103,12 +103,17 @@ stock.alias('buy_point', 'kdj.j < 0')
 ## Syntax of `directive`
 
 ```ebnf
-column_name := command_name | command_name operator expression
-operator := '/' | '\' | '<' | '<=' | '==' | '>=' | '>' | '><'
-expression := float | command_name
-command_name := indicator | indicator : arguments
-indicator := alphabets | alphabets.alphabets
-arguments := string | arguments , string
+directive := command | command operator expression
+operator := '/' | '\' | '><' | '<' | '<=' | '==' | '>=' | '>'
+expression := float | command
+
+command := command_name | command_name : arguments
+command_name := main_command_name | main_command_name.sub_command_name
+main_command_name := alphabets
+sub_command_name := alphabets
+
+arguments := argument | argument , arguments
+argument := string | ( arguments )
 ```
 
 #### `directive` Example
@@ -135,9 +140,44 @@ stock['ma:10,open']
 
 ## Built-in Commands
 
-### `ma`, simple moving averages
+Document syntax explanation:
 
-### `macd`
+- **param** `str` which means a required parameter of type `str`.
+- **param?** `str='close'` which means parameter `param` is optional with default value `'close'`.
+
+### `ma`, simple Moving Averages
+
+```
+ma:<period>,<column>
+```
+
+Gets the `period`-period simple moving average on column named `column`.
+
+`SMA` is often confused between simple moving average and smoothed moving average.
+
+So `stock-pandas` will use `ma` for simple moving average and `smma` for smoothed moving average.
+
+- **period** `int` (required)
+- **column?** `str='close'` Which column should the calculation based on. Defaults to `'close'`
+
+```py
+# which is equivalent to `stock['ma:5,close']`
+stock['ma:5']
+
+stock['ma:10,open']
+```
+
+### `macd`, Moving Average Convergence Divergence
+
+```
+macd:<fast_period>,<slow_period>
+macd.signal:<fast_period>,<slow_period>,<signal_period>
+macd.histogram:<fast_period>,<slow_period>,<signal_period>
+```
+
+- **fast_period?** `int=26` fast period. Defaults to `26`.
+- **slow_period?** `int=12` slow period. Defaults to `12`
+- **signal_period?** `int=9` signal period. Defaults to `9`
 
 ```py
 # macd
@@ -155,7 +195,15 @@ stock['macd.h']
 stock['macd.macd']
 ```
 
-### `boll`, bollinger bands
+### `boll`, BOLLinger bands
+
+```
+boll:<period>,<times>,<column>
+```
+
+- **period?** `int=20`
+- **times?** `int=2`
+- **column?** `str='close'`
 
 ```py
 # boll
@@ -170,16 +218,36 @@ stock['boll.lower']
 stock['boll.l']
 ```
 
+### `kdj`, stochastic oscillator
+
+```
+kdj.k:<param_k>
+kdj.d:<param_d>
+kdj.j:<param_j>
+```
+
+- **param_k?** `int=9`
+- **param_d?** `int=9`
+- **param_j?** `int=9`
+
+```py
+# The k series of KDJ 999
+stock['kdj.k']
+
+# The KDJ serieses of with parameters 9, 3, and 3
+stock[['kdj.k', 'kdj.d:3', 'kdj.j:3']]
+```
+
 ## Operators
 
-- **`/`**:
-- **`\`**:
-- **`<`**:
-- **`<=`**:
-- **`==`**:
-- **`>=`**:
-- **`>`**:
-- **`><`**:
+```
+left operator right
+```
+
+- **`/`**: whether `left` crosses through `right` from the down side of `right` to the upper side which we call it as "cross up".
+- **`\`**: whether `left` crosses down `right`.
+- **`><`**: whether `left` crosses `right`.
+- **`<`** / **`<=`** / **`==`** / **`>=`** / **`>`**: For a certain record of the same time, whether the value of `left` is less than / less than or equal to / equal to / larger than or equal to / larger than the value of `right`.
 
 ****
 
