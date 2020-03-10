@@ -2,11 +2,10 @@ import re
 import numpy as np
 
 from .common import (
-    join_list,
     raise_if,
     is_not_nan,
     split_and_balance,
-    ARGS_SEPARATOR
+    join_args
 )
 from .commands import COMMANDS
 from .operators import OPERATORS
@@ -46,7 +45,9 @@ def coerce_args(command_name, args, arg_settings):
     return coerced
 
 
-REGEX_COMMAND = r'^([a-z]+)(\.[a-z]+)?\s*(:[a-z0-9-.\s]+(?:,[a-z0-9-.\s]+)*)?$'
+REGEX_COMMAND = \
+    r'^([a-z]+)(\.[a-z]+)?\s*(:[a-z0-9-.\s(),:]+)?$'
+
 
 
 class Command:
@@ -59,12 +60,13 @@ class Command:
     def __str__(self):
         name = self.full_name
 
-        return f'{name}:{join_list(self.args, ARGS_SEPARATOR)}' \
+        return f'{name}:{join_args(self.args)}' \
             if self.args else name
 
     @property
     def full_name(self):
         return f'{self.name}.{self.sub}' if self.sub else self.name
+
 
     def _get_preset(self):
         name = self.name
@@ -170,7 +172,7 @@ def parse_expression(expression, strict: bool):
         return Command.from_string(expression, strict)
 
 
-REGEX_DIRECTIVE = r'^([a-z0-9.:,\s]+)(?:([=<>/\\]+)([\S\s]+))?$'
+REGEX_DIRECTIVE = r'^([a-z0-9.:,\s()]+)(?:([=<>/\\]+)([\S\s]+))?$'
 
 
 class Directive:

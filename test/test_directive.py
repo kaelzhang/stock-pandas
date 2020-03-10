@@ -75,6 +75,16 @@ def test_valid_columns():
 
             # 0 will convert to float
             'ma.bar:1,2>0.0'
+        ),
+        (
+            # parantheses
+            'ma.bar:1,2,(ma.bar:1,3,2)',
+            'ma',
+            'bar',
+            ['1', '2', 'ma.bar:1,3,2'],
+            None,
+            None,
+            'ma.bar:1,2,(ma.bar:1,3,2)'
         )
     ]
 
@@ -147,6 +157,9 @@ def test_invalid_columns():
 
     with pytest.raises(ValueError, match='invalid operator'):
         Directive.from_string('ma >> 1', True)
+
+    with pytest.raises(ValueError, match='unbalanced'):
+        Directive.from_string('ma:(abc', True)
 
     with pytest.raises(ValueError, match='accepts max'):
         directive = Directive.from_string('ma:1,close,3', True)

@@ -43,10 +43,6 @@ def is_valid_stat_column(column: str):
     )
 
 
-def join_list(l: list, separator: str):
-    return separator.join([str(x) for x in l])
-
-
 def memoize(f):
     memo = {}
 
@@ -121,24 +117,31 @@ def is_not_nan(subject):
 # left parentheses
 PARAN_L = '('
 PARAN_R = ')'
+ARGS_SEPARATOR = ','
 
 def balance(l: list):
     balanced = []
 
     pending = None
 
+    # ['1', '( foo:1', '3', '2  )']
     for item in l:
         if pending is None:
             if item.startswith(PARAN_L):
-                pending = item[1:]
+                # '( foo:1' -> 'foo:1'
+                pending = item[1:].strip()
             else:
                 balanced.append(item)
         else:
             if item.endswith(PARAN_R):
-                balanced.append(pending + item[:- 1])
+                balanced.append(
+                    # foo:1,3 ,                2
+                    pending + ARGS_SEPARATOR + item[:- 1].strip()
+                )
                 pending = None
             else:
-                pending += item
+                # foo:1    ,                3
+                pending += ARGS_SEPARATOR + item
 
     if pending is not None:
         raise ValueError(f'unbalanced argument paranthesis "({pending}"')
@@ -146,7 +149,6 @@ def balance(l: list):
     return balanced
 
 
-ARGS_SEPARATOR = ','
 REGEX_HAS_PARAN_L = r'\('
 
 def split_and_balance(args_str: str):
@@ -157,3 +159,15 @@ def split_and_balance(args_str: str):
     no_paran = re.search(REGEX_HAS_PARAN_L, args_str) is None
 
     return splitted if no_paran else balance(splitted)
+
+
+def quote_arg(arg):
+    arg = str(arg)
+
+    return f'({arg})' if ARGS_SEPARATOR in arg else arg
+
+
+def join_args(args: list):
+    return ARGS_SEPARATOR.join([
+        quote_arg(arg) for arg in args
+    ])
