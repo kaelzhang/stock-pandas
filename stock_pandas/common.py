@@ -14,13 +14,23 @@ def to_int(name: str, value: str):
         )
 
     if value <= 0:
-        raise IndexError(f'{name} must be greater than 0')
+        raise ValueError(f'{name} must be greater than 0')
 
     return value
 
 
 period_to_int = partial(to_int, 'period')
 times_to_int = partial(to_int, 'times')
+
+def to_direction(value: str) -> int:
+    if direction == '1':
+        return 1
+
+    if direction == '-1':
+        return - 1
+
+    raise ValueError(f'direction must be `1` or `-1`, but got `{value}`')
+
 
 COLUMNS = [
     'open',

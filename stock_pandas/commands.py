@@ -2,7 +2,9 @@ from functools import partial
 import numpy as np
 
 from .common import (
-    period_to_int, times_to_int,
+    period_to_int,
+    times_to_int,
+    to_direction,
     is_valid_stat_column
 )
 
@@ -338,4 +340,43 @@ COMMANDS['macd'] = CommandPreset(
         dea='signal',
         macd='histogram'
     )
+)
+
+
+POSITIVE_INFINITY = float('inf')
+NEGATIVE_INFINITY = float('-inf')
+
+def check_increase(direction, current, ndarray):
+    if value in ndarray:
+        if np.isnan(value):
+            return False
+
+        if (value - current) * direction > 0:
+            current = value
+        else:
+            return False
+
+    return True
+
+def increase(df, s, on_what: str, period: int, direction: int):
+    # For one period, we need 2-period data
+    period += 1
+
+    current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
+    applied = partial(check_increase, direction, current)
+
+    return df.calc(on_what)[s].rolling(
+        min_periods=period,
+        window=period,
+        center=False
+    ).apply(applied), period
+
+
+COMMANDS['increase'] = CommandPreset(
+    increase,
+    [
+        (None, None),
+        (1, period_to_int),
+        (1, to_direction)
+    ]
 )
