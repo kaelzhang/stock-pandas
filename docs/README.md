@@ -276,7 +276,7 @@ increase:<on_what>,<period>,<step>
 
 Gets a `bool`-type series each item of which is `True` if the value of indicator `on_what` increases in the last `period`-period.
 
-- **on_what** `str` the command name of an indicator. If we want calculate on a normal column such as `'close'`, we should use `'column:close'`
+- **on_what** `str` the command name of an indicator.
 - **period?** `int=1`
 - **direction?** `1 | -1` the direction of "increase". `-1` means decreasing
 
@@ -289,7 +289,7 @@ For example:
 stock['increase:(ma:20,close),3']
 
 # If the close price has been decreasing for 5 periods (maybe days)
-stock['increase:column:close,5,-1']
+stock['increase:close,5,-1']
 ```
 
 ## Operators

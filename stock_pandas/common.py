@@ -194,3 +194,18 @@ def join_args(args: list):
     return ARGS_SEPARATOR.join([
         quote_arg(arg) for arg in args
     ])
+
+
+def rolling_window(array: np.ndarray, period: int) -> np.ndarray:
+    """Gets an `period`-period rolling window for 1d array
+    """
+
+    array = np.append(np.repeat(np.nan, period - 1), array)
+
+    return np.lib.stride_tricks.as_strided(
+        array,
+        shape=(len(array) - period + 1, period),
+
+        # A stride for float is 8
+        strides=(8, 8)
+    )

@@ -48,3 +48,7 @@ def test_cross(stock):
     assert stock['ma:10 / ma:5']['2020-02-21']
     assert stock['ma:5 \\ ma:10']['2020-02-21']
     assert not stock['ma:10 \\ ma:5']['2020-02-21']
+
+def test_increase(stock):
+    assert stock['increase:close,3']['2020-02-13']
+    assert not stock['increase:close,4']['2020-02-13']

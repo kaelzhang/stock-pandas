@@ -76,7 +76,7 @@ class StockDataFrame(DataFrame):
             column for the calculated series.
 
         Returns:
-            pandas.Series
+            np.ndarray
         """
 
         if self._is_normal_column(directive_str):
@@ -219,7 +219,7 @@ class StockDataFrame(DataFrame):
             calculated series
 
         Returns:
-            Tuple[str, Series]: the name of the series, and the series
+            Tuple[str, np.ndarray]: the name of the series, and the series
         """
 
         name = str(directive)

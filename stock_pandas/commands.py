@@ -7,7 +7,8 @@ from .common import (
     period_to_int,
     times_to_int,
     to_direction,
-    is_valid_stat_column
+    is_valid_stat_column,
+    rolling_window
 )
 
 
@@ -349,7 +350,7 @@ POSITIVE_INFINITY = float('inf')
 NEGATIVE_INFINITY = float('-inf')
 
 def check_increase(direction, current, ndarray):
-    if value in ndarray:
+    for value in ndarray:
         if np.isnan(value):
             return False
 
@@ -365,13 +366,13 @@ def increase(df, s, on_what: str, period: int, direction: int):
     period += 1
 
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
-    applied = partial(check_increase, direction, current)
+    compare = partial(check_increase, direction, current)
 
-    return df.calc(on_what)[s].rolling(
-        min_periods=period,
-        window=period,
-        center=False
-    ).apply(applied).to_numpy(), period
+    return np.apply_along_axis(
+        compare,
+        1,
+        rolling_window(df.calc(on_what)[s], period)
+    ), period
 
 
 COMMANDS['increase'] = CommandPreset(
