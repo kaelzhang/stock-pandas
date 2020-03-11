@@ -27,6 +27,9 @@ pip install stock-pandas
 
 ```py
 from stock_pandas import StockDataFrame
+
+# or
+import stock_pandas as spd
 ```
 
 We also have some examples with annotations in the [`example`](https://github.com/kaelzhang/stock-pandas/tree/master/example) directory, you could use [JupyterLab](https://jupyter.org/) or Jupyter notebook to play with them.
@@ -43,9 +46,9 @@ stock = StockDataFrame(pd.read_csv('stock.csv'))
 As we know, we could use `[]`, which called **pandas indexing** (a.k.a. `__getitem__` in python) to select out lower-dimensional slices. In addition to indexing with `colname` (column name of the `DataFrame`), we could also do indexing by `directive`s.
 
 ```py
-stock[directive] # Gets a series
+stock[directive] # Gets a pandas.Series
 
-stock[[directive0, directive1]] # Gets a data frame
+stock[[directive0, directive1]] # Gets a StockDataFrame
 ```
 
 We have an example to show the most basic indexing using `[directive]`
@@ -99,6 +102,12 @@ stock.alias('Open', 'open')
 
 stock.alias('buy_point', 'kdj.j < 0')
 ```
+
+### stock.append(other, *args, **kwargs) -> StockDataFrame
+
+Appends rows of `other` to the end of caller, returning a new object.
+
+This method has nearly the same hehavior of [`pandas.DataFrame.append()`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.append.html), but instead it returns an instance of `StockDataFrame`
 
 ## Syntax of `directive`
 
