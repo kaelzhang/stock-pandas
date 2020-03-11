@@ -127,7 +127,7 @@ class StockDataFrame(DataFrame):
             column_name, _ = self._get_or_calc_series(directive, True)
             src_name = column_name
 
-        self._stock_aliases[as_name] = src_name
+        self._stock_aliases_map[as_name] = src_name
 
     def _map_key(self, key):
         if isinstance(key, str):
@@ -155,7 +155,7 @@ class StockDataFrame(DataFrame):
                 continue
 
             # Map alias, if the key is an alias
-            alias = self._stock_aliases.get(key, None)
+            alias = self._stock_aliases_map.get(key, None)
 
             if alias is not None:
                 mapped.append(alias)
@@ -213,7 +213,7 @@ class StockDataFrame(DataFrame):
 
         name = str(directive)
 
-        if name in self._stock_columns:
+        if name in self._stock_columns_info_map:
             return name, self._fulfill_series(name)
 
         series, period = directive.run(
@@ -223,7 +223,7 @@ class StockDataFrame(DataFrame):
         )
 
         if create_column:
-            self._stock_columns[name] = ColumnInfo(
+            self._stock_columns_info_map[name] = ColumnInfo(
                 len(self),
                 directive,
                 period
@@ -233,7 +233,7 @@ class StockDataFrame(DataFrame):
         return name, series
 
     def _fulfill_series(self, column_name):
-        column_info = self._stock_columns.get(column_name)
+        column_info = self._stock_columns_info_map.get(column_name)
         size = len(self)
 
         series = self[column_name]
@@ -256,7 +256,7 @@ class StockDataFrame(DataFrame):
 
     def _is_normal_column(self, column_name):
         return column_name in self.columns and \
-            column_name not in self._stock_columns
+            column_name not in self._stock_columns_info_map
 
     def _calc(self, directive_str: str):
         directive = self._parse_directive(directive_str, True)

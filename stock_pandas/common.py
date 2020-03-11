@@ -65,22 +65,36 @@ def memoize(f):
 
 def set_stock_metas(
     target,
-    aliases={},
-    columns={},
+    aliases_map={},
+    columns_info_map={},
     directives_cache={}
 ):
     # Use `object.__setattr__` to avoid pandas UserWarning:
     # > Pandas doesn't allow columns to be created via a new attribute name
-    object.__setattr__(target, '_stock_aliases', aliases)
-    object.__setattr__(target, '_stock_columns', columns)
+    object.__setattr__(target, '_stock_aliases_map', aliases_map)
+    object.__setattr__(target, '_stock_columns_info_map', columns_info_map)
     object.__setattr__(target, '_stock_directives_cache', directives_cache)
 
 
 def copy_stock_metas(source, target):
+    columns = source.columns
+
+    aliases_map = {}
+    for alias, column in source._stock_aliases_map.items():
+        # TODO: if alias is in columns, something wrong happened
+        # - support .iloc, loc, and other indexing and setting methods
+        if column in columns:
+            aliases_map[alias] = column
+
+    columns_info_map = {}
+    for column, info in source._stock_columns_info_map.items():
+        if column in columns:
+            columns_info_map[column] = info
+
     set_stock_metas(
         target,
-        source._stock_aliases,
-        source._stock_columns,
+        aliases_map,
+        columns_info_map,
         source._stock_directives_cache
     )
 
@@ -162,7 +176,7 @@ def balance(l: list, strict: bool):
     return balanced
 
 
-def split_and_balance(args_str: str, strict: bool):
+def split_and_balance(args_str: str, strict: bool) -> list:
     splitted = [
         a.strip() for a in args_str.split(ARGS_SEPARATOR)
     ]
