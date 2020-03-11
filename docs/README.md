@@ -271,13 +271,13 @@ Just gets the series of a column. This command is designed to be used together w
 ### `increase`
 
 ```
-increase:<on_what>,<period>,<step>
+increase:<on_what>,<repeat>,<step>
 ```
 
 Gets a `bool`-type series each item of which is `True` if the value of indicator `on_what` increases in the last `period`-period.
 
 - **on_what** `str` the command name of an indicator.
-- **period?** `int=1`
+- **repeat?** `int=1`
 - **direction?** `1 | -1` the direction of "increase". `-1` means decreasing
 
 For example:
@@ -285,11 +285,44 @@ For example:
 ```py
 # Which means whether the `ma:20,close` line
 # (a.k.a. 20-period simple moving average on column `'close'`)
-# has been increasing for 3 periods.
+# has been increasing repeatedly for 3 times (maybe 3 days)
 stock['increase:(ma:20,close),3']
 
-# If the close price has been decreasing for 5 periods (maybe days)
+# If the close price has been decreasing repeatedly for 5 times (maybe 5 days)
 stock['increase:close,5,-1']
+```
+
+### `style`
+
+```
+style:<style>
+```
+
+Gets a `bool`-type series whether the candlestick of a period is of `style` style
+
+- **style** `'bullish' | 'bearish'`
+
+```py
+stock['style:bullish']
+```
+
+### `repeat`
+
+```
+repeat:<bool_directive>,<repeat>
+```
+
+The `repeat` command first gets the result of directive `bool_directive`, and detect whether `True` is repeated for `repeat` times
+
+- **bool_directive** `str` the directive which should returns a series of `bool`s.
+- **repeat?** `int=1` which should be larger than `0`
+
+```py
+# Whether the bullish candlestick repeats for 3 periods (maybe 3 days)
+stock['repeat:style:bullish,3']
+
+# For clarity, we could wrap the directive `style:bullish` with parantheses
+stock['repeat:(style:bullish),3']
 ```
 
 ## Operators

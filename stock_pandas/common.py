@@ -5,7 +5,7 @@ from pandas import DataFrame, Series
 import numpy as np
 
 
-def to_int(name: str, value: str):
+def to_int(name: str, larger_than: int, value: str):
     try:
         value = int(value)
     except ValueError:
@@ -13,14 +13,31 @@ def to_int(name: str, value: str):
             f'{name} must be a positive int, but got `{value}`'
         )
 
-    if value <= 0:
-        raise ValueError(f'{name} must be greater than 0')
+    if value <= larger_than:
+        raise ValueError(f'{name} must be greater than {larger_than}')
 
     return value
 
 
-period_to_int = partial(to_int, 'period')
-times_to_int = partial(to_int, 'times')
+period_to_int = partial(to_int, 'period', 1)
+times_to_int = partial(to_int, 'times', 0)
+repeat_to_int = partial(to_int, 'repeat', 0)
+
+def create_enum(choices: list, name: str, value: str):
+    if value in choices:
+        return value
+
+    choices_str = ' or '.join([f'"{choice}"' for choice in choices])
+
+    raise ValueError(
+        f'{name} should be either {choices_str}, but got `{value}`'
+    )
+
+style_enums = partial(create_enum, [
+    'bullish',
+    'bearish'
+], 'style')
+
 
 def to_direction(value: str) -> int:
     if direction == '1':
@@ -196,16 +213,20 @@ def join_args(args: list):
     ])
 
 
-def rolling_window(array: np.ndarray, period: int) -> np.ndarray:
+def rolling_window(
+    array: np.ndarray,
+    period: int,
+    fill=np.nan,
+    # A stride for float is 8
+    stride: int=8
+) -> np.ndarray:
     """Gets an `period`-period rolling window for 1d array
     """
 
-    array = np.append(np.repeat(np.nan, period - 1), array)
+    array = np.append(np.repeat(fill, period - 1), array)
 
     return np.lib.stride_tricks.as_strided(
         array,
         shape=(len(array) - period + 1, period),
-
-        # A stride for float is 8
-        strides=(8, 8)
+        strides=(stride, stride)
     )

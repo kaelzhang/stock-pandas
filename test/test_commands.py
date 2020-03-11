@@ -20,16 +20,23 @@ def test_append(stock):
     """
 
     current = stock[:'2020-02-04']
+    kdj_j = current['kdj.j'][-1]
+    counter = -1
 
     max_len = len(stock)
     current_len = len(current)
 
     for i in range(current_len, max_len):
         current = current.append(stock.iloc[i])
+        counter -= 1
+
+        all_kdj_j = current['kdj.j']
+
+        assert all_kdj_j[counter] == kdj_j
 
         assert type(current) is StockDataFrame
 
-        if current['kdj.j'][-1] < 0:
+        if all_kdj_j[-1] < 0:
             # Test operator
             assert current['kdj.j<=0'][-1]
             assert current['kdj.j <0'][-1]
@@ -52,3 +59,16 @@ def test_cross(stock):
 def test_increase(stock):
     assert stock['increase:close,3']['2020-02-13']
     assert not stock['increase:close,4']['2020-02-13']
+
+
+    # assert not stock['repeat:style:bullish,7']['2020-02-13']
+
+def test_repeat(stock):
+    stock = stock[:'2020-02-13']
+
+    print(stock['style:bullish'][-10:])
+
+    assert stock['repeat:style:bullish,1']['2020-02-13']
+    assert stock['repeat:style:bullish,2']['2020-02-13']
+    assert stock['repeat:style:bullish,6']['2020-02-13']
+    assert not stock['repeat:style:bullish,7']['2020-02-13']

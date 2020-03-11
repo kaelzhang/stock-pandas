@@ -6,6 +6,9 @@ from pandas import Series
 from .common import (
     period_to_int,
     times_to_int,
+    repeat_to_int,
+    style_enums,
+
     to_direction,
     is_valid_stat_column,
     rolling_window
@@ -361,9 +364,9 @@ def check_increase(direction, current, ndarray):
 
     return True
 
-def increase(df, s, on_what: str, period: int, direction: int):
-    # For one period, we need 2-period data
-    period += 1
+
+def increase(df, s, on_what: str, repeat: int, direction: int):
+    period = repeat + 1
 
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
     compare = partial(check_increase, direction, current)
@@ -379,7 +382,38 @@ COMMANDS['increase'] = CommandPreset(
     increase,
     [
         (None, None),
-        (1, period_to_int),
+        (1, repeat_to_int),
         (1, to_direction)
+    ]
+)
+
+styles = dict(
+    bullish=lambda series: series['close'] > series['open'],
+    bearish=lambda series: series['close'] < series['open']
+)
+
+def style(df, s, style: str):
+    return df[s].apply(styles[style], axis=1).to_numpy(), 1
+
+COMMANDS['style'] = CommandPreset(
+    style,
+    [(None, style_enums)]
+)
+
+
+def repeat(df, s, command_str: str, repeat: int):
+    result = df.calc(command_str)[s]
+
+    return result if repeat == 1 else np.apply_along_axis(
+        np.all,
+        1,
+        rolling_window(result, repeat, False, 1)
+    ), repeat
+
+COMMANDS['repeat'] = CommandPreset(
+    repeat,
+    [
+        (None, None),
+        (1, repeat_to_int)
     ]
 )
