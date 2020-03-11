@@ -1,5 +1,7 @@
 from functools import partial
+
 import numpy as np
+from pandas import Series
 
 from .common import (
     period_to_int,
@@ -80,19 +82,19 @@ def smma(df, s, period, column):
         ignore_na=False,
         alpha=1.0 / period,
         adjust=True
-    ).mean(), period
+    ).mean().to_numpy(), period
 
 
 COMMANDS['smma'] = CommandPreset(smma, ma_args)
 
 
-def calc_ema(series, period):
+def calc_ema(series, period) -> np.ndarray:
     return series.ewm(
         min_periods=period,
         ignore_na=False,
         span=period,
         adjust=True
-    ).mean()
+    ).mean().to_numpy()
 
 
 def ema(df, s, period, column):
@@ -118,7 +120,7 @@ def mstd(df, s, period, column):
         min_periods=period,
         window=period,
         center=False
-    ).std(), period
+    ).std().to_numpy(), period
 
 
 COMMANDS['mstd'] = CommandPreset(
@@ -187,7 +189,7 @@ def column(df, s, column):
     """Gets the series of the column named `column`
     """
 
-    return df.loc[s, column], 0
+    return df.loc[s, column].to_numpy(), 0
 
 
 COMMANDS['column'] = CommandPreset(
@@ -218,7 +220,7 @@ def rsv(df, s, period):
         (df['close'][s] - llv) / (hhv - llv)
     ).fillna(0).astype('float64') * 100
 
-    return v, period
+    return v.to_numpy(), period
 
 
 COMMANDS['rsv'] = CommandPreset(
@@ -238,8 +240,8 @@ def kd(series):
     # then use 50.0
     k = 50.0
 
-    for i in KDJ_WEIGHT_INCREASE * series:
-        k = KDJ_WEIGHT_BASE * k + i
+    for i in series:
+        k = KDJ_WEIGHT_BASE * k + KDJ_WEIGHT_INCREASE * i
         yield k
 
 
@@ -249,13 +251,13 @@ def kdj_k(df, s, period):
 
     rsv = df.calc(f'rsv:{period}')[s]
 
-    return list(kd(rsv)), period
+    return np.fromiter(kd(rsv), float), period
 
 
 def kdj_d(df, s, period):
     k = df.calc(f'kdj.k:{period}')[s]
 
-    return list(kd(k)), period
+    return np.fromiter(kd(k), float), period
 
 
 def kdj_j(df, s, period):
@@ -369,7 +371,7 @@ def increase(df, s, on_what: str, period: int, direction: int):
         min_periods=period,
         window=period,
         center=False
-    ).apply(applied), period
+    ).apply(applied).to_numpy(), period
 
 
 COMMANDS['increase'] = CommandPreset(

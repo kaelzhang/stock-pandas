@@ -1,8 +1,11 @@
+from typing import Tuple
+
 from pandas import (
     DataFrame,
     Series,
     to_datetime
 )
+import numpy as np
 
 from .directive import Directive
 from .common import (
@@ -13,7 +16,7 @@ from .common import (
 
 
 class ColumnInfo:
-    def __init__(self, size, directive, period):
+    def __init__(self, size, directive, period) -> None:
         self.size = size
         self.directive = directive
         self.period = period
@@ -29,10 +32,10 @@ class StockDataFrame(DataFrame):
         self,
         data=None,
         date_column=None,
-        create_stock_metas=True,
+        create_stock_metas: bool=True,
         *args,
         **kwargs
-    ):
+    ) -> None:
         DataFrame.__init__(self, data, *args, **kwargs)
 
         if isinstance(data, StockDataFrame):
@@ -58,7 +61,11 @@ class StockDataFrame(DataFrame):
 
         return StockDataFrame(result)
 
-    def calc(self, directive_str: str, create_column=None):
+    def calc(
+        self,
+        directive_str: str,
+        create_column: bool=None
+    ) -> np.ndarray:
         """Calculates series according to the directive.
 
         This method is **NOT** Thread-safe.
@@ -73,7 +80,7 @@ class StockDataFrame(DataFrame):
         """
 
         if self._is_normal_column(directive_str):
-            return self[directive_str]
+            return self[directive_str].to_numpy()
 
         # We should call self.calc() without `create_column`
         # inside command formulas
@@ -198,7 +205,11 @@ class StockDataFrame(DataFrame):
 
         return directive
 
-    def _get_or_calc_series(self, directive, create_column: bool) -> str:
+    def _get_or_calc_series(
+        self,
+        directive,
+        create_column: bool
+    ) -> Tuple[str, np.ndarray]:
         """Gets the series column corresponds the `directive` or
         calculate by using the `directive`
 
@@ -216,7 +227,7 @@ class StockDataFrame(DataFrame):
         if name in self._stock_columns_info_map:
             return name, self._fulfill_series(name)
 
-        series, period = directive.run(
+        array, period = directive.run(
             self,
             # create the whole series
             slice(None)
@@ -228,11 +239,11 @@ class StockDataFrame(DataFrame):
                 directive,
                 period
             )
-            self[name] = series
+            self[name] = array
 
-        return name, series
+        return name, array
 
-    def _fulfill_series(self, column_name):
+    def _fulfill_series(self, column_name: str) -> np.ndarray:
         column_info = self._stock_columns_info_map.get(column_name)
         size = len(self)
 
@@ -252,13 +263,13 @@ class StockDataFrame(DataFrame):
 
         column_info.size = size
 
-        return series
+        return series.to_numpy()
 
     def _is_normal_column(self, column_name):
         return column_name in self.columns and \
             column_name not in self._stock_columns_info_map
 
-    def _calc(self, directive_str: str):
+    def _calc(self, directive_str: str) -> np.ndarray:
         directive = self._parse_directive(directive_str, True)
 
         _, series = self._get_or_calc_series(directive, self._create_column)
