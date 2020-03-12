@@ -16,7 +16,7 @@ EOF = (None, None)
 
 REGEX_NOT_WHITESPACE = re.compile('[^\s]', re.A)
 
-def create_normal_token(text, pos, line, col):
+def create_normal_token(text, line, col):
     if not text:
         return
 
@@ -38,7 +38,6 @@ def create_normal_token(text, pos, line, col):
         # is_special
         False,
         # pos
-        pos + start,
         # location
         (line, col + start)
     )
@@ -59,7 +58,6 @@ class Tokenizer:
     def _end(self):
         return create_normal_token(
             self._input[self._pos:],
-            self._pos,
             self._line,
             self._column
         ) or EOF
@@ -93,7 +91,7 @@ class Tokenizer:
         self._pos = special_end
         self._column += special_end - pos
 
-        normal_token = create_normal_token(text, pos, line, col)
+        normal_token = create_normal_token(text, line, col)
         # print('normal token', normal_token, special_text == STR_CARRIAGE_RETURN)
 
         if special_text == STR_CARRIAGE_RETURN:
@@ -108,7 +106,6 @@ class Tokenizer:
             special_token = (
                 special_text,
                 True,
-                special_start,
                 (line, col + special_start - pos)
             )
 
