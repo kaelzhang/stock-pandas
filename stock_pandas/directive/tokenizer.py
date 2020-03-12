@@ -1,7 +1,5 @@
 import re
 
-from stock_pandas.common import is_blank
-
 # operators
 # (
 # )
@@ -10,11 +8,45 @@ from stock_pandas.common import is_blank
 REGEX_SPECIAL_CHARS = re.compile('[=<>/\\]+|[():,\r\n]', re.A)
 
 STR_CARRIAGE_RETURN = '\n'
+STR_COLON = ':'
+STR_DOT = '.'
+
+EOF = (None, None)
+
+
+REGEX_NOT_WHITESPACE = re.compile('[^\s]', re.A)
+
+def create_normal_token(text, pos, line, col):
+    if not text:
+        return
+
+    # print(text, pos, line, col)
+    m = REGEX_NOT_WHITESPACE.search(text)
+
+    if m is None:
+        # After `\n` and before `>`:
+        #
+        # abc \n
+        #      > 1
+        return
+
+    start = m.span()[0]
+
+    return (
+        # value
+        text[start:].rstrip(),
+        # is_special
+        False,
+        # pos
+        pos + start,
+        # location
+        (line, col + start)
+    )
 
 
 class Tokenizer:
     def __init__(self, input: str):
-        self._input = input
+        self._input = input.strip()
         self._pos = 0
         self._line = 1
         self._column = 1
@@ -23,6 +55,14 @@ class Tokenizer:
     def __iter__(self):
         self._pos = 0
         return self
+
+    def _end(self):
+        return create_normal_token(
+            self._input[self._pos:],
+            self._pos,
+            self._line,
+            self._column
+        ) or EOF
 
     def _next(self):
         token = self._saved_token
@@ -35,7 +75,7 @@ class Tokenizer:
         # Reach the end,
         # We don't raise StopIteration, because we do not need this actually
         if m is None:
-            return None
+            return self._end()
 
         special_start, special_end = m.span()
 
@@ -53,9 +93,8 @@ class Tokenizer:
         self._pos = special_end
         self._column += special_end - pos
 
-        # abc \n
-        #      > 1
-        normal_is_blank = is_blank(text)
+        normal_token = create_normal_token(text, pos, line, col)
+        # print('normal token', normal_token, special_text == STR_CARRIAGE_RETURN)
 
         if special_text == STR_CARRIAGE_RETURN:
             # We will abandon CR token
@@ -63,20 +102,7 @@ class Tokenizer:
             self._line += 1
             self._column = 1
 
-            if normal_is_blank:
-                # abandon all, and return next
-                return self._next()
-            else:
-                return (
-                    # value
-                    text,
-                    # is_special
-                    False,
-                    # pos
-                    pos,
-                    # location
-                    (line, col)
-                )
+            return normal_token if normal_token else self._next()
 
         else:
             special_token = (
@@ -86,18 +112,12 @@ class Tokenizer:
                 (line, col + special_start - pos)
             )
 
-            if normal_is_blank:
-                # Just return the special token
-                return special_token
-            else:
+            if normal_token:
                 self._saved_token = special_token
+                return normal_token
+            else:
+                return special_token
 
-                return (
-                    text,
-                    False,
-                    pos,
-                    (line, col)
-                )
 
     def __next__(self):
         return self._next()
