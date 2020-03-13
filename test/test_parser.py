@@ -198,3 +198,18 @@ def test_invalid_columns():
     for directive_str, err_msg in CASES:
         with pytest.raises(DirectiveSyntaxError, match=err_msg):
             parse(directive_str)
+
+
+def test_invalid_directive():
+    try:
+        Parser('''
+repeat
+    :
+        (
+            column:close >> boll.upper
+        ),
+        5
+''').parse()
+    except Exception as e:
+        print()
+        print(e)

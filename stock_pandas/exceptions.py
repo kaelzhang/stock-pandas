@@ -1,10 +1,8 @@
-# class SyntaxError(_StandardError):
-#     msg: str
-#     lineno: int
-#     offset: Optional[int]
-#     text: Optional[str]
-#     filename: str
+import re
 
+REGEX_CARRIAGE_RETURN = re.compile(r'\r|\n', re.A)
+CR = '\n'
+WHITESPACE = ' '
 
 class DirectiveError(Exception):
     directive: str
@@ -13,8 +11,21 @@ class DirectiveError(Exception):
     message: str
 
     def __str__(self):
-        return f'directive "{self.directive}", line:{self.line}, column: {self.column}, message: {self.message}'  # noqa
-        # TODO: code frame
+        # The column of Python SyntaxError is buggy
+        # So, do not use Python built-in SyntaxError.
+
+        splitted = REGEX_CARRIAGE_RETURN.split(self.directive)
+        line = self.line
+
+        formatted = CR.join([
+            f'>  {code_line}' if index == line - 1 else f'   {code_line}' \
+                for index, code_line in enumerate(splitted)
+        ])
+
+        return f'''File "<string>", line {self.line}
+{formatted}
+   {WHITESPACE * (self.column - 1)}^
+DirectiveSyntaxError: {self.message}'''
 
 
 class DirectiveSyntaxError(DirectiveError):

@@ -78,9 +78,9 @@ Which prints the 2-period simple moving average on column `"close"`.
 Executes the given directive and returns a numpy ndarray according to the directive.
 
 ```py
-stock['ma:2']
-# is equivalent to:
-stock.exec('ma:2', create_column=True)
+stock['ma:5'] # returns a Series
+
+stock.exec('ma:5', create_column=True) # returns a numpy ndarray
 ```
 
 ```py
