@@ -9,7 +9,7 @@ from typing import (
 # )
 # :
 # ,
-REGEX_SPECIAL_CHARS = re.compile(r'[\=<>/]+|[():,\r\n]', re.A)
+REGEX_SPECIAL_CHARS = re.compile(r'[\\=<>/]+|[():,\r\n]', re.A)
 
 STR_CARRIAGE_RETURN = '\n'
 STR_COLON = ':'

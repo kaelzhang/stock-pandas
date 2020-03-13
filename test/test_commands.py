@@ -60,18 +60,10 @@ def test_increase(stock):
     assert stock['increase:close,3']['2020-02-13']
     assert not stock['increase:close,4']['2020-02-13']
 
-
-    # assert not stock['repeat:style:bullish,7']['2020-02-13']
-
 def test_repeat(stock):
     stock = stock[:'2020-02-13']
 
-    print(stock['style:bullish'][-10:])
-
-    assert stock['repeat:style:bullish,1']['2020-02-13']
-    assert stock['repeat:style:bullish,2']['2020-02-13']
-    assert stock['repeat:style:bullish,6']['2020-02-13']
-    assert not stock['repeat:style:bullish,7']['2020-02-13']
-
-# def test_macd(stock):
-#     assert stock['repeat:(macd.s > 0),10'][-1]
+    assert stock['repeat:(style:bullish),1']['2020-02-13']
+    assert stock['repeat:(style:bullish),2']['2020-02-13']
+    assert stock['repeat:(style:bullish),6']['2020-02-13']
+    assert not stock['repeat:(style:bullish),7']['2020-02-13']
