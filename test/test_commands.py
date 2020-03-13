@@ -72,3 +72,6 @@ def test_repeat(stock):
     assert stock['repeat:style:bullish,2']['2020-02-13']
     assert stock['repeat:style:bullish,6']['2020-02-13']
     assert not stock['repeat:style:bullish,7']['2020-02-13']
+
+# def test_macd(stock):
+#     assert stock['repeat:(macd.s > 0),10'][-1]

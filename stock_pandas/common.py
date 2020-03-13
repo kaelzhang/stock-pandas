@@ -1,5 +1,5 @@
 from functools import partial
-import re
+# import re
 
 from pandas import DataFrame, Series
 import numpy as np
@@ -38,6 +38,13 @@ style_enums = partial(create_enum, [
     'bearish'
 ], 'style')
 
+column_enums = partial(create_enum, [
+    'open',
+    'high',
+    'low',
+    'close'
+], 'column')
+
 
 def to_direction(value: str) -> int:
     if direction == '1':
@@ -47,37 +54,6 @@ def to_direction(value: str) -> int:
         return - 1
 
     raise ValueError(f'direction must be `1` or `-1`, but got `{value}`')
-
-
-COLUMNS = [
-    'open',
-    'high',
-    'low',
-    'close'
-]
-
-
-def is_ohlc_column(column: str):
-    return column in COLUMNS
-
-
-def is_valid_stat_column(column: str):
-    if is_ohlc_column(column):
-        return column
-
-    raise ValueError(
-        f'"{column}" is not a valid column for statistics'
-    )
-
-
-def memoize(f):
-    memo = {}
-
-    def helper(x):
-        if x not in memo:
-            memo[x] = f(x)
-        return memo[x]
-    return helper
 
 
 def set_stock_metas(
@@ -116,11 +92,6 @@ def copy_stock_metas(source, target):
     )
 
 
-def raise_if(strict: bool, err):
-    if strict:
-        raise err
-
-
 def ensure_return_type(cls, method):
     def helper(self, *args, **kwargs):
         ret = getattr(super(cls, self), method)(*args, **kwargs)
@@ -155,57 +126,7 @@ def is_not_nan(subject):
     return ~ np.isnan(subject)
 
 
-# left parentheses
-PARAN_L = '('
-PARAN_R = ')'
 ARGS_SEPARATOR = ','
-
-def balance(l: list, strict: bool):
-    balanced = []
-
-    pending = None
-
-    # ['1', '( foo:1', '3', '2  )']
-    for item in l:
-        if pending is None:
-            if item.startswith(PARAN_L):
-                # '( foo:1' -> 'foo:1'
-                pending = item[1:].strip()
-            else:
-                balanced.append(item)
-        else:
-            if item.endswith(PARAN_R):
-                balanced.append(
-                    # foo:1,3 ,                2
-                    pending + ARGS_SEPARATOR + item[:- 1].strip()
-                )
-                pending = None
-            else:
-                # foo:1    ,                3
-                pending += ARGS_SEPARATOR + item
-
-    if pending is not None:
-        return raise_if(
-            strict,
-            ValueError(f'unbalanced argument paranthesis "({pending}"')
-        )
-
-    return balanced
-
-
-def split_and_balance(args_str: str, strict: bool) -> list:
-    splitted = [
-        a.strip() for a in args_str.split(ARGS_SEPARATOR)
-    ]
-
-    return balance(splitted, strict) if PARAN_L in args_str else splitted
-
-
-def quote_arg(arg):
-    arg = str(arg)
-
-    return f'({arg})' if ARGS_SEPARATOR in arg else arg
-
 
 def join_args(args: list):
     return ARGS_SEPARATOR.join([
@@ -230,3 +151,9 @@ def rolling_window(
         shape=(len(array) - period + 1, period),
         strides=(stride, stride)
     )
+
+
+DEFAULT_ARG_VALUE = ''
+
+def command_full_name(name, sub):
+    return f'{name}.{sub}' if sub else name

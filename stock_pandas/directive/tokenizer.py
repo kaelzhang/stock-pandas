@@ -9,9 +9,11 @@ REGEX_SPECIAL_CHARS = re.compile('[=<>/\\]+|[():,\r\n]', re.A)
 
 STR_CARRIAGE_RETURN = '\n'
 STR_COLON = ':'
-STR_DOT = '.'
+STR_COMMA = ','
+STR_PARAN_L = '('
+STR_PARAN_R = ')'
 
-EOF = (None, None)
+EOF = (None, None, None)
 
 
 REGEX_NOT_WHITESPACE = re.compile('[^\s]', re.A)
@@ -45,7 +47,8 @@ def create_normal_token(text, line, col):
 
 class Tokenizer:
     def __init__(self, input: str):
-        self._input = input.strip()
+        # We should not strip input here, or pos will be wrong
+        self._input = input
         self._pos = 0
         self._line = 1
         self._column = 1

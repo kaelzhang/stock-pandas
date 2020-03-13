@@ -122,7 +122,7 @@ main_command_name := alphabets
 sub_command_name := alphabets
 
 arguments := argument | argument , arguments
-argument := empty_string | string | ( arguments )
+argument := empty_string | string | ( directive )
 ```
 
 #### `directive` Example
@@ -130,15 +130,15 @@ argument := empty_string | string | ( arguments )
 Here lists several use cases of column names
 
 ```py
-# The 20-period (default) moving average
-#   which is the mid band of bollinger bands
+# The middle band of bollinger bands
+#   which is actually a 20-period (default) moving average
 stock['boll']
 
-# kdjj less than 0
+# kdj j less than 0
 # This returns a series of bool type
 stock['kdj.j < 0']
 
-# 9-period kdjk cross up 3-day kdjd
+# 9-period kdj k cross up 3-day kdj d
 stock['kdj.k:9 / kdj.d:3']
 
 # 5-period simple moving average
@@ -158,8 +158,7 @@ stock[[
 # and specify the third parameter
 stock['macd:,,10']
 
-# We should wrap a parameter with parantheses if it contains `,`
-# This returns a series of bool type
+# We must wrap a parameter which is a nested command or directive
 stock['increase:(ma:20,close),3']
 ```
 

@@ -8,9 +8,9 @@ from .common import (
     times_to_int,
     repeat_to_int,
     style_enums,
+    column_enums
 
     to_direction,
-    is_valid_stat_column,
     rolling_window
 )
 
@@ -70,7 +70,7 @@ ma_args = [
         'close',
         # If the command use the default value,
         # then it will skip validating
-        is_valid_stat_column
+        column_enums
     )
 ]
 
