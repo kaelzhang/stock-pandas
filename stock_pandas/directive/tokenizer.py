@@ -9,7 +9,7 @@ from typing import (
 # )
 # :
 # ,
-REGEX_SPECIAL_CHARS = re.compile('[=<>/\\]+|[():,\r\n]', re.A)
+REGEX_SPECIAL_CHARS = re.compile(r'[\=<>/]+|[():,\r\n]', re.A)
 
 STR_CARRIAGE_RETURN = '\n'
 STR_COLON = ':'
@@ -17,7 +17,7 @@ STR_COMMA = ','
 STR_PARAN_L = '('
 STR_PARAN_R = ')'
 
-REGEX_NOT_WHITESPACE = re.compile('[^\s]', re.A)
+REGEX_NOT_WHITESPACE = re.compile(r'[^\s]', re.A)
 
 
 class Token:
@@ -104,6 +104,8 @@ class Tokenizer:
                 self._line,
                 self._column
             ) or self._end()
+
+        print(m, m.group(), m.span())
 
         special_start, special_end = m.span()
 

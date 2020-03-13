@@ -1,5 +1,4 @@
 from functools import partial
-# import re
 
 from pandas import DataFrame, Series
 import numpy as np

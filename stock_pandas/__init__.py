@@ -3,3 +3,4 @@ __version__ = '0.6.0'
 
 from .dataframe import StockDataFrame  # noqa
 from .common import DirectiveCache     # noqa
+from .exceptions import *

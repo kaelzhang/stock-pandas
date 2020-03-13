@@ -5,6 +5,11 @@
 #     text: Optional[str]
 #     filename: str
 
+__all__ = (
+    'DirectiveSyntaxError',
+    'DirectiveValueError'
+)
+
 class DirectiveError(Exception):
     directive: str
     line: int

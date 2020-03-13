@@ -36,7 +36,7 @@ from .operators import OPERATORS
 from .commands import COMMANDS
 
 
-REGEX_DOT_WHITESPACES = re.compile('\.\s*', re.A)
+REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
 class Parser:
     def __init__(
