@@ -2,7 +2,8 @@ import re
 
 from stock_pandas.common import (
     is_not_nan,
-    join_args
+    join_args,
+    command_full_name
 )
 
 
@@ -53,7 +54,7 @@ class Command:
         self.formula = formula
 
     def __str__(self):
-        name = self.full_name
+        name = command_full_name(self.name, self.sub)
 
         return f'{name}:{join_args(self.args)}' \
             if self.args else name

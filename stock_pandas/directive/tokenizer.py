@@ -1,4 +1,8 @@
 import re
+from typing import (
+    Optional,
+    Tuple
+)
 
 # operators
 # (
@@ -13,16 +17,27 @@ STR_COMMA = ','
 STR_PARAN_L = '('
 STR_PARAN_R = ')'
 
-EOF = (None, None, None)
-
-
 REGEX_NOT_WHITESPACE = re.compile('[^\s]', re.A)
+
+
+class Token:
+    def __init__(
+        self,
+        value: Optional[str]=None,
+        loc: Optional[Tuple[int, int]]=None,
+        special: Optional[bool]=False
+    ):
+        self.value = value
+        self.loc = loc
+        self.special = special
+
+EOF = Token()
+
 
 def create_normal_token(text, line, col):
     if not text:
         return
 
-    # print(text, pos, line, col)
     m = REGEX_NOT_WHITESPACE.search(text)
 
     if m is None:
@@ -34,13 +49,8 @@ def create_normal_token(text, line, col):
 
     start = m.span()[0]
 
-    return (
-        # value
+    return Token(
         text[start:].rstrip(),
-        # is_special
-        False,
-        # pos
-        # location
         (line, col + start)
     )
 
@@ -49,21 +59,31 @@ class Tokenizer:
     def __init__(self, input: str):
         # We should not strip input here, or pos will be wrong
         self._input = input
+        self._length = len(input)
+        self._saved_token = None
+
+        self._reset()
+
+    def __iter__(self):
+        self._reset()
+        return self
+
+    def __next__(self):
+        if self._ended:
+            raise StopIteration()
+
+        return self._next()
+
+    def _reset(self):
         self._pos = 0
         self._line = 1
         self._column = 1
-        self._saved_token = None
 
-    def __iter__(self):
-        self._pos = 0
-        return self
+        self._ended = False
 
     def _end(self):
-        return create_normal_token(
-            self._input[self._pos:],
-            self._line,
-            self._column
-        ) or EOF
+        self._ended = True
+        return EOF
 
     def _next(self):
         token = self._saved_token
@@ -76,7 +96,14 @@ class Tokenizer:
         # Reach the end,
         # We don't raise StopIteration, because we do not need this actually
         if m is None:
-            return self._end()
+            rest = self._input[self._pos:]
+            self._pos = self._length
+
+            return create_normal_token(
+                rest,
+                self._line,
+                self._column
+            ) or self._end()
 
         special_start, special_end = m.span()
 
@@ -94,11 +121,10 @@ class Tokenizer:
         self._pos = special_end
         self._column += special_end - pos
 
-        normal_token = create_normal_token(text, line, col)
-        # print('normal token', normal_token, special_text == STR_CARRIAGE_RETURN)
-
         if special_text == STR_CARRIAGE_RETURN:
             # We will abandon CR token
+
+            normal_token = create_normal_token(text, line, col)
 
             self._line += 1
             self._column = 1
@@ -106,25 +132,16 @@ class Tokenizer:
             return normal_token if normal_token else self._next()
 
         else:
-            special_token = (
+            special_token = Token(
                 special_text,
-                True,
-                (line, col + special_start - pos)
+                (line, col + special_start - pos),
+                True
             )
+
+            normal_token = create_normal_token(text, line, col)
 
             if normal_token:
                 self._saved_token = special_token
                 return normal_token
             else:
                 return special_token
-
-
-    def __next__(self):
-        return self._next()
-
-
-
-
-
-
-

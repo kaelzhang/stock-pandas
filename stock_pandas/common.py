@@ -130,7 +130,7 @@ ARGS_SEPARATOR = ','
 
 def join_args(args: list):
     return ARGS_SEPARATOR.join([
-        quote_arg(arg) for arg in args
+        str(arg) for arg in args
     ])
 
 

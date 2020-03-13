@@ -50,7 +50,6 @@ class Parser:
         # self._cache = cache
 
     def parse(self):
-        self._end = False
         self._tokens = Tokenizer(self._input)
 
         self._next_token()
@@ -87,33 +86,24 @@ class Parser:
         return directive if returns_object else directive_str
 
     def _real_expect_directive(self) -> Directive:
-        self._no_end()
-
         command = self._expect_command()
 
-        if self._token is EOF:
+        if self._token is EOF or self._is(STR_PARAN_R):
             # There is no operator
             return Directive(command, None, None)
 
         operator = self._expect_operator()
+
         expression = self._expect_expression()
 
         return Directive(command, operator, expression)
 
     def _expect_command(self) -> Command:
-        self._no_end()
-
-        if self._is_special:
-            raise self._unexpected()
-
-        name = self._text
-        loc = self._loc
-
         name, sub, preset = self._expect_command_name()
 
         self._next_token()
 
-        if self._text == STR_COLON:
+        if self._is(STR_COLON):
             self._next_token()
             args = self._expect_arg(
                 [],
@@ -127,7 +117,11 @@ class Parser:
         return Command(name, sub, args, preset.formula)
 
     def _expect_command_name(self):
-        text = self._text
+        self._check_normal()
+
+        text = self._token.value
+        loc = self._token.loc
+
         m = REGEX_DOT_WHITESPACES.search(text)
 
         if m is None:
@@ -145,7 +139,7 @@ class Parser:
             raise DirectiveValueError(
                 self._input,
                 f'unknown command "{name}"',
-                self._loc
+                loc
             )
 
         if sub is None:
@@ -153,7 +147,7 @@ class Parser:
                 raise DirectiveValueError(
                     directive_str,
                     f'sub command should be specified for command "{name}"',
-                    self.loc
+                    loc
                 )
 
             return name, sub, preset
@@ -184,6 +178,20 @@ class Parser:
 
         return name, sub, subs_map.get(sub)
 
+    def _check_normal(self):
+        self._no_end()
+
+        if self._token.special:
+            raise self._unexpected()
+
+    def _no_end(self):
+        if self._token is EOF:
+            raise DirectiveSyntaxError(
+                self._input,
+                'unexpected EOF',
+                self._token
+            )
+
     def _expect_arg(self, args, index, command_name, preset_args) -> list:
         self._no_end()
 
@@ -200,13 +208,16 @@ class Parser:
                 self._expect_directive(False),
                 True
             )
-            self._expect(STR_PARAN_L)
+
+            self._expect(STR_PARAN_R)
             self._next_token()
 
         # normal arg
-        elif not self._is_special:
-            argument = Argument(self._text, False)
+        elif not self._token.special:
+
+            argument = Argument(self._token.value, False)
             self._next_token()
+
 
         else:
             raise self._unexpected()
@@ -235,6 +246,10 @@ class Parser:
                 self._loc
             )
 
+        argument.value = arg
+        args.append(argument)
+
+
         if self._is(STR_COMMA):
             self._next_token()
             return self._expect_arg(
@@ -244,13 +259,10 @@ class Parser:
                 preset_args
             )
 
-        argument.value = arg
-        args.append(argument)
-
         return args
 
     def _is(self, value: str) -> bool:
-        return self._text == value
+        return self._token.value == value
 
     def _unexpected(self):
         return unexpected_token(self._input, self._token)
@@ -258,33 +270,23 @@ class Parser:
     def _expect(self, value):
         self._no_end()
 
-        if self._text != value:
+        if not self._is(value):
             raise self._unexpected()
 
     def _next_token(self):
-        token = next(self._tokens)
-
-        self._token = token
-        self._text, self._is_special, self._loc = token
-
-    def _no_end(self):
-        if self._end:
-            raise DirectiveSyntaxError(
-                self._input,
-                'unexpected EOF',
-                self._token
-            )
+        self._token = next(self._tokens)
 
     def _expect_operator(self):
         self._no_end()
 
-        text = self._text
+        token = self._token
+        text = token.value
 
-        if not self._is_special or text not in OPERATORS:
+        if not token.special or text not in OPERATORS:
             raise DirectiveSyntaxError(
                 self._input,
                 '"{}" is an invalid operator',
-                self._token
+                token
             )
 
         self._next_token()

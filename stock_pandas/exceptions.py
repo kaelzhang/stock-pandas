@@ -17,10 +17,10 @@ class DirectiveError(Exception):
 
 class DirectiveSyntaxError(DirectiveError):
     def __init__(self, directive, message_template: str, token):
-        text, _, (line, column) = token
+        line, column = token.loc
 
         self.directive = directive
-        self.message = message_template.format(text)
+        self.message = message_template.format(token.value)
         self.line = line
         self.column = column
 
