@@ -160,6 +160,17 @@ stock['macd:,,10']
 
 # We must wrap a parameter which is a nested command or directive
 stock['increase:(ma:20,close),3']
+
+# stock-pandas has a powerful directive parser,
+# so we could even write directives like this:
+stock['''
+repeat
+    :
+        (
+            column:close > boll.upper
+        ),
+        5
+''']
 ```
 
 ## Built-in Commands of Indicators
@@ -340,6 +351,53 @@ left operator right
 - **`\`**: whether `left` crosses down `right`.
 - **`><`**: whether `left` crosses `right`, either up or down.
 - **`<`** / **`<=`** / **`==`** / **`>=`** / **`>`**: For a certain record of the same time, whether the value of `left` is less than / less than or equal to / equal to / larger than or equal to / larger than the value of `right`.
+
+## Errors
+
+```py
+from stock_pandas import (
+    DirectiveSyntaxError,
+    DirectiveValueError
+)
+```
+
+### `DirectiveSyntaxError`
+
+Raises if there is a syntax error in the given directive.
+
+```py
+stock['''
+repeat
+    :
+        (
+            column:close >> boll.upper
+        ),
+        5
+''']
+```
+
+`DirectiveSyntaxError` might print some messages like this:
+
+```
+File "<string>", line 5, column 26
+
+   repeat
+       :
+           (
+>              column:close >> boll.upper
+           ),
+           5
+
+                            ^
+DirectiveSyntaxError: ">>" is an invalid operator
+```
+
+### `DirectiveValueError`
+
+Raises if
+- there is an unknown command name
+- something is wrong about the command arguments
+- etc.
 
 ****
 

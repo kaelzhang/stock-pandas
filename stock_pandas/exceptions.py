@@ -22,7 +22,7 @@ class DirectiveError(Exception):
                 for index, code_line in enumerate(splitted)
         ])
 
-        return f'''File "<string>", line {self.line}
+        return f'''File "<string>", line {self.line}, column {self.column}
 {formatted}
    {WHITESPACE * (self.column - 1)}^
 DirectiveSyntaxError: {self.message}'''
