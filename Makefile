@@ -2,10 +2,10 @@ test:
 	pytest -s -v test/test_*.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
-	flake8 stock_pandas
+	flake8 stock_pandas test
 
 fix:
-	autopep8 --in-place --aggressive -r stock_pandas
+	autopep8 --in-place --aggressive -r stock_pandas test
 
 install:
 	pip install -r requirements.txt -r test-requirements.txt

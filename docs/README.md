@@ -73,19 +73,19 @@ stock['ma:2']
 
 Which prints the 2-period simple moving average on column `"close"`.
 
-#### stock.calc(directive: str, create_column: bool=False) -> np.ndarray
+#### stock.exec(directive: str, create_column: bool=False) -> np.ndarray
 
 Calculates numpy ndarray according to the directive.
 
 ```py
 stock['ma:2']
 # is equivalent to:
-stock.calc('ma:2', create_column=True)
+stock.exec('ma:2', create_column=True)
 ```
 
 ```py
 # This will only calculate without creating a new column in the dataframe
-stock.calc('ma:20')
+stock.exec('ma:20')
 ```
 
 #### stock.alias(alias: str, name: str) -> None

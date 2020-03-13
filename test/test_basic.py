@@ -35,7 +35,7 @@ def test_basic_ma(stock):
     ))
 
     stock = stock.append(new)
-    ma2 = stock.calc('ma:2')
+    ma2 = stock.exec('ma:2')
 
     assert list(ma2[1:]) == [*list_ma0, 8.5]
 

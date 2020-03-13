@@ -18,6 +18,27 @@ def test_basic():
     for token in tokens:
         got = next(i)
         got_token = (got.value, got.special, got.loc)
-        print('>>>', got_token)
 
         assert got_token == token
+
+def test_invalid_operator():
+    CASES = [
+        ('ma >= 1', ['ma', '>=', '1']),
+        ('''ma
+    \\
+    ma''', ['ma', '\\', 'ma']),
+        (
+            '''ma:,
+            ,
+            ,
+
+            // b''', ['ma', ':', ',', ',', ',', '//', 'b']
+        )
+    ]
+
+    for input, expect in CASES:
+        assert [
+            token.value for token in Tokenizer(input)
+        ] == [*expect, None]
+
+

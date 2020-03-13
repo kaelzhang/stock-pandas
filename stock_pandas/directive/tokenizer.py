@@ -105,8 +105,6 @@ class Tokenizer:
                 self._column
             ) or self._end()
 
-        print(m, m.group(), m.span())
-
         special_start, special_end = m.span()
 
         # the text of the string before the special token
