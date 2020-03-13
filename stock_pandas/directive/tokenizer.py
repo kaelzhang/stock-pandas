@@ -23,15 +23,15 @@ REGEX_NOT_WHITESPACE = re.compile(r'[^\s]', re.A)
 class Token:
     def __init__(
         self,
+        loc: Tuple[int, int],
         value: Optional[str]=None,
-        loc: Optional[Tuple[int, int]]=None,
-        special: Optional[bool]=False
+        special: Optional[bool]=False,
+        EOF: Optional[bool]=False
     ):
         self.value = value
         self.loc = loc
         self.special = special
-
-EOF = Token()
+        self.EOF = EOF
 
 
 def create_normal_token(text, line, col):
@@ -50,8 +50,8 @@ def create_normal_token(text, line, col):
     start = m.span()[0]
 
     return Token(
-        text[start:].rstrip(),
-        (line, col + start)
+        (line, col + start),
+        text[start:].rstrip()
     )
 
 
@@ -83,7 +83,10 @@ class Tokenizer:
 
     def _end(self):
         self._ended = True
-        return EOF
+        return Token(
+            loc=(self._line, self._column),
+            EOF=True
+        )
 
     def _next(self):
         token = self._saved_token
@@ -96,14 +99,16 @@ class Tokenizer:
         # Reach the end,
         # We don't raise StopIteration, because we do not need this actually
         if m is None:
-            rest = self._input[self._pos:]
-            self._pos = self._length
-
-            return create_normal_token(
-                rest,
+            normal_token = create_normal_token(
+                self._input[self._pos:],
                 self._line,
                 self._column
-            ) or self._end()
+            )
+
+            self._column += self._length - self._pos
+            self._pos = self._length
+
+            return normal_token or self._end()
 
         special_start, special_end = m.span()
 
@@ -133,8 +138,8 @@ class Tokenizer:
 
         else:
             special_token = Token(
-                special_text,
                 (line, col + special_start - pos),
+                special_text,
                 True
             )
 
