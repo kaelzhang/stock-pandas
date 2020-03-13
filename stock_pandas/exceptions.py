@@ -12,8 +12,7 @@ class DirectiveError(Exception):
     message: str
 
     def __str__(self):
-        # TODO: codeframe
-        pass
+        return f'directive "{self.directive}", line:{self.line}, column: {self.column}, message: {self.message}'
 
 
 class DirectiveSyntaxError(DirectiveError):

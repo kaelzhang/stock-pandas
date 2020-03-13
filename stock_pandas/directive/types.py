@@ -1,6 +1,6 @@
 import re
 
-from .common import (
+from stock_pandas.common import (
     is_not_nan,
     join_args
 )
@@ -70,7 +70,7 @@ class Argument:
         self._is_directive = is_directive
 
     def __str__(self):
-        return f'({self.value})' self._is_directive else str(self.value)
+        return f'({self.value})' if self._is_directive else str(self.value)
 
 
 class Operator:

@@ -11,14 +11,14 @@ from .tokenizer import (
     STR_PARAN_L,
     STR_PARAN_R,
     EOF
-}
+)
 
 from .types import (
     Directive,
     Command,
     Argument,
     Operator
-}
+)
 
 from stock_pandas.exceptions import (
     DirectiveSyntaxError,
@@ -42,12 +42,12 @@ class Parser:
     def __init__(
         self,
         directive_str: str,
-        cache
+        # cache
     ):
         self._input = directive_str.strip()
         self._tokens = None
         self._token = None
-        self._cache = cache
+        # self._cache = cache
 
     def parse(self):
         self._end = False
@@ -67,8 +67,8 @@ class Parser:
 
         self._expect_eof()
 
-        self._cache.set(str(directive), directive)
-        self._cache = None
+        # self._cache.set(str(directive), directive)
+        # self._cache = None
 
         return directive
 
@@ -82,7 +82,7 @@ class Parser:
         directive = self._real_expect_directive()
         directive_str = str(directive)
 
-        self._cache.set(directive_str, directive)
+        # self._cache.set(directive_str, directive)
 
         return directive if returns_object else directive_str
 
@@ -91,7 +91,7 @@ class Parser:
 
         command = self._expect_command()
 
-        if self._is_end():
+        if self._token is EOF:
             # There is no operator
             return Directive(command, None, None)
 
@@ -127,7 +127,8 @@ class Parser:
         return Command(name, sub, args, preset.formula)
 
     def _expect_command_name(self):
-        m = REGEX_DOT_WHITESPACES.search(self._text)
+        text = self._text
+        m = REGEX_DOT_WHITESPACES.search(text)
 
         if m is None:
             # There is no dot
@@ -228,7 +229,7 @@ class Parser:
                 )
 
         if arg is None:
-            raise DirectiveValueError(,
+            raise DirectiveValueError(
                 self._input,
                 f'args[{index}] is required for command "{command_name}"',
                 self._loc

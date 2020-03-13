@@ -1,4 +1,4 @@
-from .common import compare_cross
+from stock_pandas.common import compare_cross
 
 
 def cross(left, right):

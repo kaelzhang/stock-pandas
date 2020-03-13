@@ -1,5 +1,5 @@
 test:
-	pytest -s -v test/test_tokenizer.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
+	pytest -s -v test/test_parser.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
 	flake8 stock_pandas

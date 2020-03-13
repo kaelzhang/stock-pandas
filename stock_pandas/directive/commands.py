@@ -3,12 +3,12 @@ from functools import partial
 import numpy as np
 from pandas import Series
 
-from .common import (
+from stock_pandas.common import (
     period_to_int,
     times_to_int,
     repeat_to_int,
     style_enums,
-    column_enums
+    column_enums,
 
     to_direction,
     rolling_window
@@ -131,7 +131,7 @@ COMMANDS['mstd'] = CommandPreset(
     mstd,
     [
         arg_period,
-        ('close', is_valid_stat_column)
+        ('close', column_enums)
     ]
 )
 
@@ -163,14 +163,14 @@ def boll_band(upper: bool, df, s, period, times, column):
 boll_band_args = [
     (20, period_to_int),
     (2, times_to_int),
-    ('close', is_valid_stat_column)
+    ('close', column_enums)
 ]
 
 COMMANDS['boll'] = CommandPreset(
     boll,
     [
         (20, period_to_int),
-        ('close', is_valid_stat_column)
+        ('close', column_enums)
     ],
     dict(
         upper=CommandPreset(

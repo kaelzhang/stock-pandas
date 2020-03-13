@@ -1,20 +1,8 @@
-from stock_pandas.directive.tokenizer import Tokenizer
+from stock_pandas.directive.parser import Parser
 
 def test_basic():
-    input = """a: b
-   > 11"""
+    input = 'increase:(ma:20,close),3'
 
-    tokens = [
-        ('a', False, (1, 1)),
-        (':', True, (1, 2)),
-        ('b', False, (1, 4)),
-        ('>', True, (2, 4)),
-        ('11', False, (2, 6))
-    ]
+    parser = Parser(input)
 
-    i = iter(Tokenizer(input))
-
-    for token in tokens:
-        got = next(i)
-        print(got)
-        assert got == token
+    print(parser.parse())
