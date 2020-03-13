@@ -1,7 +1,8 @@
 import re
 from typing import (
-    Union,
-    Tuple
+    Tuple,
+    List,
+    Union
 )
 
 from .tokenizer import (
@@ -32,22 +33,39 @@ from stock_pandas.common import (
     command_full_name
 )
 
+from .factory import (
+    TYPE_DIRECTIVE,
+    TYPE_COMMAND,
+    TYPE_OPERATOR,
+    TYPE_FLOAT,
+    TYPE_TEXT
+)
+
 from .operators import OPERATORS
 from .commands import COMMANDS
 
 
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
+
+class Node:
+    __slots__ = ('label', 'data', 'loc')
+
+    label: int
+    data: Tuple
+    loc: Tuple[int, int]
+
+    def __init__(self, t, data, loc):
+        self.label = t
+        self.data = data
+        self.loc = loc
+
+
 class Parser:
-    def __init__(
-        self,
-        directive_str: str, /,
-        cache
-    ):
+    def __init__(self, directive_str: str):
         self._input = directive_str.strip()
         self._tokens = None
         self._token = None
-        self._cache = cache
 
     def parse(self):
         self._tokens = Tokenizer(self._input)
@@ -62,61 +80,59 @@ class Parser:
         # comparison of two bool series makes no sense.
         #
         # So, to make it simple, we expect directive from the beginning
-        directive = self._expect_directive(True)
+        directive = self._expect_directive()
 
         self._expect_eof()
-
-        self._cache.set(str(directive), directive)
-        self._cache = None
 
         return directive
 
     # An _expect_<type> method
     # - should NOT next_token at the begining
     # - should next_token at the end
-    def _expect_directive(
-        self,
-        returns_object: bool
-    ) -> Union[Directive, str]:
-        directive = self._real_expect_directive()
-        directive_str = str(directive)
+    # - should returns Node or Tuple[Node]
 
-        self._cache.set(directive_str, directive)
+    def _expect_directive(self) -> Node:
+        loc = self._token.loc
 
-        return directive if returns_object else directive_str
-
-    def _real_expect_directive(self) -> Directive:
         command = self._expect_command()
 
         if self._token is EOF or self._is(STR_PARAN_R):
             # There is no operator
-            return Directive(command, None, None)
+            return Node(
+                TYPE_DIRECTIVE,
+                (command, None, None),
+                loc
+            )
 
         operator = self._expect_operator()
-
         expression = self._expect_expression()
 
-        return Directive(command, operator, expression)
+        return Node(
+            TYPE_DIRECTIVE,
+            (command, operator, expression),
+            loc
+        )
 
-    def _expect_command(self) -> Command:
-        name, sub, preset = self._expect_command_name()
+    def _expect_command(self) -> Node:
+        loc = self._token.loc
+
+        name, sub = self._expect_command_name()
 
         self._next_token()
 
         if self._is(STR_COLON):
             self._next_token()
-            args = self._expect_arg(
-                [],
-                0,
-                command_full_name(name, sub),
-                preset.args
-            )
+            args = self._expect_arg([])
         else:
             args = []
 
-        return Command(name, sub, args, preset.formula)
+        return Node(
+            TYPE_COMMAND,
+            (name, sub, args),
+            loc
+        )
 
-    def _expect_command_name(self):
+    def _expect_command_name(self) -> Tuple[Node, Node]:
         self._check_normal()
 
         text = self._token.value
@@ -125,58 +141,23 @@ class Parser:
         m = REGEX_DOT_WHITESPACES.search(text)
 
         if m is None:
-            # There is no dot
+            # There is no dot -> no sub command name
             name, sub = text, None
-            sub_loc = (None, None)
         else:
             start, end = m.span()
             name, sub = text[:start], text[end:]
-            sub_loc = (loc[0], loc[1] + start)
 
-        preset = COMMANDS.get(name, None)
-
-        if not preset:
-            raise DirectiveValueError(
-                self._input,
-                f'unknown command "{name}"',
-                loc
+            sub = Node(
+                TYPE_TEXT,
+                (sub,),
+                (loc[0], loc[1] + start)
             )
 
-        if sub is None:
-            if preset.formula is None:
-                raise DirectiveValueError(
-                    directive_str,
-                    f'sub command should be specified for command "{name}"',
-                    loc
-                )
-
-            return name, sub, preset
-
-        sub_aliases_map = preset.sub_aliases_map
-        subs_map = preset.subs_map
-
-        # apply sub aliases
-        sub = sub if sub_aliases_map is None else sub_aliases_map.get(sub, sub)
-
-        # macd.dif -> macd
-        if sub is None:
-            return Command(name, sub, args, preset)
-
-        if subs_map is None:
-            raise DirectiveValueError(
-                self._input,
-                f'command "{name}" has no sub commands',
-                sub_loc
-            )
-
-        if sub not in subs_map:
-            raise DirectiveValueError(
-                directive_str,
-                f'unknown sub command "{sub}" for command "{name}"',
-                sub_loc
-            )
-
-        return name, sub, subs_map.get(sub)
+        return Node(
+            TYPE_TEXT,
+            (name,),
+            loc
+        ), sub
 
     def _check_normal(self):
         self._no_end()
@@ -192,70 +173,34 @@ class Parser:
                 self._token
             )
 
-    def _expect_arg(self, args, index, command_name, preset_args) -> list:
+    def _expect_arg(self, args) -> List[Node]:
         self._no_end()
-
-        max_lenth = len(preset_args)
-        if index == max_lenth:
-            msg = f'command "{command_name}" accepts max {max_lenth} args'
-
-            raise DirectiveValueError(self._input, msg, self._loc)
 
         # ( directive )
         if self._is(STR_PARAN_L):
             self._next_token()
-            argument = Argument(
-                self._expect_directive(False),
-                True
-            )
+            argument = self._expect_directive()
 
             self._expect(STR_PARAN_R)
             self._next_token()
 
         # normal arg
         elif not self._token.special:
-            argument = Argument(self._token.value, False)
+            argument = Node(
+                TYPE_TEXT,
+                (self._token.value,),
+                self._token.loc
+            )
             self._next_token()
-
 
         else:
             raise self._unexpected()
 
-        default, setter = preset_args[index]
-        arg = argument.value
-
-        if arg == DEFAULT_ARG_VALUE:
-            arg = default
-
-        # Setter could be optional
-        elif setter:
-            try:
-                arg = setter(arg)
-            except ValueError as e:
-                raise DirectiveValueError(
-                    self._input,
-                    str(e),
-                    self._loc
-                )
-
-        if arg is None:
-            raise DirectiveValueError(
-                self._input,
-                f'args[{index}] is required for command "{command_name}"',
-                self._loc
-            )
-
-        argument.value = arg
         args.append(argument)
 
         if self._is(STR_COMMA):
             self._next_token()
-            return self._expect_arg(
-                args,
-                index + 1,
-                command_name,
-                preset_args
-            )
+            return self._expect_arg(args)
 
         return args
 
@@ -274,7 +219,7 @@ class Parser:
     def _next_token(self):
         self._token = next(self._tokens)
 
-    def _expect_operator(self):
+    def _expect_operator(self) -> Node:
         self._no_end()
 
         token = self._token
@@ -289,15 +234,25 @@ class Parser:
 
         self._next_token()
 
-        return Operator(text, OPERATORS.get(text))
+        return Node(
+            TYPE_OPERATOR,
+            (text,),
+            token.loc
+        )
 
-    def _expect_expression(self):
+    def _expect_expression(self) -> Node:
         self._check_normal()
 
         try:
-            num = float(self._token.value)
+            token = self._token
+            num = float(token.value)
             self._next_token()
-            return num
+
+            return Node(
+                TYPE_FLOAT,
+                (num,),
+                token.loc
+            )
 
         except ValueError:
             return self._expect_command()

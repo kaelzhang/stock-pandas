@@ -81,7 +81,7 @@ def test_invalid_columns():
         ('a1', 'unknown command', DirectiveValueError),
         ('foo', 'unknown command', DirectiveValueError),
         ('ma >> 1', 'invalid operator', DirectiveSyntaxError),
-        ('ma:(abc', 'unbalanced', DirectiveSyntaxError),
+        ('ma:(abc', 'unknown command', DirectiveValueError),
         ('kdj', 'sub command should be specified', DirectiveValueError),
         ('ma > foo', 'unknown command', DirectiveValueError)
     ]
@@ -90,8 +90,8 @@ def test_invalid_columns():
         with pytest.raises(err, match=err_msg):
             parse(directive_str)
 
-    with pytest.raises(ValueError, match='accepts max'):
-        parse('ma:1,close,3')
+    with pytest.raises(DirectiveValueError, match='accepts max'):
+        parse('ma:2,close,3')
 
     with pytest.raises(ValueError, match='is required'):
         parse('ma')
