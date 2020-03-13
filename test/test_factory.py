@@ -72,3 +72,21 @@ def test_column_with_two_command_real_case():
     assert expr.sub == 'upper'
     assert [a.value for a in expr.args] == [20, 2, 'close']
 
+
+def test_value_error():
+    CASES = [
+        ('a1', 'unknown command'),
+        ('foo', 'unknown command'),
+        ('kdj', 'sub command should be specified'),
+        # ('ma > foo', 'unknown command'),
+        ('ma:2,close,3', 'accepts max'),
+        ('ma:close', 'positive int'),
+        ('ma', 'is required'),
+        ('ma.nosub', 'no sub'),
+        ('macd.unknown', 'unknown sub')
+    ]
+
+    for directive_str, err_msg in CASES:
+        with pytest.raises(DirectiveValueError, match=err_msg):
+            parse(directive_str)
+

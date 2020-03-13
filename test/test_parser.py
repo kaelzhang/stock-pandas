@@ -181,30 +181,17 @@ def test_basic():
 
 def test_invalid_columns():
     CASES = [
-        ('a >', 'unexpected EOF', DirectiveSyntaxError),
-        ('>', 'unexpected token', DirectiveSyntaxError),
-        # ('a1', 'unknown command', DirectiveValueError),
-        # ('foo', 'unknown command', DirectiveValueError),
-        ('ma >> 1', 'invalid operator', DirectiveSyntaxError),
-        ('ma:(abc', 'unexpected EOF', DirectiveSyntaxError),
-        # ('kdj', 'sub command should be specified', DirectiveValueError),
-        # ('ma > foo', 'unknown command', DirectiveValueError)
+        ('a >', 'unexpected EOF'),
+        ('>', 'unexpected token'),
+        ('ma:>0', 'unexpected token'),
+        ('ma >> 1', 'invalid operator'),
+        ('ma:(abc', 'unexpected EOF'),
+        ('ma > 0 >', 'expect EOF'),
+        ('ma:(abc > 0 >', 'unexpected token')
     ]
 
     parse = lambda input: Parser(input).parse()
 
-    for directive_str, err_msg, err in CASES:
-        with pytest.raises(err, match=err_msg):
+    for directive_str, err_msg in CASES:
+        with pytest.raises(DirectiveSyntaxError, match=err_msg):
             parse(directive_str)
-
-    # with pytest.raises(DirectiveValueError, match='accepts max'):
-    #     parse('ma:2,close,3')
-
-    # with pytest.raises(ValueError, match='is required'):
-    #     parse('ma')
-
-    # with pytest.raises(ValueError, match='no sub'):
-    #     parse('ma.nosub')
-
-    # with pytest.raises(ValueError, match='unknown sub'):
-    #     parse('macd.unknown')

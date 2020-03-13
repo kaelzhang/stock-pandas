@@ -75,7 +75,7 @@ Which prints the 2-period simple moving average on column `"close"`.
 
 #### stock.exec(directive: str, create_column: bool=False) -> np.ndarray
 
-Calculates numpy ndarray according to the directive.
+Executes the given directive and returns a numpy ndarray according to the directive.
 
 ```py
 stock['ma:2']

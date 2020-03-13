@@ -67,8 +67,8 @@ class StockDataFrame(DataFrame):
         directive_str: str,
         create_column: bool=None
     ) -> np.ndarray:
-        """Executes the specified directive and
-        calculates series according to the directive.
+        """Executes the given directive and
+        returns a numpy ndarray according to the directive.
 
         This method is **NOT** Thread-safe.
 
