@@ -98,20 +98,16 @@ def smma(df, s, period, column):
 COMMANDS['smma'] = CommandPreset(smma, ma_args)
 
 
-def calc_ema(series, period) -> np.ndarray:
-    return series.ewm(
-        min_periods=period,
-        ignore_na=False,
-        span=period,
-        adjust=True
-    ).mean().to_numpy()
-
-
 def ema(df, s, period, column):
     """Gets Exponential Moving Average
     """
 
-    return calc_ema(df[column][s], period), period
+    return df[column][s].ewm(
+        min_periods=period,
+        ignore_na=False,
+        span=period,
+        adjust=True
+    ).mean().to_numpy(), period
 
 
 COMMANDS['ema'] = CommandPreset(ema, ma_args)

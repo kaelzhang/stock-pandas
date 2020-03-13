@@ -15,7 +15,7 @@ With the help of `stock-pandas` and mplfinance, we could easily draw something l
 
 ![](boll.png)
 
-The code example is available at [here](https://github.com/kaelzhang/stock-pandas/blob/master/example/bollinger_bands.ipynb).
+The code example is available at [here](https://github.com/kaelzhang/stock-pandas-examples/blob/master/example/bollinger_bands.ipynb).
 
 ## Install
 
@@ -317,19 +317,16 @@ stock['style:bullish']
 ### `repeat`
 
 ```
-repeat:<bool_directive>,<repeat>
+repeat:(<bool_directive>),<repeat>
 ```
 
 The `repeat` command first gets the result of directive `bool_directive`, and detect whether `True` is repeated for `repeat` times
 
-- **bool_directive** `str` the directive which should returns a series of `bool`s.
+- **bool_directive** `str` the directive which should returns a series of `bool`s. PAY ATTENTION, that the directive should be wrapped with parantheses as a parameter.
 - **repeat?** `int=1` which should be larger than `0`
 
 ```py
 # Whether the bullish candlestick repeats for 3 periods (maybe 3 days)
-stock['repeat:style:bullish,3']
-
-# For clarity, we could wrap the directive `style:bullish` with parantheses
 stock['repeat:(style:bullish),3']
 ```
 
