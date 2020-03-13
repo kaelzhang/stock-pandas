@@ -1,5 +1,6 @@
 from stock_pandas.directive.tokenizer import Tokenizer
 
+
 def test_basic():
     input = """a: ,b
    > 11"""
@@ -21,6 +22,7 @@ def test_basic():
 
         assert got_token == token
 
+
 def test_invalid_operator():
     CASES = [
         ('ma >= 1', ['ma', '>=', '1']),
@@ -40,5 +42,3 @@ def test_invalid_operator():
         assert [
             token.value for token in Tokenizer(input)
         ] == [*expect, None]
-
-

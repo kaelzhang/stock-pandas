@@ -1,7 +1,6 @@
 from functools import partial
 
 import numpy as np
-from pandas import Series
 
 from stock_pandas.common import (
     period_to_int,
@@ -359,6 +358,7 @@ COMMANDS['macd'] = CommandPreset(
 POSITIVE_INFINITY = float('inf')
 NEGATIVE_INFINITY = float('-inf')
 
+
 def check_increase(direction, current, ndarray):
     for value in ndarray:
         if np.isnan(value):
@@ -399,8 +399,10 @@ styles = dict(
     bearish=lambda series: series['close'] < series['open']
 )
 
+
 def style(df, s, style: str):
     return df[s].apply(styles[style], axis=1).to_numpy(), 1
+
 
 COMMANDS['style'] = CommandPreset(
     style,
@@ -416,6 +418,7 @@ def repeat(df, s, command_str: str, repeat: int):
         1,
         rolling_window(result, repeat, False, 1)
     ), repeat
+
 
 COMMANDS['repeat'] = CommandPreset(
     repeat,

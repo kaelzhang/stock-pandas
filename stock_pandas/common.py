@@ -22,6 +22,7 @@ period_to_int = partial(to_int, 'period', 1)
 times_to_int = partial(to_int, 'times', 0)
 repeat_to_int = partial(to_int, 'repeat', 0)
 
+
 def create_enum(choices: list, name: str, value: str):
     if value in choices:
         return value
@@ -31,6 +32,7 @@ def create_enum(choices: list, name: str, value: str):
     raise ValueError(
         f'{name} should be either {choices_str}, but got `{value}`'
     )
+
 
 style_enums = partial(create_enum, [
     'bullish',
@@ -139,6 +141,7 @@ def is_not_nan(subject):
 
 ARGS_SEPARATOR = ','
 
+
 def join_args(args: list):
     return ARGS_SEPARATOR.join([
         str(arg) for arg in args
@@ -150,7 +153,7 @@ def rolling_window(
     period: int,
     fill=np.nan,
     # A stride for float is 8
-    stride: int=8
+    stride: int = 8
 ) -> np.ndarray:
     """Gets an `period`-period rolling window for 1d array
     """
@@ -165,6 +168,7 @@ def rolling_window(
 
 
 DEFAULT_ARG_VALUE = ''
+
 
 def command_full_name(name, sub):
     return f'{name}.{sub}' if sub else name

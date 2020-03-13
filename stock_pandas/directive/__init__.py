@@ -1,6 +1,7 @@
 from .parser import Parser
 from .factory import create_by_node
 
+
 def parse(directive_str: str, cache):
     directive_str = directive_str.strip()
 
@@ -15,4 +16,3 @@ def parse(directive_str: str, cache):
     cache.set(directive_str, directive)
 
     return directive
-

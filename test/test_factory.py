@@ -1,10 +1,15 @@
 import pytest
 
 from stock_pandas.directive import parse as parse_it
-from stock_pandas import *
+from stock_pandas import (
+    DirectiveValueError,
+    DirectiveCache
+)
+
 
 def parse(string):
     return parse_it(string, DirectiveCache())
+
 
 def run_case(case, apply=False):
     c, cc, sc, a, o, e, s = case
@@ -63,6 +68,7 @@ def test_valid_columns_after_apply():
     for case in CASES:
         run_case(case, True)
 
+
 def test_column_with_two_command_real_case():
     directive = parse('ma:10 > boll.upper:20')
 
@@ -78,7 +84,7 @@ def test_value_error():
         ('a1', 'unknown command'),
         ('foo', 'unknown command'),
         ('kdj', 'sub command should be specified'),
-        # ('ma > foo', 'unknown command'),
+        ('ma:2 > foo', 'unknown command'),
         ('ma:2,close,3', 'accepts max'),
         ('ma:1', 'greater than 1'),
         ('ma:close', 'positive int'),
@@ -92,4 +98,3 @@ def test_value_error():
     for directive_str, err_msg in CASES:
         with pytest.raises(DirectiveValueError, match=err_msg):
             parse(directive_str)
-

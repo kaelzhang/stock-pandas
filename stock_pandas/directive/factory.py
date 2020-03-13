@@ -1,9 +1,14 @@
 from typing import (
-    Tuple,
-    Callable
+    Tuple
 )
 
-from .types import *
+from .types import (
+    Directive,
+    Command,
+    Argument,
+    Operator
+)
+
 from .commands import (
     COMMANDS,
     CommandPreset

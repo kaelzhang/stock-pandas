@@ -33,7 +33,7 @@ class StockDataFrame(DataFrame):
         self,
         data=None,
         date_column=None,
-        create_stock_metas: bool=True,
+        create_stock_metas: bool = True,
         *args,
         **kwargs
     ) -> None:
@@ -65,7 +65,7 @@ class StockDataFrame(DataFrame):
     def exec(
         self,
         directive_str: str,
-        create_column: bool=None
+        create_column: bool = None
     ) -> np.ndarray:
         """Executes the given directive and
         returns a numpy ndarray according to the directive.

@@ -10,6 +10,7 @@ from stock_pandas.common import (
 )
 from stock_pandas.exceptions import DirectiveSyntaxError
 
+
 def convert(result):
     if result is None:
         return
@@ -29,6 +30,7 @@ def convert(result):
     return label, tuple([
         convert(x) for x in data
     ])
+
 
 def test_basic():
     increase = 'increase:(ma:20,close),3'
@@ -187,10 +189,11 @@ def test_invalid_columns():
         ('ma >> 1', 'invalid operator'),
         ('ma:(abc', 'unexpected EOF'),
         ('ma > 0 >', 'expect EOF'),
-        ('ma:(abc > 0 >', 'unexpected token')
+        ('ma:(abc > 0 >', 'unexpected token'),
+        ('ma:5 > 0)', 'expect EOF')
     ]
 
-    parse = lambda input: Parser(input).parse()
+    def parse(input): return Parser(input).parse()
 
     for directive_str, err_msg in CASES:
         with pytest.raises(DirectiveSyntaxError, match=err_msg):

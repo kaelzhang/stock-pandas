@@ -1,8 +1,7 @@
 import re
 from typing import (
     Tuple,
-    List,
-    Union
+    List
 )
 
 from .tokenizer import (
@@ -13,23 +12,12 @@ from .tokenizer import (
     STR_PARAN_R
 )
 
-from .types import (
-    Directive,
-    Command,
-    Argument,
-    Operator
-)
-
 from stock_pandas.exceptions import (
     DirectiveSyntaxError,
     unexpected_token
 )
 
 from stock_pandas.common import (
-    ARGS_SEPARATOR,
-    DEFAULT_ARG_VALUE,
-    command_full_name,
-
     TYPE_DIRECTIVE,
     TYPE_COMMAND,
     TYPE_OPERATOR,
@@ -38,7 +26,6 @@ from stock_pandas.common import (
 )
 
 from .operators import OPERATORS
-from .commands import COMMANDS
 
 
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)

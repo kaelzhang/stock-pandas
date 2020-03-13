@@ -5,10 +5,6 @@
 #     text: Optional[str]
 #     filename: str
 
-__all__ = (
-    'DirectiveSyntaxError',
-    'DirectiveValueError'
-)
 
 class DirectiveError(Exception):
     directive: str
@@ -17,7 +13,8 @@ class DirectiveError(Exception):
     message: str
 
     def __str__(self):
-        return f'directive "{self.directive}", line:{self.line}, column: {self.column}, message: {self.message}'
+        return f'directive "{self.directive}", line:{self.line}, column: {self.column}, message: {self.message}'  # noqa
+        # TODO: code frame
 
 
 class DirectiveSyntaxError(DirectiveError):

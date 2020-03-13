@@ -24,9 +24,9 @@ class Token:
     def __init__(
         self,
         loc: Tuple[int, int],
-        value: Optional[str]=None,
-        special: Optional[bool]=False,
-        EOF: Optional[bool]=False
+        value: Optional[str] = None,
+        special: Optional[bool] = False,
+        EOF: Optional[bool] = False
     ):
         self.value = value
         self.loc = loc

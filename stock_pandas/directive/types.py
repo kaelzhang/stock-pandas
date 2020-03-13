@@ -1,17 +1,7 @@
-import re
-
 from stock_pandas.common import (
     is_not_nan,
     join_args,
     command_full_name
-)
-
-
-__all__ = (
-    'Directive',
-    'Command',
-    'Argument',
-    'Operator'
 )
 
 
@@ -96,7 +86,7 @@ class Argument:
         'is_directive'
     )
 
-    def __init__(self, value: str, is_directive: bool=False):
+    def __init__(self, value: str, is_directive: bool = False):
         self.value = value
         self.is_directive = is_directive
 

@@ -4,17 +4,19 @@ import pytest
 
 from stock_pandas import StockDataFrame
 
-l = [2, 3, 4, 5, 6, 7]
+simple_list = [2, 3, 4, 5, 6, 7]
+
 
 @pytest.fixture
 def stock():
     return StockDataFrame({
-        'open': l,
-        'close': [x + 1 for x in l],
-        'high': [x + 10 for x in l],
-        'low': [x - 1 for x in l],
-        'volume': [x * 100 for x in l]
+        'open': simple_list,
+        'close': [x + 1 for x in simple_list],
+        'high': [x + 10 for x in simple_list],
+        'low': [x - 1 for x in simple_list],
+        'volume': [x * 100 for x in simple_list]
     })
+
 
 def test_basic_ma(stock):
     ma = stock['ma:2']
@@ -27,11 +29,11 @@ def test_basic_ma(stock):
     assert list(ma[1:]) == list_ma0
 
     new = pd.DataFrame(dict(
-        open = [8],
-        close = [9],
-        high = [18],
-        low = [7],
-        volume = [800]
+        open=[8],
+        close=[9],
+        high=[18],
+        low=[7],
+        volume=[800]
     ))
 
     stock = stock.append(new)
@@ -42,7 +44,7 @@ def test_basic_ma(stock):
 
 def test_aliases(stock):
     stock.alias('Open', 'open')
-    assert list(stock['Open']) == l
+    assert list(stock['Open']) == simple_list
 
     with pytest.raises(ValueError, match='not exists'):
         stock.alias('some_column', 'not-exists')
