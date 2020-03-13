@@ -168,3 +168,12 @@ DEFAULT_ARG_VALUE = ''
 
 def command_full_name(name, sub):
     return f'{name}.{sub}' if sub else name
+
+
+NONE_TUPLE = (None, None)
+
+TYPE_DIRECTIVE = 1
+TYPE_COMMAND = 2
+TYPE_OPERATOR = 3
+TYPE_ARGUMENT = 4
+TYPE_SCALAR = 5

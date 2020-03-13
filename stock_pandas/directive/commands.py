@@ -16,6 +16,13 @@ from stock_pandas.common import (
 
 
 class CommandPreset:
+    __slots__ = (
+        'formula',
+        'args',
+        'subs_map',
+        'sub_aliases_map'
+    )
+
     def __init__(
         self,
         formula=None,

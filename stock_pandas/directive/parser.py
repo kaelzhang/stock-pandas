@@ -33,6 +33,7 @@ from stock_pandas.common import (
     TYPE_DIRECTIVE,
     TYPE_COMMAND,
     TYPE_OPERATOR,
+    TYPE_ARGUMENT,
     TYPE_SCALAR
 )
 
@@ -174,7 +175,13 @@ class Parser:
         # ( directive )
         if self._is(STR_PARAN_L):
             self._next_token()
-            argument = self._expect_directive()
+            loc = self._token.loc
+
+            argument = Node(
+                TYPE_ARGUMENT,
+                (self._expect_directive(),),
+                loc
+            )
 
             self._expect(STR_PARAN_R)
             self._next_token()
@@ -182,8 +189,14 @@ class Parser:
         # normal arg
         elif not self._token.special:
             argument = Node(
-                TYPE_SCALAR,
-                (self._token.value,),
+                TYPE_ARGUMENT,
+                (
+                    Node(
+                        TYPE_SCALAR,
+                        (self._token.value,),
+                        self._token.loc
+                    ),
+                ),
                 self._token.loc
             )
             self._next_token()

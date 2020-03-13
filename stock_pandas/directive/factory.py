@@ -22,11 +22,12 @@ from stock_pandas.common import (
     TYPE_DIRECTIVE,
     TYPE_COMMAND,
     TYPE_OPERATOR,
+    TYPE_ARGUMENT,
     TYPE_SCALAR
 )
 
 
-class Conntext:
+class Context:
     __slots__ = (
         'input',
         'loc',
@@ -45,7 +46,9 @@ def create_directive(
     operator,
     expression
 ):
-    directive = Directive(command[0], operator[0], expression[0])
+    directive = Directive(command[0]) if operator is None else Directive(
+        command[0], operator[0], expression[0]
+    )
 
     context.cache.set(str(directive), directive)
 
@@ -73,11 +76,14 @@ def create_command(context, name, sub, args):
     coerced_args = []
 
     for index, (default, setter) in enumerate(preset.args):
-        arg, loc = args[index] if index < args_length else (
-            DEFAULT_ARG_VALUE,
+        if index < args_length:
+            argument, loc = args[index]
+            arg = argument.value
+        else:
             # If the arg does not exist, use the command loc
-            context.loc
-        )
+            loc = context.loc
+            arg = DEFAULT_ARG_VALUE
+            argument = Argument(arg)
 
         if arg == DEFAULT_ARG_VALUE:
             arg = default
@@ -100,7 +106,9 @@ def create_command(context, name, sub, args):
                 loc
             )
 
-        coerced_args.append(arg)
+        argument.value = arg
+
+        coerced_args.append(argument)
 
     return Command(name, sub, coerced_args, preset.formula)
 
@@ -164,10 +172,20 @@ def create_operator(_, operator):
     return Operator(operator, OPERATORS.get(operator))
 
 
+def create_argument(_, arg):
+    arg = arg[0]
+
+    if isinstance(arg, Directive):
+        return Argument(str(arg), True)
+
+    return Argument(arg)
+
+
 FACTORY = {
     TYPE_DIRECTIVE: create_directive,
     TYPE_COMMAND: create_command,
     TYPE_OPERATOR: create_operator,
+    TYPE_ARGUMENT: create_argument,
     TYPE_SCALAR: lambda _, value: value
 }
 
@@ -177,15 +195,15 @@ def create_by_node(
     input: str,
     cache
 ):
-    if instance(node, list):
+    if isinstance(node, list):
         return [
-            create(arg, input, cache) for arg in node
+            create_by_node(arg, input, cache) for arg in node
         ]
 
     if not isinstance(node, Node):
         return node
 
-    factory = FACTORY.get(node.labal)
+    factory = FACTORY.get(node.label)
     loc = node.loc
 
     context = Context(
@@ -195,7 +213,7 @@ def create_by_node(
     )
 
     args = [
-        create(arg, input, cache) for arg in node.data
+        create_by_node(arg, input, cache) for arg in node.data
     ]
 
     # For node, we return the instance and loc

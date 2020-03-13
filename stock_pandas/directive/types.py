@@ -22,7 +22,12 @@ class Directive:
         'expression'
     )
 
-    def __init__(self, command, operator, expression):
+    def __init__(
+        self,
+        command,
+        operator=None,
+        expression=None
+    ):
         self.command = command
         self.operator = operator
         self.expression = expression
@@ -82,7 +87,6 @@ class Command:
 
     def run(self, df, s: slice):
         args = [arg.value for arg in self.args]
-
         return self.formula(df, s, *args)
 
 
@@ -92,7 +96,7 @@ class Argument:
         'is_directive'
     )
 
-    def __init__(self, value: str, is_directive: bool):
+    def __init__(self, value: str, is_directive: bool=False):
         self.value = value
         self.is_directive = is_directive
 
