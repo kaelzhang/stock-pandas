@@ -1,8 +1,28 @@
 from stock_pandas.directive.parser import Parser
 
 def test_basic():
-    input = 'increase:(ma:20,close),3'
+    increase = 'increase:(ma:20,close),3'
 
-    parser = Parser(input)
+    FORMS = [
+        (increase, increase),
+        ("""
+        increase :
+            (
+                ma:
+                    20,
+                    close
+            ),
+            3
+        """, increase),
+        (
+            'repeat : (kdj.j < 0), 5',
+            'repeat:(kdj.j<0.0),5'
+        )
+    ]
 
-    print(parser.parse())
+    for input, expect in FORMS:
+        parser = Parser(input)
+        parsed = parser.parse()
+
+        assert str(parsed) == expect
+

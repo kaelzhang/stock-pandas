@@ -214,7 +214,6 @@ class Parser:
 
         # normal arg
         elif not self._token.special:
-
             argument = Argument(self._token.value, False)
             self._next_token()
 
@@ -248,7 +247,6 @@ class Parser:
 
         argument.value = arg
         args.append(argument)
-
 
         if self._is(STR_COMMA):
             self._next_token()
@@ -291,21 +289,18 @@ class Parser:
 
         self._next_token()
 
-        return Operator.from_string(text)
+        return Operator(text, OPERATORS.get(text))
 
     def _expect_expression(self):
-        self._no_end()
-
-        if self._is_special:
-            raise self._unexpected()
+        self._check_normal()
 
         try:
-            return float(self._text)
+            num = float(self._token.value)
+            self._next_token()
+            return num
+
         except ValueError:
-            try:
-                return self._expect_command()
-            except expression as identifier:
-                pass
+            return self._expect_command()
 
     def _expect_eof(self):
         if self._token is EOF:
