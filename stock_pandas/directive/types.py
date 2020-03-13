@@ -7,7 +7,21 @@ from stock_pandas.common import (
 )
 
 
+__all__ = (
+    'Directive',
+    'Command',
+    'Argument',
+    'Operator'
+)
+
+
 class Directive:
+    __slots__ = (
+        'command',
+        'operator',
+        'expression'
+    )
+
     def __init__(self, command, operator, expression):
         self.command = command
         self.operator = operator
@@ -41,6 +55,13 @@ class Directive:
 
 
 class Command:
+    __slots__ = (
+        'name',
+        'sub',
+        'args',
+        'formula'
+    )
+
     def __init__(
         self,
         name: str,
@@ -66,15 +87,25 @@ class Command:
 
 
 class Argument:
+    __slots__ = (
+        'value',
+        'is_directive'
+    )
+
     def __init__(self, value: str, is_directive: bool):
         self.value = value
-        self._is_directive = is_directive
+        self.is_directive = is_directive
 
     def __str__(self):
-        return f'({self.value})' if self._is_directive else str(self.value)
+        return f'({self.value})' if self.is_directive else str(self.value)
 
 
 class Operator:
+    __slots__ = (
+        'name',
+        'formula'
+    )
+
     def __init__(self, name, formula):
         self.name = name
         self.formula = formula

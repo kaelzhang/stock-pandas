@@ -7,9 +7,7 @@ from pandas import (
 )
 import numpy as np
 
-from .directive import (
-    Parser
-)
+from .directive import parse
 
 from .common import (
     copy_stock_metas,
@@ -180,14 +178,7 @@ class StockDataFrame(DataFrame):
         return mapped
 
     def _parse_directive(self, directive_str: str):
-        cached = self._stock_directives_cache.get(directive_str)
-        if cached:
-            return cached
-
-        return Parser(
-            directive_str,
-            cache = self._stock_directives_cache
-        ).parse()
+        return parse(directive_str, self._stock_directives_cache)
 
     def _get_or_calc_series(
         self,

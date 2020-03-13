@@ -10,8 +10,7 @@ from .tokenizer import (
     STR_COLON,
     STR_COMMA,
     STR_PARAN_L,
-    STR_PARAN_R,
-    EOF
+    STR_PARAN_R
 )
 
 from .types import (
@@ -23,22 +22,18 @@ from .types import (
 
 from stock_pandas.exceptions import (
     DirectiveSyntaxError,
-    DirectiveValueError,
     unexpected_token
 )
 
 from stock_pandas.common import (
     ARGS_SEPARATOR,
     DEFAULT_ARG_VALUE,
-    command_full_name
-)
+    command_full_name,
 
-from .factory import (
     TYPE_DIRECTIVE,
     TYPE_COMMAND,
     TYPE_OPERATOR,
-    TYPE_FLOAT,
-    TYPE_TEXT
+    TYPE_SCALAR
 )
 
 from .operators import OPERATORS
@@ -63,7 +58,7 @@ class Node:
 
 class Parser:
     def __init__(self, directive_str: str):
-        self._input = directive_str.strip()
+        self._input = directive_str
         self._tokens = None
         self._token = None
 
@@ -96,7 +91,7 @@ class Parser:
 
         command = self._expect_command()
 
-        if self._token is EOF or self._is(STR_PARAN_R):
+        if self._token.EOF or self._is(STR_PARAN_R):
             # There is no operator
             return Node(
                 TYPE_DIRECTIVE,
@@ -148,13 +143,13 @@ class Parser:
             name, sub = text[:start], text[end:]
 
             sub = Node(
-                TYPE_TEXT,
+                TYPE_SCALAR,
                 (sub,),
                 (loc[0], loc[1] + start)
             )
 
         return Node(
-            TYPE_TEXT,
+            TYPE_SCALAR,
             (name,),
             loc
         ), sub
@@ -166,7 +161,7 @@ class Parser:
             raise self._unexpected()
 
     def _no_end(self):
-        if self._token is EOF:
+        if self._token.EOF:
             raise DirectiveSyntaxError(
                 self._input,
                 'unexpected EOF',
@@ -187,7 +182,7 @@ class Parser:
         # normal arg
         elif not self._token.special:
             argument = Node(
-                TYPE_TEXT,
+                TYPE_SCALAR,
                 (self._token.value,),
                 self._token.loc
             )
@@ -249,7 +244,7 @@ class Parser:
             self._next_token()
 
             return Node(
-                TYPE_FLOAT,
+                TYPE_SCALAR,
                 (num,),
                 token.loc
             )
@@ -258,7 +253,7 @@ class Parser:
             return self._expect_command()
 
     def _expect_eof(self):
-        if self._token is EOF:
+        if self._token.EOF:
             return
 
         raise DirectiveSyntaxError(
