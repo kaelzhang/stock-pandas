@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 import pandas as pd
+import numpy as np
 
 from stock_pandas import StockDataFrame
 
@@ -57,8 +58,11 @@ def test_cross(stock):
     assert not stock['ma:10 \\ ma:5']['2020-02-21']
 
 def test_increase(stock):
+    assert type(stock.exec('increase:close,3', False)) is np.ndarray
     assert stock['increase:close,3']['2020-02-13']
+    assert stock['increase:close,3,1']['2020-02-13']
     assert not stock['increase:close,4']['2020-02-13']
+    assert stock['increase:close,3,-1']['2020-02-24']
 
 def test_repeat(stock):
     stock = stock[:'2020-02-13']
@@ -67,3 +71,6 @@ def test_repeat(stock):
     assert stock['repeat:(style:bullish),2']['2020-02-13']
     assert stock['repeat:(style:bullish),6']['2020-02-13']
     assert not stock['repeat:(style:bullish),7']['2020-02-13']
+
+def test_indexing(stock):
+    assert type(stock[['kdj.k', 'kdj.d']]) is StockDataFrame

@@ -80,10 +80,13 @@ def test_value_error():
         ('kdj', 'sub command should be specified'),
         # ('ma > foo', 'unknown command'),
         ('ma:2,close,3', 'accepts max'),
+        ('ma:1', 'greater than 1'),
         ('ma:close', 'positive int'),
         ('ma', 'is required'),
         ('ma.nosub', 'no sub'),
-        ('macd.unknown', 'unknown sub')
+        ('macd.unknown', 'unknown sub'),
+        ('style:cartoon', 'should be either'),
+        ('increase:close,5,3', 'direction')
     ]
 
     for directive_str, err_msg in CASES:

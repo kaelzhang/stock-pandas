@@ -43,3 +43,9 @@ def test_basic_ma(stock):
 def test_aliases(stock):
     stock.alias('Open', 'open')
     assert list(stock['Open']) == l
+
+    with pytest.raises(ValueError, match='not exists'):
+        stock.alias('some_column', 'not-exists')
+
+    with pytest.raises(ValueError, match='already exists'):
+        stock.alias('open', 'close')

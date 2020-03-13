@@ -46,10 +46,10 @@ column_enums = partial(create_enum, [
 
 
 def to_direction(value: str) -> int:
-    if direction == '1':
+    if value == '1':
         return 1
 
-    if direction == '-1':
+    if value == '-1':
         return - 1
 
     raise ValueError(f'direction must be `1` or `-1`, but got `{value}`')

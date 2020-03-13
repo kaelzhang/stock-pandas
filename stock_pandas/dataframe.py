@@ -120,14 +120,7 @@ class StockDataFrame(DataFrame):
             raise ValueError(f'column "{as_name}" already exists')
 
         if src_name not in columns:
-            # Not a column, then try parse directive
-            directive = self._parse_directive(src_name, False)
-
-            if directive is None:
-                raise ValueError(f'column "{src_name}" not exists')
-
-            column_name, _ = self._get_or_calc_series(directive, True)
-            src_name = column_name
+            raise ValueError(f'column "{src_name}" not exists')
 
         self._stock_aliases_map[as_name] = src_name
 
