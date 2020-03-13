@@ -41,13 +41,13 @@ REGEX_DOT_WHITESPACES = re.compile('\.\s*', re.A)
 class Parser:
     def __init__(
         self,
-        directive_str: str,
-        # cache
+        directive_str: str, /,
+        cache
     ):
         self._input = directive_str.strip()
         self._tokens = None
         self._token = None
-        # self._cache = cache
+        self._cache = cache
 
     def parse(self):
         self._tokens = Tokenizer(self._input)
@@ -66,8 +66,8 @@ class Parser:
 
         self._expect_eof()
 
-        # self._cache.set(str(directive), directive)
-        # self._cache = None
+        self._cache.set(str(directive), directive)
+        self._cache = None
 
         return directive
 
@@ -81,7 +81,7 @@ class Parser:
         directive = self._real_expect_directive()
         directive_str = str(directive)
 
-        # self._cache.set(directive_str, directive)
+        self._cache.set(directive_str, directive)
 
         return directive if returns_object else directive_str
 

@@ -139,7 +139,7 @@ COMMANDS['mstd'] = CommandPreset(
 def boll(df, s, period, column):
     """Gets the mid band of bollinger bands
     """
-    return df.calc(f'ma:{period},{column}')[s], period
+    return df.exec(f'ma:{period},{column}')[s], period
 
 
 def boll_band(upper: bool, df, s, period, times, column):
@@ -148,8 +148,8 @@ def boll_band(upper: bool, df, s, period, times, column):
     Args:
         upper (bool): Get the upper band if True else the lower band
     """
-    ma = df.calc(f'ma:{period},{column}')[s]
-    mstd = df.calc(f'mstd:{period},{column}')[s]
+    ma = df.exec(f'ma:{period},{column}')[s]
+    mstd = df.exec(f'mstd:{period},{column}')[s]
 
     ma = list(map(np.float64, ma))
     mstd = list(map(np.float64, mstd))
@@ -253,20 +253,20 @@ def kdj_k(df, s, period):
     """Gets KDJ K
     """
 
-    rsv = df.calc(f'rsv:{period}')[s]
+    rsv = df.exec(f'rsv:{period}')[s]
 
     return np.fromiter(kd(rsv), float), period
 
 
 def kdj_d(df, s, period):
-    k = df.calc(f'kdj.k:{period}')[s]
+    k = df.exec(f'kdj.k:{period}')[s]
 
     return np.fromiter(kd(k), float), period
 
 
 def kdj_j(df, s, period):
-    k = df.calc(f'kdj.k:{period}')[s]
-    d = df.calc(f'kdj.d:{period}')[s]
+    k = df.exec(f'kdj.k:{period}')[s]
+    d = df.exec(f'kdj.d:{period}')[s]
 
     return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period
 
@@ -296,21 +296,21 @@ COMMANDS['kdj'] = CommandPreset(
 
 
 def macd(df, s, fast_period, slow_period):
-    fast = df.calc(f'ema:{fast_period},close', False)[s]
-    slow = df.calc(f'ema:{slow_period},close', False)[s]
+    fast = df.exec(f'ema:{fast_period},close', False)[s]
+    slow = df.exec(f'ema:{slow_period},close', False)[s]
 
     return fast - slow, fast_period
 
 
 def macd_signal(df, s, fast_period, slow_period, signal_period):
-    macd = df.calc(f'macd:{fast_period},{slow_period}')[s]
+    macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
 
     return calc_ema(macd, signal_period), fast_period
 
 
 def macd_histogram(df, s, fast_period, slow_period, signal_period):
-    macd = df.calc(f'macd:{fast_period},{slow_period}')[s]
-    macd_s = df.calc(
+    macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
+    macd_s = df.exec(
         f'macd.signal:{fast_period},{slow_period},{signal_period}'
     )[s]
 
@@ -374,7 +374,7 @@ def increase(df, s, on_what: str, repeat: int, direction: int):
     return np.apply_along_axis(
         compare,
         1,
-        rolling_window(df.calc(on_what)[s], period)
+        rolling_window(df.exec(on_what)[s], period)
     ), period
 
 
@@ -402,7 +402,7 @@ COMMANDS['style'] = CommandPreset(
 
 
 def repeat(df, s, command_str: str, repeat: int):
-    result = df.calc(command_str)[s]
+    result = df.exec(command_str)[s]
 
     return result if repeat == 1 else np.apply_along_axis(
         np.all,

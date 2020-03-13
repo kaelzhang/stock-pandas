@@ -7,7 +7,10 @@ from pandas import (
 )
 import numpy as np
 
-from .directive import Directive
+from .directive import (
+    Parser
+)
+
 from .common import (
     copy_stock_metas,
     set_stock_metas,
@@ -61,12 +64,13 @@ class StockDataFrame(DataFrame):
 
         return StockDataFrame(result)
 
-    def calc(
+    def exec(
         self,
         directive_str: str,
         create_column: bool=None
     ) -> np.ndarray:
-        """Calculates series according to the directive.
+        """Executes the specified directive and
+        calculates series according to the directive.
 
         This method is **NOT** Thread-safe.
 
@@ -82,7 +86,7 @@ class StockDataFrame(DataFrame):
         if self._is_normal_column(directive_str):
             return self[directive_str].to_numpy()
 
-        # We should call self.calc() without `create_column`
+        # We should call self.exec() without `create_column`
         # inside command formulas
         explicit_create_column = isinstance(create_column, bool)
         original_create_column = self._create_column
@@ -102,13 +106,6 @@ class StockDataFrame(DataFrame):
             self._create_column = original_create_column
 
         return series
-
-    def recalc(
-        self,
-        directive_str: str = None
-    ):
-        """
-        """
 
     def alias(self, as_name, src_name) -> None:
         """Defines column alias or directive alias
@@ -169,14 +166,7 @@ class StockDataFrame(DataFrame):
                 continue
 
             # Not exists
-            directive = self._parse_directive(key, False)
-
-            if directive is None:
-                # The key is not a valid directive,
-                # but we don't know what the user really want,
-                # so just let pandas.DataFrame to raise a KeyError
-                mapped.append(key)
-                continue
+            directive = self._parse_directive(key)
 
             # It is a valid directive
             # If the column exists, then fulfill it,
@@ -189,21 +179,15 @@ class StockDataFrame(DataFrame):
 
         return mapped
 
-    def _parse_directive(self, directive_str: str, strict: bool):
-        # A simple cache
-        if directive_str in self._stock_directives_cache:
-            return self._stock_directives_cache[directive_str]
+    def _parse_directive(self, directive_str: str):
+        cached = self._stock_directives_cache.get(directive_str)
+        if cached:
+            return cached
 
-        directive = Directive.from_string(directive_str, strict)
-
-        # We should not put a failed result into the cache
-        if not strict and directive is None:
-            return
-
-        directive.apply_presets()
-        self._stock_directives_cache[directive_str] = directive
-
-        return directive
+        return Parser(
+            directive_str,
+            cache = self._stock_directives_cache
+        ).parse()
 
     def _get_or_calc_series(
         self,
@@ -270,7 +254,7 @@ class StockDataFrame(DataFrame):
             column_name not in self._stock_columns_info_map
 
     def _calc(self, directive_str: str) -> np.ndarray:
-        directive = self._parse_directive(directive_str, True)
+        directive = self._parse_directive(directive_str)
 
         _, series = self._get_or_calc_series(directive, self._create_column)
 
