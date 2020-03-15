@@ -61,9 +61,9 @@ def test_cross(stock):
 
 
 def test_increase(stock):
+    assert stock['increase:close,3,1']['2020-02-13']
     assert type(stock.exec('increase:close,3', False)) is np.ndarray
     assert stock['increase:close,3']['2020-02-13']
-    assert stock['increase:close,3,1']['2020-02-13']
     assert not stock['increase:close,4']['2020-02-13']
     assert stock['increase:close,3,-1']['2020-02-24']
 
@@ -89,5 +89,6 @@ def test_boll(stock):
     assert stock['column:open > boll.u']['2020-01-14']
     assert stock['column:close > boll']['2020-02-05']
 
-# def test_macd(stock):
-#     assert stock['macd.dif / macd.dea']['2020-02-10']
+def test_macd(stock):
+    assert stock['macd / macd.dea']['2020-02-10']
+    assert stock['macd.histogram / 0']['2020-02-10']

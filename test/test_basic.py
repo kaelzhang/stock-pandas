@@ -18,7 +18,7 @@ def stock():
     })
 
 
-def test_basic_ma(stock):
+def test_ma(stock):
     ma = stock['ma:2']
 
     stock = StockDataFrame(stock)
@@ -51,3 +51,8 @@ def test_aliases(stock):
 
     with pytest.raises(ValueError, match='already exists'):
         stock.alias('open', 'close')
+
+
+def test_invalid_indexing(stock):
+    with pytest.raises(KeyError, match='None'):
+        stock[[1]]
