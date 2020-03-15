@@ -85,19 +85,19 @@ ma_args = [
 COMMANDS['ma'] = CommandPreset(ma, ma_args)
 
 
-def smma(df, s, period, column):
-    """Gets Smoothed Moving Average
-    """
+# def smma(df, s, period, column):
+#     """Gets Smoothed Moving Average
+#     """
 
-    return df[column][s].ewm(
-        min_periods=period,
-        ignore_na=False,
-        alpha=1.0 / period,
-        adjust=True
-    ).mean().to_numpy(), period
+#     return df[column][s].ewm(
+#         min_periods=period,
+#         ignore_na=False,
+#         alpha=1.0 / period,
+#         adjust=True
+#     ).mean().to_numpy(), period
 
 
-COMMANDS['smma'] = CommandPreset(smma, ma_args)
+# COMMANDS['smma'] = CommandPreset(smma, ma_args)
 
 
 def ema(df, s, period, column):

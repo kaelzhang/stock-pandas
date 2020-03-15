@@ -44,22 +44,22 @@ def test_valid_columns_after_apply():
             # sub command
             None,
             # arguments
-            [26, 12],
+            [12, 26],
             # operator
             None,
             # expression
             None,
             # to string
-            'macd:26,12'
+            'macd:12,26'
         ),
         (
             'macd.signal',
             'macd',
             'signal',
-            [26, 12, 9],
+            [12, 26, 9],
             None,
             None,
-            'macd.signal:26,12,9'
+            'macd.signal:12,26,9'
         )
     ]
 
