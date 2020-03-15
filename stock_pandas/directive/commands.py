@@ -13,6 +13,8 @@ from stock_pandas.common import (
     rolling_window
 )
 
+from stock_pandas.math.ewma import ewma
+
 
 class CommandPreset:
     __slots__ = (
@@ -102,12 +104,18 @@ def ema(df, s, period, column):
     """Gets Exponential Moving Average
     """
 
-    return df[column][s].ewm(
-        min_periods=period,
-        ignore_na=False,
-        span=period,
-        adjust=True
-    ).mean().to_numpy(), period
+    # return df[column][s].ewm(
+    #     min_periods=period,
+    #     ignore_na=False,
+    #     span=period,
+    #     adjust=True
+    # ).mean().to_numpy(), period
+
+    return ewma(
+        df[column][s].to_numpy(),
+        period,
+        period
+    ), period
 
 
 COMMANDS['ema'] = CommandPreset(ema, ma_args)
@@ -307,8 +315,14 @@ def macd(df, s, fast_period, slow_period):
 def macd_signal(df, s, fast_period, slow_period, signal_period):
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
 
-    return calc_ema(macd, signal_period), fast_period
+    return ewma(
+        macd,
+        signal_period,
+        signal_period
+    ), fast_period
 
+
+MACD_HISTOGRAM_TIMES = 2.0
 
 def macd_histogram(df, s, fast_period, slow_period, signal_period):
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
@@ -316,14 +330,14 @@ def macd_histogram(df, s, fast_period, slow_period, signal_period):
         f'macd.signal:{fast_period},{slow_period},{signal_period}'
     )[s]
 
-    return macd - macd_s, fast_period
+    return MACD_HISTOGRAM_TIMES * (macd - macd_s), fast_period
 
 
 macd_args = [
     # Fast period
-    (26, period_to_int),
+    (12, period_to_int),
     # Slow period
-    (12, period_to_int)
+    (26, period_to_int)
 ]
 
 macd_args_all = [

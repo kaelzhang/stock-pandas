@@ -73,7 +73,7 @@ stock['ma:2']
 
 Which prints the 2-period simple moving average on column `"close"`.
 
-#### stock.exec(directive: str, create_column: bool=False) -> np.ndarray
+### stock.exec(directive: str, create_column: bool=False) -> np.ndarray
 
 Executes the given directive and returns a numpy ndarray according to the directive.
 
@@ -88,7 +88,7 @@ stock.exec('ma:5', create_column=True) # returns a numpy ndarray
 stock.exec('ma:20')
 ```
 
-#### stock.alias(alias: str, name: str) -> None
+### stock.alias(alias: str, name: str) -> None
 
 Defines column alias or directive alias
 
@@ -212,8 +212,8 @@ macd.signal:<fast_period>,<slow_period>,<signal_period>
 macd.histogram:<fast_period>,<slow_period>,<signal_period>
 ```
 
-- **fast_period?** `int=26` fast period. Defaults to `26`.
-- **slow_period?** `int=12` slow period. Defaults to `12`
+- **fast_period?** `int=12` fast period (short period). Defaults to `12`.
+- **slow_period?** `int=26` slow period (long period). Defaults to `26`
 - **signal_period?** `int=9` signal period. Defaults to `9`
 
 ```py
@@ -235,7 +235,9 @@ stock['macd.macd']
 ### `boll`, BOLLinger bands
 
 ```
-boll:<period>,<times>,<column>
+boll:<period>,<column>
+boll.upper:<period>,<times>,<column>
+boll.lower:<period>,<times>,<column>
 ```
 
 - **period?** `int=20`
