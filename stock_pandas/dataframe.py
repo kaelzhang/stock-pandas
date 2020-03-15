@@ -219,7 +219,7 @@ class StockDataFrame(DataFrame):
 
         if size == column_info.size:
             # Already fulfilled
-            return series
+            return series.to_numpy()
 
         delta = size - column_info.size
         offset_slice = slice(- column_info.period - delta + 1, None)
