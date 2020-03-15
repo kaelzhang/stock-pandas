@@ -324,6 +324,7 @@ def macd_signal(df, s, fast_period, slow_period, signal_period):
 
 MACD_HISTOGRAM_TIMES = 2.0
 
+
 def macd_histogram(df, s, fast_period, slow_period, signal_period):
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
     macd_s = df.exec(

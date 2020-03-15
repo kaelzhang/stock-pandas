@@ -3,6 +3,7 @@ import numpy as np
 
 _ewma = window_aggregations.ewma
 
+
 def ewma(
     array: np.ndarray,
     period: int,

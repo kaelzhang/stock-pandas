@@ -84,10 +84,12 @@ def test_indexing(stock):
 def test_column(stock):
     assert stock['column:close'][-1] == stock['close'][-1]
 
+
 def test_boll(stock):
     assert stock['column:low < boll.lower']['2020-02-03']
     assert stock['column:open > boll.u']['2020-01-14']
     assert stock['column:close > boll']['2020-02-05']
+
 
 def test_macd(stock):
     assert stock['macd / macd.dea']['2020-02-10']

@@ -4,6 +4,7 @@ REGEX_CARRIAGE_RETURN = re.compile(r'\r|\n', re.A)
 CR = '\n'
 WHITESPACE = ' '
 
+
 class DirectiveError(Exception):
     directive: str
     line: int
@@ -18,8 +19,8 @@ class DirectiveError(Exception):
         line = self.line
 
         formatted = CR.join([
-            f'>  {code_line}' if index == line - 1 else f'   {code_line}' \
-                for index, code_line in enumerate(splitted)
+            f'>  {code_line}' if index == line - 1 else f'   {code_line}'
+            for index, code_line in enumerate(splitted)
         ])
 
         return f'''File "<string>", line {self.line}, column {self.column}
