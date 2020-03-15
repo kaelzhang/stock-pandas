@@ -19,7 +19,8 @@ settings = dict(
     name = 'stock-pandas',
     packages = [
         'stock_pandas',
-        'stock_pandas.directive'
+        'stock_pandas.directive',
+        'stock_pandas.math'
     ],
     version = __version__,
     author = 'Kael Zhang',
