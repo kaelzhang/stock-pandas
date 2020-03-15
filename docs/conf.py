@@ -63,6 +63,17 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #
 html_theme = 'alabaster'
 
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+html_theme_options = {
+    # 'logo': 'stock-pandas.svg',
+    'description': 'A wrapper and a subtle class of `pandas.DataFrame` which supports stock statistics and indicators',
+    'github_button': True,
+    'github_user': 'kaelzhang',
+    'github_repo': 'stock-pandas'
+}
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".

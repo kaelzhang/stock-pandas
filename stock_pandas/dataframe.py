@@ -140,7 +140,8 @@ class StockDataFrame(DataFrame):
 
         for key in keys:
             if not isinstance(key, str):
-                # It might be an `pandas.DataFrame` indexer type
+                # It might be an `pandas.DataFrame` indexer type,
+                # or an KeyError which we should let pandas raise
                 mapped.append(key)
                 continue
 

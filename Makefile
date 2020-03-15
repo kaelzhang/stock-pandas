@@ -8,7 +8,7 @@ fix:
 	autopep8 --in-place --aggressive -r stock_pandas test
 
 install:
-	pip install -r requirements.txt -r test-requirements.txt
+	pip install -r requirements.txt -r test-requirements.txt -r docs/requirements.txt
 
 report:
 	codecov
@@ -16,6 +16,9 @@ report:
 build: stock_pandas
 	rm -rf dist
 	python setup.py sdist bdist_wheel
+
+build-doc:
+	sphinx-build -b html docs build_docs
 
 publish:
 	make build

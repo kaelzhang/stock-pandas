@@ -3,7 +3,7 @@
 [![](https://img.shields.io/pypi/v/stock-pandas.svg)](https://pypi.org/project/stock-pandas/)
 [![](https://img.shields.io/pypi/l/stock-pandas.svg)](https://github.com/kaelzhang/stock-pandas)
 
-# stock-pandas
+# [stock-pandas](https://github.com/kaelzhang/stock-pandas)
 
 A wrapper and a subtle class of `pandas.DataFrame` which supports:
 - stock statistics
