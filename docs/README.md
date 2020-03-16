@@ -7,7 +7,10 @@
 
 A wrapper and a subtle class of `pandas.DataFrame` which supports:
 - stock statistics
-- all kinds of stock indicators
+- stock indicators, including
+  - trend-following momentum indicators, such as MA, EMA, MACD, BBI
+  - dynamic support and resistance indicators, such as BOLL
+  - over-bought / over-sold indicators, such as KDJ, RSI
 
 `stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6**
 
