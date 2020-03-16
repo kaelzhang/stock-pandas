@@ -1,3 +1,4 @@
+from stock_pandas.common import rolling_calc
 import pandas._libs.window.aggregations as window_aggregations
 import numpy as np
 
@@ -56,3 +57,13 @@ def calc_smma(
         0,
         period
     )
+
+
+def calc_ma(
+    array: np.ndarray,
+    period: int
+) -> np.ndarray:
+    """Calculates N-period Simple Moving Average
+    """
+
+    return rolling_calc(array, period, np.mean)

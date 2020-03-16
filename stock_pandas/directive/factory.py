@@ -9,13 +9,13 @@ from .types import (
     Operator
 )
 
-from .commands import (
+from .operators import OPERATORS
+from .parser import Node
+
+from stock_pandas.commands import (
     COMMANDS,
     CommandPreset
 )
-
-from .operators import OPERATORS
-from .parser import Node
 
 from stock_pandas.exceptions import DirectiveValueError
 
