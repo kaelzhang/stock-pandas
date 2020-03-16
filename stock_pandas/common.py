@@ -1,6 +1,7 @@
 from functools import partial
+from typing import Callable
 
-from pandas import DataFrame, Series
+from pandas import DataFrame
 import numpy as np
 
 
@@ -132,13 +133,6 @@ def compare_cross(left, right):
     return cross, less
 
 
-def is_not_nan(subject):
-    if isinstance(subject, Series):
-        subject = subject.values
-
-    return ~ np.isnan(subject)
-
-
 ARGS_SEPARATOR = ','
 
 
@@ -168,11 +162,27 @@ def shift_and_fill(
     array: np.ndarray,
     period: int,
     fill=np.nan
-):
+) -> np.ndarray:
     """Adds items to the left of an array to meet the min periods
     """
 
     return np.append(np.repeat(fill, period - 1), array)
+
+
+def rolling_calc(
+    array: np.ndarray,
+    period: int,
+    func: Callable,
+    fill=np.nan,
+    stride: int = 8
+) -> np.ndarray:
+    unshifted = np.apply_along_axis(
+        func,
+        1,
+        rolling_window(array, period, stride)
+    )
+
+    return shift_and_fill(unshifted, period, fill)
 
 
 DEFAULT_ARG_VALUE = ''

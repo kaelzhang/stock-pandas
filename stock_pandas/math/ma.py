@@ -1,8 +1,5 @@
 import pandas._libs.window.aggregations as window_aggregations
-import pandas as pd
 import numpy as np
-
-from stock_pandas.common import rolling_window
 
 _ewma = window_aggregations.ewma
 
@@ -40,7 +37,6 @@ def calc_ewma(
     )
 
 
-
 def calc_smma(
     array: np.ndarray,
     period: int
@@ -60,10 +56,3 @@ def calc_smma(
         0,
         period
     )
-
-
-# def calc_ma(
-#     array: np.ndarray,
-#     period: int
-# ) -> np.ndarray:
-#     pass

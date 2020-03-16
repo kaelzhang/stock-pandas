@@ -1,5 +1,5 @@
 from stock_pandas.common import (
-    is_not_nan,
+    # is_not_nan,
     join_args,
     command_full_name
 )
@@ -39,12 +39,15 @@ class Directive:
 
         operated = self.operator.formula(left, right)
 
-        # Plan.A: `np.nan` makes non-sense, so mark them all as False
-        # or Plan.B: mark as `np.nan` ?
-        # Plan.A has better compatibility,
-        #   and `operated` is often used as condition indexer,
-        #   so it must be of bool type
-        operated = operated & is_not_nan(left) & is_not_nan(right)
+        # Since 0.12.0
+        # `operated` will not be of type np.nan
+
+        # # Plan.A: `np.nan` makes non-sense, so mark them all as False
+        # # or Plan.B: mark as `np.nan` ?
+        # # Plan.A has better compatibility,
+        # #   and `operated` is often used as condition indexer,
+        # #   so it must be of bool type
+        # operated = operated & is_not_nan(left) & is_not_nan(right)
 
         return operated, max(period_left, period_right)
 

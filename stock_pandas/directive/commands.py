@@ -10,8 +10,7 @@ from stock_pandas.common import (
     column_enums,
 
     to_direction,
-    rolling_window,
-    shift_and_fill
+    rolling_calc
 )
 
 from stock_pandas.math.ma import (
@@ -58,11 +57,11 @@ def ma(df, s, period, column):
         and the period offset the indicator needs
     """
 
-    return df[column][s].rolling(
-        min_periods=period,
-        window=period,
-        center=False
-    ).mean(), period
+    return rolling_calc(
+        df[column][s].to_numpy(),
+        period,
+        np.mean
+    ), period
 
 
 arg_period = (
@@ -376,13 +375,12 @@ def increase(df, s, on_what: str, repeat: int, direction: int):
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
     compare = partial(check_increase, direction, current)
 
-    unshifted = np.apply_along_axis(
+    return rolling_calc(
+        df.exec(on_what)[s],
+        period,
         compare,
-        1,
-        rolling_window(df.exec(on_what)[s], period)
-    )
-
-    return shift_and_fill(unshifted, period, False), period
+        False
+    ), period
 
 
 COMMANDS['increase'] = CommandPreset(
@@ -416,13 +414,13 @@ def repeat(df, s, command_str: str, repeat: int):
     if repeat == 1:
         return result, repeat
 
-    unshifted = np.apply_along_axis(
+    return rolling_calc(
+        result,
+        repeat,
         np.all,
-        1,
-        rolling_window(result, repeat, 1)
-    )
-
-    return shift_and_fill(unshifted, repeat, False), repeat
+        False,
+        1
+    ), repeat
 
 
 COMMANDS['repeat'] = CommandPreset(

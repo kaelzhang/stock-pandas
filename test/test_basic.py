@@ -39,6 +39,8 @@ def test_ma(stock):
     stock = stock.append(new)
     ma2 = stock.exec('ma:2')
 
+    print(ma2)
+
     assert list(ma2[1:]) == [*list_ma0, 8.5]
 
 
