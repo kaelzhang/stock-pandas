@@ -101,3 +101,8 @@ def test_rsi(stock):
     assert rsi6_80['2020-02-13']
     assert not rsi6_80['2020-02-12']
     assert not rsi6_80['2020-02-14']
+
+
+def test_bbi(stock):
+    assert stock['repeat:(bbi < column:close),8']['2020-02-13']
+    assert not stock['repeat:(bbi < column:close),9']['2020-02-13']

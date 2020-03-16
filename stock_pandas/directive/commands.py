@@ -457,4 +457,24 @@ COMMANDS['rsi'] = CommandPreset(
 )
 
 
-# def bbi(df, s, a, b, c, d):
+def bbi(df, s, a, b, c, d):
+    """Calculates BBI (Bull and Bear Index) which is the average of
+    ma:3, ma:6, ma:12, ma:24 by default
+    """
+    return (
+        df.exec(f'ma:{a}')
+        + df.exec(f'ma:{b}')
+        + df.exec(f'ma:{c}')
+        + df.exec(f'ma:{d}')
+    ) / 4, max(a, b, c, d)
+
+
+COMMANDS['bbi'] = CommandPreset(
+    bbi,
+    [
+        (3, period_to_int),
+        (6, period_to_int),
+        (12, period_to_int),
+        (24, period_to_int)
+    ]
+)

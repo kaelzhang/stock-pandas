@@ -305,6 +305,19 @@ Calculates the N-period RSI (Relative Strength Index)
 
 - **period** `int` The period to calculate RSI. `period` should be an int which is larger than `1`
 
+### `bbi`, Bull and Bear Index
+
+```
+bbi:<a>,<b>,<c>,<d>
+```
+
+Calculates indicator BBI (Bull and Bear Index) which is the average of `ma:3`, `ma:6`, `ma:12`, `ma:24` by default
+
+- **a?** `int=3`
+- **b?** `int=6`
+- **c?** `int=12`
+- **d?** `int=24`
+
 ## Built-in Commands for Statistics
 
 ### `column`
