@@ -10,7 +10,8 @@ from stock_pandas.common import (
     column_enums,
 
     to_direction,
-    rolling_window
+    rolling_window,
+    shift_and_fill
 )
 
 from stock_pandas.math.ma import (
@@ -361,9 +362,6 @@ NEGATIVE_INFINITY = float('-inf')
 
 def check_increase(direction, current, ndarray):
     for value in ndarray:
-        if np.isnan(value):
-            return False
-
         if (value - current) * direction > 0:
             current = value
         else:
@@ -378,11 +376,13 @@ def increase(df, s, on_what: str, repeat: int, direction: int):
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
     compare = partial(check_increase, direction, current)
 
-    return np.apply_along_axis(
+    unshifted = np.apply_along_axis(
         compare,
         1,
         rolling_window(df.exec(on_what)[s], period)
-    ), period
+    )
+
+    return shift_and_fill(unshifted, period, False), period
 
 
 COMMANDS['increase'] = CommandPreset(
@@ -413,11 +413,16 @@ COMMANDS['style'] = CommandPreset(
 def repeat(df, s, command_str: str, repeat: int):
     result = df.exec(command_str)[s]
 
-    return result if repeat == 1 else np.apply_along_axis(
+    if repeat == 1:
+        return result, repeat
+
+    unshifted = np.apply_along_axis(
         np.all,
         1,
-        rolling_window(result, repeat, False, 1)
-    ), repeat
+        rolling_window(result, repeat, 1)
+    )
+
+    return shift_and_fill(unshifted, repeat, False), repeat
 
 
 COMMANDS['repeat'] = CommandPreset(
@@ -452,3 +457,6 @@ COMMANDS['rsi'] = CommandPreset(
     rsi,
     [arg_period]
 )
+
+
+# def bbi(df, s, a, b, c, d):

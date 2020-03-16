@@ -151,20 +151,28 @@ def join_args(args: list):
 def rolling_window(
     array: np.ndarray,
     period: int,
-    fill=np.nan,
     # A stride for float is 8
     stride: int = 8
 ) -> np.ndarray:
     """Gets an `period`-period rolling window for 1d array
     """
 
-    array = np.append(np.repeat(fill, period - 1), array)
-
     return np.lib.stride_tricks.as_strided(
         array,
         shape=(len(array) - period + 1, period),
         strides=(stride, stride)
     )
+
+
+def shift_and_fill(
+    array: np.ndarray,
+    period: int,
+    fill=np.nan
+):
+    """Adds items to the left of an array to meet the min periods
+    """
+
+    return np.append(np.repeat(fill, period - 1), array)
 
 
 DEFAULT_ARG_VALUE = ''
