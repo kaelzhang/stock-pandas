@@ -4,10 +4,9 @@ import numpy as np
 _ewma = window_aggregations.ewma
 
 
-def ewma(
+def calc_ewma(
     array: np.ndarray,
-    period: int,
-    min_periods: int
+    period: int
 ) -> np.ndarray:
     """Calculates Exponential Weighted Moving Average.
 
@@ -32,5 +31,29 @@ def ewma(
         1,
         # ignore_na=False
         0,
-        min_periods
+
+        # For now, all calculations require `min_periods` as `period`
+        period
+    )
+
+
+
+def calc_smma(
+    array: np.ndarray,
+    period: int
+) -> np.ndarray:
+    """Calculates Smoothed Moving Average(Modified Moving Average)
+    https://en.wikipedia.org/wiki/Moving_average#Modified_moving_average
+
+    >  SMMA is an EWMA, with `alpha = 1 / N`
+
+    1. / period = 1. / (1. + com)
+    """
+
+    return _ewma(
+        array.astype(float),
+        period - 1.,
+        1,
+        0,
+        period
     )

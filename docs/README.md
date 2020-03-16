@@ -204,6 +204,16 @@ stock['ma:5']
 stock['ma:10,open']
 ```
 
+### `ema`, Exponential Moving Average
+
+```
+ema:<period>,<column>
+```
+
+Gets the Exponential Moving Average, also known as the Exponential Weighted Moving Average.
+
+The arguments of this command is the same as `ma`.
+
 ### `macd`, Moving Average Convergence Divergence
 
 ```
@@ -257,6 +267,14 @@ stock['boll.lower']
 stock['boll.l']
 ```
 
+### `rsv`, Raw Stochastic Value
+
+```
+rsv:<period>
+```
+
+Calculates the raw stochastic value which is often used to calculate KDJ
+
 ### `kdj`, stochastic oscillator
 
 ```
@@ -276,6 +294,16 @@ stock['kdj.k']
 # The KDJ serieses of with parameters 9, 3, and 3
 stock[['kdj.k', 'kdj.d:3', 'kdj.j:3']]
 ```
+
+### `rsi`, Relative Strength Index
+
+```
+rsi:<period>
+```
+
+Calculates the N-period RSI (Relative Strength Index)
+
+- **period** `int` The period to calculate RSI. `period` should be an int which is larger than `1`
 
 ## Built-in Commands for Statistics
 

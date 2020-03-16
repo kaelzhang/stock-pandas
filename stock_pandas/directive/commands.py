@@ -13,7 +13,10 @@ from stock_pandas.common import (
     rolling_window
 )
 
-from stock_pandas.math.ewma import ewma
+from stock_pandas.math.ma import (
+    calc_ewma,
+    calc_smma
+)
 
 
 class CommandPreset:
@@ -89,12 +92,10 @@ COMMANDS['ma'] = CommandPreset(ma, ma_args)
 #     """Gets Smoothed Moving Average
 #     """
 
-#     return df[column][s].ewm(
-#         min_periods=period,
-#         ignore_na=False,
-#         alpha=1.0 / period,
-#         adjust=True
-#     ).mean().to_numpy(), period
+#     return calc_smma(
+#         df[column][s].to_numpy(),
+#         period
+#     ), period
 
 
 # COMMANDS['smma'] = CommandPreset(smma, ma_args)
@@ -104,16 +105,8 @@ def ema(df, s, period, column):
     """Gets Exponential Moving Average
     """
 
-    # return df[column][s].ewm(
-    #     min_periods=period,
-    #     ignore_na=False,
-    #     span=period,
-    #     adjust=True
-    # ).mean().to_numpy(), period
-
-    return ewma(
+    return calc_ewma(
         df[column][s].to_numpy(),
-        period,
         period
     ), period
 
@@ -315,11 +308,7 @@ def macd(df, s, fast_period, slow_period):
 def macd_signal(df, s, fast_period, slow_period, signal_period):
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
 
-    return ewma(
-        macd,
-        signal_period,
-        signal_period
-    ), fast_period
+    return calc_ewma(macd, signal_period), fast_period
 
 
 MACD_HISTOGRAM_TIMES = 2.0
@@ -437,4 +426,29 @@ COMMANDS['repeat'] = CommandPreset(
         (None, None),
         (1, repeat_to_int)
     ]
+)
+
+
+def rsi(df, s, period):
+    """Calculates N-period RSI (Relative Strength Index)
+
+    https://en.wikipedia.org/wiki/Relative_strength_index
+    """
+
+    delta = df['close'].diff().to_numpy()
+
+    # gain
+    U = (np.absolute(delta) + delta) / 2.
+    # loss
+    D = (np.absolute(delta) - delta) / 2.
+
+    smma_u = calc_smma(U, period)
+    smma_d = calc_smma(D, period)
+
+    return 100 - 100 / (1. + smma_u / smma_d), period
+
+
+COMMANDS['rsi'] = CommandPreset(
+    rsi,
+    [arg_period]
 )

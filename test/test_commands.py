@@ -94,3 +94,10 @@ def test_boll(stock):
 def test_macd(stock):
     assert stock['macd / macd.dea']['2020-02-10']
     assert stock['macd.histogram / 0']['2020-02-10']
+
+
+def test_rsi(stock):
+    rsi6_80 = stock['rsi:6 > 80']
+    assert rsi6_80['2020-02-13']
+    assert not rsi6_80['2020-02-12']
+    assert not rsi6_80['2020-02-14']
