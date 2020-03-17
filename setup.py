@@ -19,6 +19,7 @@ settings = dict(
     name = 'stock-pandas',
     packages = [
         'stock_pandas',
+        'stock_pandas.commands',
         'stock_pandas.directive',
         'stock_pandas.math'
     ],
