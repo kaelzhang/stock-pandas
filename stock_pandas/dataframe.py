@@ -254,6 +254,7 @@ class StockDataFrame(DataFrame):
 
 METHODS_TO_ENSURE_RETURN_TYPE = [
     'append',
+    'drop',
     'set_index'
 ]
 
