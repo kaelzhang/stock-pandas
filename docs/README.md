@@ -180,10 +180,10 @@ repeat
 
 Document syntax explanation:
 
-- **param0** `str` which means `param0` is a required parameter of type `str`.
+- **param0** `int` which means `param0` is a required parameter of type `int`.
 - **param1?** `str='close'` which means parameter `param1` is optional with default value `'close'`.
 
-Actually, all parameters of a command are of string type, so the `str` here means an interger-like string.
+Actually, all parameters of a command are of string type, so the `int` here means an interger-like string.
 
 ### `ma`, simple Moving Averages
 
