@@ -1,7 +1,6 @@
 from functools import partial
 from typing import Callable
 
-from pandas import DataFrame
 import numpy as np
 
 
@@ -70,54 +69,61 @@ class DirectiveCache:
         return self._store.get(key, default)
 
 
-def set_stock_metas(
-    target,
-    aliases_map={},
-    columns_info_map={},
-    directives_cache=DirectiveCache()
-):
-    # Use `object.__setattr__` to avoid pandas UserWarning:
-    # > Pandas doesn't allow columns to be created via a new attribute name
-    object.__setattr__(target, '_stock_aliases_map', aliases_map)
-    object.__setattr__(target, '_stock_columns_info_map', columns_info_map)
-    object.__setattr__(target, '_stock_directives_cache', directives_cache)
+KEY_ALIAS_MAP = '__stock_aliases_map'
+KEY_COLUMNS_INFO_MAP = '__stock_columns_info_map'
+KEY_DIRECTIVES_CACHE = '__stock_directives_cache'
 
 
 def copy_stock_metas(source, target):
     columns = source.columns
 
-    aliases_map = {}
-    for alias, column in source._stock_aliases_map.items():
-        # TODO: if alias is in columns, something wrong happened
-        # - support .iloc, loc, and other indexing and setting methods
-        if column in columns:
-            aliases_map[alias] = column
+    source_aliases_map = getattr(source, KEY_ALIAS_MAP, None)
 
-    columns_info_map = {}
-    for column, info in source._stock_columns_info_map.items():
-        if column in columns:
-            columns_info_map[column] = info
+    if source_aliases_map is not None:
+        aliases_map = {}
+        for alias, column in source_aliases_map.items():
+            # TODO: if alias is in columns, something wrong happened
+            # - support .iloc, loc, and other indexing and setting methods
+            if column in columns:
+                aliases_map[alias] = column
 
-    set_stock_metas(
-        target,
-        aliases_map,
-        columns_info_map,
-        source._stock_directives_cache
-    )
+        # Use `object.__setattr__` to avoid pandas UserWarning:
+        # > Pandas doesn't allow columns to be created via a new attribute name
+        object.__setattr__(target, KEY_ALIAS_MAP, aliases_map)
+
+    source_columns_info_map = getattr(source, KEY_COLUMNS_INFO_MAP, None)
+
+    if source_columns_info_map is not None:
+        columns_info_map = {}
+        for column, info in source_columns_info_map.items():
+            if column in columns:
+                columns_info_map[column] = info
+
+        object.__setattr__(target, KEY_COLUMNS_INFO_MAP, columns_info_map)
+
+    source_stock_directives_cache = getattr(source, KEY_DIRECTIVES_CACHE, None)
+
+    if source_stock_directives_cache is not None:
+        object.__setattr__(
+            target,
+            KEY_DIRECTIVES_CACHE,
+            source_stock_directives_cache
+        )
 
 
-def ensure_return_type(cls, method):
-    def helper(self, *args, **kwargs):
-        ret = getattr(super(cls, self), method)(*args, **kwargs)
+def create_meta_property(key, create, self):
+    value = getattr(self, key, None)
 
-        if isinstance(ret, DataFrame):
-            return self._ensure_stock_type(ret)
+    if value is not None:
+        return value
 
-        return ret
+    value = create()
+    object.__setattr__(self, key, value)
+    return value
 
-    helper.__doc__ = getattr(DataFrame, method).__doc__
 
-    setattr(cls, method, helper)
+def meta_property(key, create):
+    return property(partial(create_meta_property, key, create))
 
 
 def compare_cross(left, right):

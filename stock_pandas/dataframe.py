@@ -1,4 +1,7 @@
-from typing import Tuple
+from typing import (
+    Tuple,
+    Type
+)
 
 from pandas import (
     DataFrame,
@@ -10,9 +13,14 @@ import numpy as np
 from .directive import parse
 
 from .common import (
+    meta_property,
     copy_stock_metas,
-    set_stock_metas,
-    ensure_return_type
+
+    KEY_ALIAS_MAP,
+    KEY_COLUMNS_INFO_MAP,
+    KEY_DIRECTIVES_CACHE,
+
+    DirectiveCache
 )
 
 
@@ -29,11 +37,42 @@ class StockDataFrame(DataFrame):
     Args definitions are the same as `pandas.DataFrame`
     """
 
+    _stock_aliases_map = meta_property(
+        KEY_ALIAS_MAP, lambda: {}
+    )
+
+    _stock_columns_info_map = meta_property(
+        KEY_COLUMNS_INFO_MAP, lambda: {}
+    )
+
+    _stock_directives_cache = meta_property(
+        KEY_DIRECTIVES_CACHE, lambda: DirectiveCache()
+    )
+
+    @property
+    def _constructor(self) -> Type['StockDataFrame']:
+        """This method overrides `DataFrame._constructor`
+        which ensures the return type of several DataFrame methods
+        """
+
+        return StockDataFrame
+
+    def __finalize__(self, other, *args, **kwargs):
+        """This method overrides `DataFrame.__finalize__`
+        which ensures the meta info of StockDataFrame
+        """
+
+        super().__finalize__(other, *args, **kwargs)
+
+        if isinstance(other, StockDataFrame):
+            copy_stock_metas(other, self)
+
+        return self
+
     def __init__(
         self,
         data=None,
         date_column=None,
-        create_stock_metas: bool = True,
         *args,
         **kwargs
     ) -> None:
@@ -41,8 +80,6 @@ class StockDataFrame(DataFrame):
 
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
-        elif create_stock_metas:
-            set_stock_metas(self)
 
         self._create_column = False
 
@@ -244,19 +281,3 @@ class StockDataFrame(DataFrame):
         _, series = self._get_or_calc_series(directive, self._create_column)
 
         return series
-
-    def _ensure_stock_type(self, df):
-        new = StockDataFrame(df, create_stock_metas=False)
-        # TODO: check columns and alises
-        copy_stock_metas(self, new)
-        return new
-
-
-METHODS_TO_ENSURE_RETURN_TYPE = [
-    'append',
-    'drop',
-    'set_index'
-]
-
-for method in METHODS_TO_ENSURE_RETURN_TYPE:
-    ensure_return_type(StockDataFrame, method)

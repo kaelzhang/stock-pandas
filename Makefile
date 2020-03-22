@@ -1,11 +1,13 @@
+files = stock_pandas test
+
 test:
 	pytest -s -v test/test_*.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
-	flake8 stock_pandas test
+	flake8 $(files)
 
 fix:
-	autopep8 --in-place --aggressive -r stock_pandas test
+	autopep8 --in-place -r $(files)
 
 install:
 	pip install -r requirements.txt -r test-requirements.txt -r docs/requirements.txt
@@ -24,4 +26,4 @@ publish:
 	make build
 	twine upload --config-file ~/.pypirc -r pypi dist/*
 
-.PHONY: test
+.PHONY: test build
