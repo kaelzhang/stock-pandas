@@ -393,10 +393,28 @@ stock['repeat:(style:bullish),3']
 left operator right
 ```
 
-- **`/`**: whether `left` crosses through `right` from the down side of `right` to the upper side which we call it as "cross up".
-- **`\`**: whether `left` crosses down `right`.
-- **`><`**: whether `left` crosses `right`, either up or down.
-- **`<`** / **`<=`** / **`==`** / **`>=`** / **`>`**: For a certain record of the same time, whether the value of `left` is less than / less than or equal to / equal to / larger than or equal to / larger than the value of `right`.
+### Operator: `/`
+
+whether `left` crosses through `right` from the down side of `right` to the upper side which we call it as "cross up".
+
+### Operator: `\`
+
+whether `left` crosses down `right`.
+
+```py
+# Which we call them __dead crosses__
+stock['macd \\ macd.signal']
+```
+
+**PAY ATTENTION**, in the example above, we should escape the backslash, so we've got double backslashes `'\\'`
+
+### Operator: `><`
+
+whether `left` crosses `right`, either up or down.
+
+### Operator: `<` | `<=` | `==` | `>=` | `>`
+
+For a certain record of the same time, whether the value of `left` is less than / less than or equal to / equal to / larger than or equal to / larger than the value of `right`.
 
 ## Errors
 
