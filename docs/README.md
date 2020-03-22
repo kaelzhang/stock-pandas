@@ -5,7 +5,7 @@
 
 # [stock-pandas](https://github.com/kaelzhang/stock-pandas)
 
-A wrapper and a subtle class of `pandas.DataFrame` which supports:
+**stock-pandas** inherits and extends `pandas.DataFrame` to support:
 - Stock Statistics
 - Stock Indicators, including:
   - Trend-following momentum indicators, such as **MA**, **EMA**, **MACD**, **BBI**

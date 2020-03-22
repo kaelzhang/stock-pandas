@@ -1,5 +1,5 @@
 # beta version
-__version__ = '0.14.0'
+__version__ = '0.15.0'
 
 from .dataframe import StockDataFrame  # noqa
 from .common import DirectiveCache     # noqa
