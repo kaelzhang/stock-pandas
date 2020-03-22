@@ -15,6 +15,8 @@ def stock():
 
 
 def test_ma(stock):
+    stock.alias('Open', 'open')
+
     ma = stock['ma:2']
 
     stock = StockDataFrame(stock)
@@ -32,12 +34,13 @@ def test_ma(stock):
         volume=[800]
     ))
 
-    stock = stock.append(new)
+    stock = stock.append(new, ignore_index=True)
     ma2 = stock.exec('ma:2')
 
     print(ma2)
 
     assert list(ma2[1:]) == [*list_ma0, 8.5]
+    assert stock['Open'][0] == 2
 
 
 def test_aliases(stock):
