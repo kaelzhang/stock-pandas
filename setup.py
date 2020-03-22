@@ -19,22 +19,22 @@ def read_requirements(filename):
 
 
 settings = dict(
-    name = 'stock-pandas',
-    packages = [
+    name='stock-pandas',
+    packages=[
         'stock_pandas',
         'stock_pandas.commands',
         'stock_pandas.directive',
         'stock_pandas.math'
     ],
-    version = __version__,
-    author = 'Kael Zhang',
-    author_email = 'i+pypi@kael.me',
-    description = 'The wrapper of `pandas.DataFrame` with stock statistics and indicators support.',
+    version=__version__,
+    author='Kael Zhang',
+    author_email='i+pypi@kael.me',
+    description='The wrapper of `pandas.DataFrame` with stock statistics and indicators support.',  # noqa:E501
     install_requires=read_requirements('requirements.txt'),
     tests_require=read_requirements('test-requirements.txt'),
-    license = 'MIT',
-    keywords = 'pandas pandas-dataframe stock stat indicators macd',
-    url = 'https://github.com/kaelzhang/stock-pandas',
+    license='MIT',
+    keywords='pandas pandas-dataframe stock stat indicators macd',
+    url='https://github.com/kaelzhang/stock-pandas',
     long_description=read('docs', 'README.md'),
     long_description_content_type='text/markdown',
     python_requires='>=3.6',

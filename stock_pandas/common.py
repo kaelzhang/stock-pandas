@@ -2,6 +2,7 @@ from functools import partial
 from typing import Callable
 
 import numpy as np
+from pandas import DataFrame
 
 
 def to_int(name: str, larger_than: int, value: str):
@@ -109,6 +110,19 @@ def copy_stock_metas(source, target):
             KEY_DIRECTIVES_CACHE,
             source_stock_directives_cache
         )
+
+
+def ensure_return_type(cls, method):
+    def helper(self, *args, **kwargs):
+        ret = getattr(super(cls, self), method)(*args, **kwargs)
+
+        copy_stock_metas(self, ret)
+
+        return ret
+
+    helper.__doc__ = getattr(DataFrame, method).__doc__
+
+    setattr(cls, method, helper)
 
 
 def create_meta_property(key, create, self):

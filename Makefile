@@ -1,4 +1,4 @@
-files = stock_pandas test
+files = stock_pandas test *.py
 
 test:
 	pytest -s -v test/test_*.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing

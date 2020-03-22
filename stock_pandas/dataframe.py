@@ -15,6 +15,7 @@ from .directive import parse
 from .common import (
     meta_property,
     copy_stock_metas,
+    ensure_return_type,
 
     KEY_ALIAS_MAP,
     KEY_COLUMNS_INFO_MAP,
@@ -281,3 +282,11 @@ class StockDataFrame(DataFrame):
         _, series = self._get_or_calc_series(directive, self._create_column)
 
         return series
+
+
+METHODS_TO_ENSURE_RETURN_TYPE = [
+    'append'
+]
+
+for method in METHODS_TO_ENSURE_RETURN_TYPE:
+    ensure_return_type(StockDataFrame, method)
