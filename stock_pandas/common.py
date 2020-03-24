@@ -112,9 +112,16 @@ def copy_stock_metas(source, target):
         )
 
 
-def ensure_return_type(cls, method):
+def ensure_return_type(
+    cls,
+    method: Callable,
+    should_apply_constructor: bool
+):
     def helper(self, *args, **kwargs):
         ret = getattr(super(cls, self), method)(*args, **kwargs)
+
+        if should_apply_constructor:
+            ret = cls(ret)
 
         copy_stock_metas(self, ret)
 

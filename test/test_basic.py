@@ -14,6 +14,18 @@ def stock():
     return create_stock()
 
 
+def test_astype(stock):
+    stock = stock.astype({
+        'open': 'float',
+        'close': 'float'
+    })
+
+    assert isinstance(stock, StockDataFrame)
+
+    open0 = stock.iloc[0]['open']
+    assert isinstance(open0, float)
+
+
 def test_ma(stock):
     stock.alias('Open', 'open')
 
@@ -35,6 +47,8 @@ def test_ma(stock):
     ))
 
     stock = stock.append(new, ignore_index=True)
+    assert isinstance(stock, StockDataFrame)
+
     ma2 = stock.exec('ma:2')
 
     print(ma2)

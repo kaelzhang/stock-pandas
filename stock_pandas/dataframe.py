@@ -285,8 +285,9 @@ class StockDataFrame(DataFrame):
 
 
 METHODS_TO_ENSURE_RETURN_TYPE = [
-    'append'
+    ('append', False),
+    ('astype', True)
 ]
 
-for method in METHODS_TO_ENSURE_RETURN_TYPE:
-    ensure_return_type(StockDataFrame, method)
+for method, should_apply_constructor in METHODS_TO_ENSURE_RETURN_TYPE:
+    ensure_return_type(StockDataFrame, method, should_apply_constructor)
