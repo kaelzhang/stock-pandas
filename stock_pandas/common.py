@@ -228,6 +228,15 @@ def rolling_calc(
     fill=np.nan,
     stride: int = 8
 ) -> np.ndarray:
+    """Creates a `period`-period rolling window and apply
+    `func` to the items
+    """
+
+    length = len(array)
+
+    if period > length:
+        return np.repeat(fill, length)
+
     unshifted = np.apply_along_axis(
         func,
         1,

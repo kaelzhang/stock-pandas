@@ -51,10 +51,29 @@ def test_ma(stock):
 
     ma2 = stock.exec('ma:2')
 
-    print(ma2)
+    assert np.isnan(ma2[0])
 
     assert list(ma2[1:]) == [*list_ma0, 8.5]
     assert stock['Open'][0] == 2
+
+
+COMMANDS = [
+    'ma:{}',
+    'macd.signal',
+    'rsi:{}'
+]
+
+
+def test_period_larger_than_size(stock):
+    period = len(stock) + 1
+
+    for command in COMMANDS:
+        directive_str = command.format(period)
+        result = stock.exec(directive_str)
+
+        assert np.all(
+            np.isnan(result)
+        ), directive_str
 
 
 def test_aliases(stock):
