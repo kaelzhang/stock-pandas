@@ -78,6 +78,12 @@ KEY_DIRECTIVES_CACHE = '__stock_directives_cache'
 def copy_stock_metas(source, target):
     columns = target.columns
 
+    # If the new dataframe has been truncated,
+    # Then we need to clean the column info
+
+    # We just set the size of the info to zero to avoid complexity
+    need_clean = len(target) < len(source)
+
     source_aliases_map = getattr(source, KEY_ALIAS_MAP, None)
 
     if source_aliases_map is not None:
@@ -102,7 +108,12 @@ def copy_stock_metas(source, target):
         columns_info_map = {}
         for column, info in source_columns_info_map.items():
             if column in columns:
-                columns_info_map[column] = info
+
+                # Set the size to 0,
+                # which indicates that the column needs to be calculated again
+                columns_info_map[
+                    column
+                ] = info.update(0) if need_clean else info
 
         object.__setattr__(target, KEY_COLUMNS_INFO_MAP, columns_info_map)
 
@@ -149,27 +160,6 @@ def create_meta_property(key, create, self):
 
 def meta_property(key, create):
     return property(partial(create_meta_property, key, create))
-
-
-def clean_columns_info(target, origin):
-    """Cleans the columns info if the new dataframe
-    has been truncated.
-
-    We just set the size of the info to zero to avoid complexity
-    """
-
-    if len(target) >= len(origin):
-        return
-
-    columns_info = getattr(target, KEY_COLUMNS_INFO_MAP, None)
-
-    if columns_info is None:
-        return
-
-    for key, info in columns_info.items():
-        # Set the size to 0,
-        # which indicates that the column needs to be calculated again
-        columns_info[key] = info.update(0)
 
 
 def compare_cross(left, right):

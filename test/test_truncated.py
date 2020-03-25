@@ -35,6 +35,15 @@ def test_drop(stock):
 def test_slice(stock):
     assert get_last(stock['ma:2']) == 7.5
 
-    stock = stock[3:]
+    stock = stock[5:]
     stock = stock.append(get_stock_update())
+    assert get_last(stock['ma:2']) == 8.5
+
+
+def test_iloc_slice(stock):
+    assert get_last(stock['ma:2']) == 7.5
+
+    stock = stock.iloc[5:]
+    stock = stock.append(get_stock_update())
+
     assert get_last(stock['ma:2']) == 8.5

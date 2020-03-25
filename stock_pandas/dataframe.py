@@ -15,7 +15,6 @@ from .directive import parse
 from .common import (
     meta_property,
     copy_stock_metas,
-    clean_columns_info,
     ensure_return_type,
 
     KEY_ALIAS_MAP,
@@ -127,7 +126,6 @@ class StockDataFrame(DataFrame):
             return result
 
         result = StockDataFrame(result)
-        clean_columns_info(result, self)
 
         return result
 
@@ -136,13 +134,6 @@ class StockDataFrame(DataFrame):
         """
 
         return self._get_item_cache(key)
-
-    def drop(self, *args, **kwargs) -> 'StockDataFrame':
-        result = super().drop(*args, **kwargs)
-
-        clean_columns_info(result, self)
-
-        return result
 
     def exec(
         self,
