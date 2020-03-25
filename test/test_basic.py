@@ -1,11 +1,11 @@
-import pandas as pd
 import numpy as np
 import pytest
 
 from stock_pandas import StockDataFrame
 from .common import (
     simple_list,
-    create_stock
+    create_stock,
+    get_stock_update
 )
 
 
@@ -38,13 +38,7 @@ def test_ma(stock):
     assert np.isnan(ma[0])
     assert list(ma[1:]) == list_ma0
 
-    new = pd.DataFrame(dict(
-        open=[8],
-        close=[9],
-        high=[18],
-        low=[7],
-        volume=[800]
-    ))
+    new = get_stock_update()
 
     stock = stock.append(new, ignore_index=True)
     assert isinstance(stock, StockDataFrame)
