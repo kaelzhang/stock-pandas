@@ -2,6 +2,7 @@ from stock_pandas import StockDataFrame
 from pandas import DataFrame, Series
 
 simple_list = [2, 3, 4, 5, 6, 7]
+names = 'abcdef'
 
 
 def create_stock():
@@ -10,7 +11,8 @@ def create_stock():
         'close': [x + 1 for x in simple_list],
         'high': [x + 10 for x in simple_list],
         'low': [x - 1 for x in simple_list],
-        'volume': [x * 100 for x in simple_list]
+        'volume': [x * 100 for x in simple_list],
+        'name': [x for x in names]
     })
 
 
@@ -20,7 +22,8 @@ def get_stock_update():
         close=[9],
         high=[18],
         low=[7],
-        volume=[800]
+        volume=[800],
+        name=['g']
     ))
 
 
