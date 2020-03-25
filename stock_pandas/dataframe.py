@@ -15,6 +15,7 @@ from .directive import parse
 from .common import (
     meta_property,
     copy_stock_metas,
+    clean_columns_info,
     ensure_return_type,
 
     KEY_ALIAS_MAP,
@@ -30,6 +31,16 @@ class ColumnInfo:
         self.size = size
         self.directive = directive
         self.period = period
+
+    def update(self, size) -> 'ColumnInfo':
+        """Creates a new ColumnInfo and update the size
+        """
+
+        return ColumnInfo(
+            size,
+            self.directive,
+            self.period
+        )
 
 
 class StockDataFrame(DataFrame):
@@ -79,6 +90,13 @@ class StockDataFrame(DataFrame):
     ) -> None:
         DataFrame.__init__(self, data, *args, **kwargs)
 
+        if self.columns.nlevels > 1:
+            # For now, I admit,
+            # there are a lot of works to support MultiIndex dataframes
+            raise ValueError(
+                'stock-pandas does not support dataframes with MultiIndex columns'  # noqa:E501
+            )
+
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
 
@@ -89,7 +107,17 @@ class StockDataFrame(DataFrame):
             self.set_index(date_column, inplace=True)
 
     def __getitem__(self, key):
-        key = self._map_key(key)
+        if isinstance(key, str):
+            key = self._map_single_key(key)
+
+            # We just return super __getitem__,
+            # because the result must be series
+            return super().__getitem__(key)
+
+        if isinstance(key, list):
+            key = self._map_keys(key)
+
+        # else: key of another type
 
         result = super().__getitem__(key)
 
@@ -98,7 +126,23 @@ class StockDataFrame(DataFrame):
             # `self._get_or_calc_series()`
             return result
 
-        return StockDataFrame(result)
+        result = StockDataFrame(result)
+        clean_columns_info(result, self)
+
+        return result
+
+    def _direct_get_column(self, key: str):
+        """Gets the column directly from dataframe by key
+        """
+
+        return self._get_item_cache(key)
+
+    def drop(self, *args, **kwargs) -> 'StockDataFrame':
+        result = super().drop(*args, **kwargs)
+
+        clean_columns_info(result, self)
+
+        return result
 
     def exec(
         self,
@@ -162,52 +206,38 @@ class StockDataFrame(DataFrame):
 
         self._stock_aliases_map[as_name] = src_name
 
-    def _map_key(self, key):
-        if isinstance(key, str):
-            return self._map_keys([key])[0]
-
-        if isinstance(key, list):
-            return self._map_keys(key)
-
-        return key
-
     def _map_keys(self, keys):
-        columns = self.columns
+        return [
+            self._map_single_key(key)
+            for key in keys
+        ]
 
-        mapped = []
+    def _map_single_key(self, key):
+        if not isinstance(key, str):
+            # It might be an `pandas.DataFrame` indexer type,
+            # or an KeyError which we should let pandas raise
+            return key
 
-        for key in keys:
-            if not isinstance(key, str):
-                # It might be an `pandas.DataFrame` indexer type,
-                # or an KeyError which we should let pandas raise
-                mapped.append(key)
-                continue
-
-            if key in columns:
-                # There exists a column named `key`
-                mapped.append(key)
-                continue
-
+        if key in self._stock_aliases_map:
             # Map alias, if the key is an alias
-            alias = self._stock_aliases_map.get(key, None)
+            key = self._stock_aliases_map[key]
 
-            if alias is not None:
-                mapped.append(alias)
-                continue
+        if self._is_normal_column(key):
+            # There exists a column named `key`,
+            # and it is a normal column
+            return key
 
-            # Not exists
-            directive = self._parse_directive(key)
+        # Not exists
+        directive = self._parse_directive(key)
 
-            # It is a valid directive
-            # If the column exists, then fulfill it,
-            #   else create it
-            column_name, _ = self._get_or_calc_series(directive, True)
+        # It is a valid directive
+        # If the column exists, then fulfill it,
+        #   else create it
+        column_name, _ = self._get_or_calc_series(directive, True)
 
-            # Append the real column name to the mapped key,
-            #   So `pandas.DataFrame.__getitem__` could index the right column
-            mapped.append(column_name)
-
-        return mapped
+        # Append the real column name to the mapped key,
+        #   So `pandas.DataFrame.__getitem__` could index the right column
+        return column_name
 
     def _parse_directive(self, directive_str: str):
         return parse(directive_str, self._stock_directives_cache)
@@ -254,23 +284,35 @@ class StockDataFrame(DataFrame):
         column_info = self._stock_columns_info_map.get(column_name)
         size = len(self)
 
-        series = self[column_name]
+        array = self._direct_get_column(column_name).to_numpy()
 
         if size == column_info.size:
             # Already fulfilled
-            return series.to_numpy()
+            return array
 
-        delta = size - column_info.size
-        offset_slice = slice(- column_info.period - delta + 1, None)
-        fulfill_slice = slice(- delta, None)
+        neg_delta = column_info.size - size
 
-        partial, _ = column_info.directive.run(self, offset_slice)
+        # Sometimes, there is not enough items to calculate
+        calc_delta = max(
+            neg_delta - column_info.period + 1,
+            - size
+        )
 
-        series[fulfill_slice] = partial[fulfill_slice]
+        calc_slice = slice(calc_delta, None)
+        fulfill_slice = slice(neg_delta, None)
+
+        partial, _ = column_info.directive.run(self, calc_slice)
+
+        if neg_delta == calc_delta:
+            array = partial
+        else:
+            array[fulfill_slice] = partial[fulfill_slice]
+
+        self[column_name] = array
 
         column_info.size = size
 
-        return series.to_numpy()
+        return array
 
     def _is_normal_column(self, column_name):
         return column_name in self.columns and \

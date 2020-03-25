@@ -83,8 +83,9 @@ def copy_stock_metas(source, target):
     if source_aliases_map is not None:
         aliases_map = {}
         for alias, column in source_aliases_map.items():
-            # Column `column` might be dropped in `target`,
-            # So we need to check it
+            # Column `column` might be dropped in `target`
+            # by dataframe.drop(columns=some_columns)
+            # so we need to check it
 
             # TODO: if alias is in columns, something wrong happened
             # - support .iloc, loc, and other indexing and setting methods
@@ -150,7 +151,13 @@ def meta_property(key, create):
     return property(partial(create_meta_property, key, create))
 
 
-def check_columns_info(target, origin):
+def clean_columns_info(target, origin):
+    """Cleans the columns info if the new dataframe
+    has been truncated.
+
+    We just set the size of the info to zero to avoid complexity
+    """
+
     if len(target) >= len(origin):
         return
 

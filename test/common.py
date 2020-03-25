@@ -1,5 +1,5 @@
 from stock_pandas import StockDataFrame
-import pandas as pd
+from pandas import DataFrame, Series
 
 simple_list = [2, 3, 4, 5, 6, 7]
 
@@ -15,7 +15,7 @@ def create_stock():
 
 
 def get_stock_update():
-    return pd.DataFrame(dict(
+    return DataFrame(dict(
         open=[8],
         close=[9],
         high=[18],
@@ -24,5 +24,10 @@ def get_stock_update():
     ))
 
 
-def get_last(stock):
-    return stock[len(stock) - 1]
+def get_last(series):
+    index = len(series) - 1
+
+    if isinstance(series, Series):
+        series = series.to_numpy()
+
+    return series[index]

@@ -1,5 +1,7 @@
 import numpy as np
+import itertools
 import pytest
+import pandas as pd
 
 from stock_pandas import StockDataFrame
 from .common import (
@@ -24,6 +26,10 @@ def test_astype(stock):
 
     open0 = stock.iloc[0]['open']
     assert isinstance(open0, float)
+
+
+def test_indexing_by_callable(stock):
+    assert isinstance(stock[lambda df: 'open'], pd.Series)
 
 
 def test_ma(stock):
@@ -65,3 +71,19 @@ def test_aliases(stock):
 def test_invalid_indexing(stock):
     with pytest.raises(KeyError, match='None'):
         stock[[1]]
+
+
+def test_multi_index():
+    tuples = list(itertools.product(
+        ['foo', 'bar'],
+        ['one', 'two']
+    ))
+
+    columns = pd.MultiIndex.from_tuples(tuples, names=['first', 'second'])
+
+    with pytest.raises(ValueError, match='MultiIndex'):
+        StockDataFrame(
+            np.random.randn(3, 4),
+            index=['A', 'B', 'C'],
+            columns=columns
+        )
