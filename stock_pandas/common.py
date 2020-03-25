@@ -76,13 +76,16 @@ KEY_DIRECTIVES_CACHE = '__stock_directives_cache'
 
 
 def copy_stock_metas(source, target):
-    columns = source.columns
+    columns = target.columns
 
     source_aliases_map = getattr(source, KEY_ALIAS_MAP, None)
 
     if source_aliases_map is not None:
         aliases_map = {}
         for alias, column in source_aliases_map.items():
+            # Column `column` might be dropped in `target`,
+            # So we need to check it
+
             # TODO: if alias is in columns, something wrong happened
             # - support .iloc, loc, and other indexing and setting methods
             if column in columns:
@@ -145,6 +148,21 @@ def create_meta_property(key, create, self):
 
 def meta_property(key, create):
     return property(partial(create_meta_property, key, create))
+
+
+def check_columns_info(target, origin):
+    if len(target) >= len(origin):
+        return
+
+    columns_info = getattr(target, KEY_COLUMNS_INFO_MAP, None)
+
+    if columns_info is None:
+        return
+
+    for key, info in columns_info.items():
+        # Set the size to 0,
+        # which indicates that the column needs to be calculated again
+        columns_info[key] = info.update(0)
 
 
 def compare_cross(left, right):
