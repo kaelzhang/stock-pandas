@@ -294,25 +294,28 @@ RSV = rsv(period_rsv)
 %J = 3 * %K - 2 * %D
 ```
 
-And the `ema` here is the exponential weighted moving average with initial value as `50.0`.
+And the `ema` here is the exponential weighted moving average with initial value as `init_value`.
 
 PAY ATTENTION that the calculation forumla is different from wikipedia, but it is much popular and more widely used by the industry.
 
 **Directive Arguments**:
 
 ```
-kdj.k:<period_rsv>,<period_k>
-kdj.d:<period_rsv>,<period_k>,<period_d>
-kdj.j:<period_rsv>,<period_k>,<period_d>
+kdj.k:<period_rsv>,<period_k>,<init_value>
+kdj.d:<period_rsv>,<period_k>,<period_d>,<init_value>
+kdj.j:<period_rsv>,<period_k>,<period_d>,<init_value>
 ```
 
 - **period_rsv?** `int=9` The period for calculating RSV, which is used for K%
 - **period_k?** `int=3` The period for calculating the EMA of RSV, which is used for K%
 - **period_d?** `int=3` The period for calculating the EMA of K%, which is used for D%
+- **init_value?** `float=50.0` The initial value for calculating ema. Trading softwares of different companies usually use different initial values each of which is usually `0.0`, `50.0` or `100.0`.
 
 ```py
-# The k series of KDJ 933
-stock['kdj.k']
+# The %D series of KDJ
+stock['kdj.d']
+# which is equivalent to
+stock['kdj.d:9,3,3,50.0']
 
 # The KDJ serieses of with parameters 9, 9, and 9
 stock[['kdj.k:9,9', 'kdj.d:9,9', 'kdj.j:9,9,9']]

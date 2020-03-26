@@ -60,7 +60,11 @@ KDJ_WEIGHT_K = 3.0
 KDJ_WEIGHT_D = 2.0
 
 
-def ewma(array, period):
+def ewma(
+    array: np.ndarray,
+    period: int,
+    init: float
+):
     """Exponentially weighted moving average
     https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
 
@@ -71,7 +75,7 @@ def ewma(array, period):
 
     # If there is no value k or value d of the previous day,
     # then use 50.0
-    k = 50.0
+    k = init
     alpha = 1. / period
     base = 1 - alpha
 
@@ -80,39 +84,61 @@ def ewma(array, period):
         yield k
 
 
-def kdj_k(df, s, period_rsv, period_k):
+def kdj_k(df, s, period_rsv, period_k, init):
     """Gets KDJ K
     """
 
     rsv = df.exec(f'rsv:{period_rsv}')[s]
 
-    return np.fromiter(ewma(rsv, period_k), float), period_rsv
+    return np.fromiter(ewma(rsv, period_k, init), float), period_rsv
 
 
-def kdj_d(df, s, period_rsv, period_k, period_d):
-    k = df.exec(f'kdj.k:{period_rsv},{period_k}')[s]
+def kdj_d(df, s, period_rsv, period_k, period_d, init):
+    k = df.exec(f'kdj.k:{period_rsv},{period_k},{init}')[s]
 
-    return np.fromiter(ewma(k, period_d), float), period_rsv
+    return np.fromiter(ewma(k, period_d, init), float), period_rsv
 
 
-def kdj_j(df, s, period_rsv, period_k, period_d):
-    k = df.exec(f'kdj.k:{period_rsv},{period_k}')[s]
-    d = df.exec(f'kdj.d:{period_rsv},{period_k},{period_d}')[s]
+def kdj_j(df, s, period_rsv, period_k, period_d, init):
+    k = df.exec(f'kdj.k:{period_rsv},{period_k},{init}')[s]
+    d = df.exec(f'kdj.d:{period_rsv},{period_k},{period_d},{init}')[s]
 
     return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period_rsv
 
 
-# The default args for KDJ is 9, 3, 3
-arg_period_k = (3, period_to_int)
+def init_to_float(value):
+    try:
+        value = float(value)
+    except Exception:
+        raise ValueError(
+            f'init_value must be a float, but got `{value}`'
+        )
 
-args_k = [
+    if value < 0. or value > 100.:
+        raise ValueError(
+            f'init_value must be in between 0 and 100, but got `{value}`'
+        )
+
+    return value
+
+
+arg_period_k = (3, period_to_int)
+kdj_common_args = [
     (9, period_to_int),
     arg_period_k
 ]
+arg_init = (50., init_to_float)
 
+args_k = [
+    *kdj_common_args,
+    arg_init
+]
+
+# The default args for KDJ is 9, 3, 3, 50.
 args_dj = [
-    *args_k,
-    arg_period_k
+    *kdj_common_args,
+    arg_period_k,
+    arg_init
 ]
 
 

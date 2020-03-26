@@ -112,3 +112,6 @@ def test_kdj(stock):
     assert stock['kdj.j']['2020-02-07'] > 120
     assert stock['kdj.j']['2020-01-31'] < -1
     assert stock['kdj.j']['2020-02-24'] < -14
+
+    kdjj = stock['kdj.j']['2020-02-07']
+    assert stock['kdj.j:9,3,3,50']['2020-02-07'] == kdjj

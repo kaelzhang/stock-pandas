@@ -92,7 +92,9 @@ def test_value_error():
         ('ma.nosub', 'no sub'),
         ('macd.unknown', 'unknown sub'),
         ('style:cartoon', 'should be either'),
-        ('increase:close,5,3', 'direction')
+        ('increase:close,5,3', 'direction'),
+        ('kdj.j:9,3,3,a', 'a float'),
+        ('kdj.j:9,3,3,200', 'in between')
     ]
 
     for directive_str, err_msg in CASES:
