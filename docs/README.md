@@ -91,6 +91,11 @@ stock.exec('ma:5', create_column=True) # returns a numpy ndarray
 stock.exec('ma:20')
 ```
 
+The difference between `stock[directive]` and `stock.exec(directive)` is that
+- the former will create a new column for the result of `directive` as a cache for later use, while `stock.exec(directive)` does not unless we pass the parameter `create_column` as `True`
+- the former one accepts other pandas indexing targets, while `stock.exec(directive)` only accepts a valid **stock-pandas** directive string
+- the former one returns a `pandas.Series` or `StockDataFrame` object while the latter one returns an [`np.ndarray`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html)
+
 ### stock.alias(alias: str, name: str) -> None
 
 Defines column alias or directive alias
