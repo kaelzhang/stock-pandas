@@ -146,8 +146,8 @@ stock['boll']
 # This returns a series of bool type
 stock['kdj.j < 0']
 
-# 9-period kdj k cross up 3-day kdj d
-stock['kdj.k:9 / kdj.d:3']
+# kdj %K cross up kdj %D
+stock['kdj.k / kdj.d']
 
 # 5-period simple moving average
 stock['ma:5']
@@ -285,22 +285,37 @@ Calculates the raw stochastic value which is often used to calculate KDJ
 
 ### `kdj`, stochastic oscillator
 
+The variety of [Stochastic Oscillator](https://en.wikipedia.org/wiki/Stochastic_oscillator) indicator created by [Dr. George Lane](https://en.wikipedia.org/wiki/George_Lane_(technical_analyst)), which follows the formula:
+
 ```
-kdj.k:<param_k>
-kdj.d:<param_d>
-kdj.j:<param_j>
+RSV = rsv(period_rsv)
+%K = ema(RSV, period_k)
+%D = ema(%K, period_d)
+%J = 3 * %K - 2 * %D
 ```
 
-- **param_k?** `int=9`
-- **param_d?** `int=9`
-- **param_j?** `int=9`
+And the `ema` here is the exponential weighted moving average with initial value as `50.0`.
+
+PAY ATTENTION that the calculation forumla is different from wikipedia, but it is much popular and more widely used by the industry.
+
+**Directive Arguments**:
+
+```
+kdj.k:<period_rsv>,<period_k>
+kdj.d:<period_rsv>,<period_k>,<period_d>
+kdj.j:<period_rsv>,<period_k>,<period_d>
+```
+
+- **period_rsv?** `int=9` The period for calculating RSV, which is used for K%
+- **period_k?** `int=3` The period for calculating the EMA of RSV, which is used for K%
+- **period_d?** `int=3` The period for calculating the EMA of K%, which is used for D%
 
 ```py
-# The k series of KDJ 999
+# The k series of KDJ 933
 stock['kdj.k']
 
-# The KDJ serieses of with parameters 9, 3, and 3
-stock[['kdj.k', 'kdj.d:3', 'kdj.j:3']]
+# The KDJ serieses of with parameters 9, 9, and 9
+stock[['kdj.k:9,9', 'kdj.d:9,9', 'kdj.j:9,9,9']]
 ```
 
 ### `rsi`, Relative Strength Index

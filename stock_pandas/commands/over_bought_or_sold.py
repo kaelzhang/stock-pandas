@@ -58,43 +58,63 @@ COMMANDS['rsv'] = CommandPreset(
 
 KDJ_WEIGHT_K = 3.0
 KDJ_WEIGHT_D = 2.0
-KDJ_WEIGHT_BASE = KDJ_WEIGHT_D / KDJ_WEIGHT_K
-KDJ_WEIGHT_INCREASE = 1.0 / KDJ_WEIGHT_K
 
 
-def kd(series):
+def ewma(array, period):
+    """Exponentially weighted moving average
+    https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+
+    with
+    - init value as `50.0`
+    - alpha as `1 / period`
+    """
+
     # If there is no value k or value d of the previous day,
     # then use 50.0
     k = 50.0
+    alpha = 1. / period
+    base = 1 - alpha
 
-    for i in series:
-        k = KDJ_WEIGHT_BASE * k + KDJ_WEIGHT_INCREASE * i
+    for i in array:
+        k = base * k + alpha * i
         yield k
 
 
-def kdj_k(df, s, period):
+def kdj_k(df, s, period_rsv, period_k):
     """Gets KDJ K
     """
 
-    rsv = df.exec(f'rsv:{period}')[s]
+    rsv = df.exec(f'rsv:{period_rsv}')[s]
 
-    return np.fromiter(kd(rsv), float), period
-
-
-def kdj_d(df, s, period):
-    k = df.exec(f'kdj.k:{period}')[s]
-
-    return np.fromiter(kd(k), float), period
+    return np.fromiter(ewma(rsv, period_k), float), period_rsv
 
 
-def kdj_j(df, s, period):
-    k = df.exec(f'kdj.k:{period}')[s]
-    d = df.exec(f'kdj.d:{period}')[s]
+def kdj_d(df, s, period_rsv, period_k, period_d):
+    k = df.exec(f'kdj.k:{period_rsv},{period_k}')[s]
 
-    return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period
+    return np.fromiter(ewma(k, period_d), float), period_rsv
 
 
-kdj_arg_period = [(9, period_to_int)]
+def kdj_j(df, s, period_rsv, period_k, period_d):
+    k = df.exec(f'kdj.k:{period_rsv},{period_k}')[s]
+    d = df.exec(f'kdj.d:{period_rsv},{period_k},{period_d}')[s]
+
+    return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period_rsv
+
+
+# The default args for KDJ is 9, 3, 3
+arg_period_k = (3, period_to_int)
+
+args_k = [
+    (9, period_to_int),
+    arg_period_k
+]
+
+args_dj = [
+    *args_k,
+    arg_period_k
+]
+
 
 COMMANDS['kdj'] = CommandPreset(
     # We must specify sub command for kdj, such as
@@ -102,17 +122,17 @@ COMMANDS['kdj'] = CommandPreset(
     subs_map=dict(
         k=CommandPreset(
             kdj_k,
-            kdj_arg_period
+            args_k
         ),
 
         d=CommandPreset(
             kdj_d,
-            kdj_arg_period
+            args_dj
         ),
 
         j=CommandPreset(
             kdj_j,
-            kdj_arg_period
+            args_dj
         )
     )
 )
