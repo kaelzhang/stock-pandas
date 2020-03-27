@@ -1,6 +1,8 @@
 from typing import (
     Tuple,
-    Type
+    Type,
+    Union,
+    List
 )
 
 from pandas import (
@@ -68,7 +70,7 @@ class StockDataFrame(DataFrame):
 
         return StockDataFrame
 
-    def __finalize__(self, other, *args, **kwargs):
+    def __finalize__(self, other, *args, **kwargs) -> 'StockDataFrame':
         """This method overrides `DataFrame.__finalize__`
         which ensures the meta info of StockDataFrame
         """
@@ -105,7 +107,7 @@ class StockDataFrame(DataFrame):
             self[date_column] = to_datetime(self[date_column])
             self.set_index(date_column, inplace=True)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
         if isinstance(key, str):
             key = self._map_single_key(key)
 
@@ -129,7 +131,7 @@ class StockDataFrame(DataFrame):
 
         return result
 
-    def _direct_get_column(self, key: str):
+    def _direct_get_column(self, key: str) -> Series:
         """Gets the column directly from dataframe by key
         """
 
@@ -197,7 +199,7 @@ class StockDataFrame(DataFrame):
 
         self._stock_aliases_map[as_name] = src_name
 
-    def _map_keys(self, keys):
+    def _map_keys(self, keys) -> List:
         return [
             self._map_single_key(key)
             for key in keys
@@ -320,7 +322,7 @@ class StockDataFrame(DataFrame):
 
         return array
 
-    def _is_normal_column(self, column_name):
+    def _is_normal_column(self, column_name) -> bool:
         return column_name in self.columns and \
             column_name not in self._stock_columns_info_map
 

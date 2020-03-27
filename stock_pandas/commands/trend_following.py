@@ -5,6 +5,7 @@
 from .base import (
     COMMANDS,
     CommandPreset,
+    ReturnType,
 
     arg_period
 )
@@ -23,7 +24,7 @@ from stock_pandas.math.ma import (
 # ----------------------------------------------------
 
 
-def ma(df, s, period, column):
+def ma(df, s, period, column) -> ReturnType:
     """Gets simple moving average
 
     Args:
@@ -61,7 +62,7 @@ COMMANDS['ma'] = CommandPreset(ma, ma_args)
 # ema
 # ----------------------------------------------------
 
-def ema(df, s, period, column):
+def ema(df, s, period, column) -> ReturnType:
     """Gets Exponential Moving Average
     """
 
@@ -77,14 +78,14 @@ COMMANDS['ema'] = CommandPreset(ema, ma_args)
 # macd
 # ----------------------------------------------------
 
-def macd(df, s, fast_period, slow_period):
+def macd(df, s, fast_period, slow_period) -> ReturnType:
     fast = df.exec(f'ema:{fast_period},close', False)[s]
     slow = df.exec(f'ema:{slow_period},close', False)[s]
 
     return fast - slow, fast_period
 
 
-def macd_signal(df, s, fast_period, slow_period, signal_period):
+def macd_signal(df, s, fast_period, slow_period, signal_period) -> ReturnType:
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
 
     return calc_ewma(macd, signal_period), fast_period
@@ -93,7 +94,13 @@ def macd_signal(df, s, fast_period, slow_period, signal_period):
 MACD_HISTOGRAM_TIMES = 2.0
 
 
-def macd_histogram(df, s, fast_period, slow_period, signal_period):
+def macd_histogram(
+    df,
+    s,
+    fast_period,
+    slow_period,
+    signal_period
+) -> ReturnType:
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
     macd_s = df.exec(
         f'macd.signal:{fast_period},{slow_period},{signal_period}'
@@ -137,7 +144,7 @@ COMMANDS['macd'] = CommandPreset(
 # bbi
 # ----------------------------------------------------
 
-def bbi(df, s, a, b, c, d):
+def bbi(df, s, a, b, c, d) -> ReturnType:
     """Calculates BBI (Bull and Bear Index) which is the average of
     ma:3, ma:6, ma:12, ma:24 by default
     """

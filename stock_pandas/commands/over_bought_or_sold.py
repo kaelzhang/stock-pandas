@@ -6,6 +6,7 @@ import numpy as np
 from .base import (
     COMMANDS,
     CommandPreset,
+    ReturnType,
 
     arg_period
 )
@@ -22,7 +23,7 @@ from stock_pandas.math.ma import (
 # rsv
 # ----------------------------------------------------
 
-def rsv(df, s, period):
+def rsv(df, s, period) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
 
@@ -84,7 +85,7 @@ def ewma(
         yield k
 
 
-def kdj_k(df, s, period_rsv, period_k, init):
+def kdj_k(df, s, period_rsv, period_k, init) -> ReturnType:
     """Gets KDJ K
     """
 
@@ -93,25 +94,25 @@ def kdj_k(df, s, period_rsv, period_k, init):
     return np.fromiter(ewma(rsv, period_k, init), float), period_rsv
 
 
-def kdj_d(df, s, period_rsv, period_k, period_d, init):
+def kdj_d(df, s, period_rsv, period_k, period_d, init) -> ReturnType:
     k = df.exec(f'kdj.k:{period_rsv},{period_k},{init}')[s]
 
     return np.fromiter(ewma(k, period_d, init), float), period_rsv
 
 
-def kdj_j(df, s, period_rsv, period_k, period_d, init):
+def kdj_j(df, s, period_rsv, period_k, period_d, init) -> ReturnType:
     k = df.exec(f'kdj.k:{period_rsv},{period_k},{init}')[s]
     d = df.exec(f'kdj.d:{period_rsv},{period_k},{period_d},{init}')[s]
 
     return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period_rsv
 
 
-def init_to_float(value):
+def init_to_float(raw_value: str) -> float:
     try:
-        value = float(value)
+        value = float(raw_value)
     except Exception:
         raise ValueError(
-            f'init_value must be a float, but got `{value}`'
+            f'init_value must be a float, but got `{raw_value}`'
         )
 
     if value < 0. or value > 100.:
@@ -167,7 +168,7 @@ COMMANDS['kdj'] = CommandPreset(
 # rsi
 # ----------------------------------------------------
 
-def rsi(df, s, period):
+def rsi(df, s, period) -> ReturnType:
     """Calculates N-period RSI (Relative Strength Index)
 
     https://en.wikipedia.org/wiki/Relative_strength_index

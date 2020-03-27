@@ -8,7 +8,8 @@ import numpy as np
 
 from .base import (
     COMMANDS,
-    CommandPreset
+    CommandPreset,
+    ReturnType
 )
 
 from stock_pandas.common import (
@@ -20,7 +21,7 @@ from stock_pandas.common import (
 )
 
 
-def column(df, s, column):
+def column(df, s, column) -> ReturnType:
     """Gets the series of the column named `column`
     """
 
@@ -37,7 +38,7 @@ POSITIVE_INFINITY = float('inf')
 NEGATIVE_INFINITY = float('-inf')
 
 
-def check_increase(direction, current, ndarray):
+def check_increase(direction, current, ndarray) -> bool:
     for value in ndarray:
         if (value - current) * direction > 0:
             current = value
@@ -47,7 +48,7 @@ def check_increase(direction, current, ndarray):
     return True
 
 
-def increase(df, s, on_what: str, repeat: int, direction: int):
+def increase(df, s, on_what: str, repeat: int, direction: int) -> ReturnType:
     period = repeat + 1
 
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
@@ -76,7 +77,7 @@ styles = dict(
 )
 
 
-def style(df, s, style: str):
+def style(df, s, style: str) -> ReturnType:
     return df[s].apply(styles[style], axis=1).to_numpy(), 1
 
 
@@ -86,7 +87,7 @@ COMMANDS['style'] = CommandPreset(
 )
 
 
-def repeat(df, s, command_str: str, repeat: int):
+def repeat(df, s, command_str: str, repeat: int) -> ReturnType:
     result = df.exec(command_str)[s]
 
     if repeat == 1:

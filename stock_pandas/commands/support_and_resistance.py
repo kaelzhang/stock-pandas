@@ -7,7 +7,8 @@ import numpy as np
 
 from .base import (
     COMMANDS,
-    CommandPreset
+    CommandPreset,
+    ReturnType
 )
 
 from stock_pandas.common import (
@@ -22,13 +23,13 @@ from stock_pandas.common import (
 # boll
 # ----------------------------------------------------
 
-def boll(df, s, period, column):
+def boll(df, s, period, column) -> ReturnType:
     """Gets the mid band of bollinger bands
     """
     return df.exec(f'ma:{period},{column}')[s], period
 
 
-def boll_band(upper: bool, df, s, period, times, column):
+def boll_band(upper: bool, df, s, period, times, column) -> ReturnType:
     """Gets the upper band or the lower band of bolinger bands
 
     Args:

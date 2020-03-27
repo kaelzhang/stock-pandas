@@ -11,7 +11,7 @@ class DirectiveError(Exception):
     column: int
     message: str
 
-    def __str__(self):
+    def __str__(self) -> str:
         # The column of Python SyntaxError is buggy
         # So, do not use Python built-in SyntaxError.
 
@@ -30,7 +30,7 @@ DirectiveSyntaxError: {self.message}'''
 
 
 class DirectiveSyntaxError(DirectiveError):
-    def __init__(self, directive, message_template: str, token):
+    def __init__(self, directive, message_template: str, token) -> None:
         line, column = token.loc
 
         self.directive = directive
@@ -39,12 +39,12 @@ class DirectiveSyntaxError(DirectiveError):
         self.column = column
 
 
-def unexpected_token(directive, token):
+def unexpected_token(directive, token) -> DirectiveSyntaxError:
     return DirectiveSyntaxError(directive, 'unexpected token "{}"', token)
 
 
 class DirectiveValueError(DirectiveError):
-    def __init__(self, directive, message, loc):
+    def __init__(self, directive, message, loc) -> None:
         self.directive = directive
         self.message = message
 
