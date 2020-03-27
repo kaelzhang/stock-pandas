@@ -267,9 +267,8 @@ class StockDataFrame(DataFrame):
                 directive,
                 period
             )
-            # self[name] = array
+
             self._set_new_item(name, array)
-            # self._set_item(name, array)
 
         return name, array
 
