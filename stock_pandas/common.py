@@ -1,16 +1,20 @@
 from functools import partial
-from typing import Callable
+from typing import (
+    Callable,
+    Optional,
+    Tuple
+)
 
 import numpy as np
 from pandas import DataFrame
 
 
-def to_int(name: str, larger_than: int, value: str):
+def to_int(name: str, larger_than: int, raw_value: str) -> int:
     try:
-        value = int(value)
+        value = int(raw_value)
     except ValueError:
         raise ValueError(
-            f'{name} must be a positive int, but got `{value}`'
+            f'{name} must be a positive int, but got `{raw_value}`'
         )
 
     if value <= larger_than:
@@ -24,7 +28,7 @@ times_to_int = partial(to_int, 'times', 0)
 repeat_to_int = partial(to_int, 'repeat', 0)
 
 
-def create_enum(choices: list, name: str, value: str):
+def create_enum(choices: list, name: str, value: str) -> str:
     if value in choices:
         return value
 
@@ -75,7 +79,7 @@ KEY_COLUMNS_INFO_MAP = '__stock_columns_info_map'
 KEY_DIRECTIVES_CACHE = '__stock_directives_cache'
 
 
-def copy_stock_metas(source, target):
+def copy_stock_metas(source, target) -> None:
     columns = target.columns
 
     # If the new dataframe has been truncated,
@@ -129,9 +133,9 @@ def copy_stock_metas(source, target):
 
 def ensure_return_type(
     cls,
-    method: Callable,
+    method: str,
     should_apply_constructor: bool
-):
+) -> None:
     def helper(self, *args, **kwargs):
         ret = getattr(super(cls, self), method)(*args, **kwargs)
 
@@ -162,7 +166,10 @@ def meta_property(key, create):
     return property(partial(create_meta_property, key, create))
 
 
-def compare_cross(left, right):
+def compare_cross(
+    left: np.ndarray,
+    right: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     less = right < left
 
     # matrix or vector of all False value
@@ -178,7 +185,7 @@ def compare_cross(left, right):
 ARGS_SEPARATOR = ','
 
 
-def join_args(args: list):
+def join_args(args: list) -> str:
     return ARGS_SEPARATOR.join([
         str(arg) for arg in args
     ])
@@ -239,8 +246,11 @@ def rolling_calc(
 DEFAULT_ARG_VALUE = ''
 
 
-def command_full_name(name, sub):
-    return f'{name}.{sub}' if sub else name
+def command_full_name(
+    name: str,
+    sub: Optional[str]
+) -> str:
+    return name if sub is None else f'{name}.{sub}'
 
 
 NONE_TUPLE = (None, None)

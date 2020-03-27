@@ -1,10 +1,13 @@
 import re
 from typing import (
     Tuple,
-    List
+    List,
+    Optional
 )
 
 from .tokenizer import (
+    Token,
+    Loc,
     Tokenizer,
     STR_COLON,
     STR_COMMA,
@@ -36,7 +39,7 @@ class Node:
 
     label: int
     data: Tuple
-    loc: Tuple[int, int]
+    loc: Loc
 
     def __init__(self, t, data, loc):
         self.label = t
@@ -45,12 +48,16 @@ class Node:
 
 
 class Parser:
-    def __init__(self, directive_str: str):
+    _input: str
+    _token: Optional[Token]
+    _tokens: Optional[Tokenizer]
+
+    def __init__(self, directive_str: str) -> None:
         self._input = directive_str
         self._tokens = None
         self._token = None
 
-    def parse(self):
+    def parse(self) -> Node:
         self._tokens = Tokenizer(self._input)
 
         self._next_token()
@@ -115,13 +122,13 @@ class Parser:
             loc
         )
 
-    def _expect_command_name(self) -> Tuple[Node, Node]:
+    def _expect_command_name(self) -> Tuple[Node, Optional[Node]]:
         self._check_normal()
 
         text = self._token.value
         loc = self._token.loc
 
-        m = REGEX_DOT_WHITESPACES.search(text)
+        m = REGEX_DOT_WHITESPACES.search(text)  # type: ignore
 
         if m is None:
             # There is no dot -> no sub command name
@@ -142,13 +149,13 @@ class Parser:
             loc
         ), sub
 
-    def _check_normal(self):
+    def _check_normal(self) -> None:
         self._no_end()
 
         if self._token.special:
             raise self._unexpected()
 
-    def _no_end(self):
+    def _no_end(self) -> None:
         if self._token.EOF:
             raise DirectiveSyntaxError(
                 self._input,
@@ -202,17 +209,17 @@ class Parser:
     def _is(self, value: str) -> bool:
         return self._token.value == value
 
-    def _unexpected(self):
+    def _unexpected(self) -> DirectiveSyntaxError:
         return unexpected_token(self._input, self._token)
 
-    def _expect(self, value):
+    def _expect(self, value) -> None:
         self._no_end()
 
         if not self._is(value):
             raise self._unexpected()
 
     def _next_token(self):
-        self._token = next(self._tokens)
+        self._token = next(self._tokens)  # type: ignore
 
     def _expect_operator(self) -> Node:
         self._no_end()
@@ -240,7 +247,7 @@ class Parser:
 
         try:
             token = self._token
-            num = float(token.value)
+            num = float(token.value)  # type: ignore
             self._next_token()
 
             return Node(
@@ -252,7 +259,7 @@ class Parser:
         except ValueError:
             return self._expect_command()
 
-    def _expect_eof(self):
+    def _expect_eof(self) -> None:
         if self._token.EOF:
             return
 

@@ -1,7 +1,8 @@
 import re
 from typing import (
     Optional,
-    Tuple
+    Tuple,
+    Iterator
 )
 
 # operators
@@ -19,11 +20,17 @@ STR_PARAN_R = ')'
 
 REGEX_NOT_WHITESPACE = re.compile(r'[^\s]', re.A)
 
+Loc = Tuple[int, int]
+
 
 class Token:
+    __slots__ = (
+        'value', 'loc', 'special', 'EOF'
+    )
+
     def __init__(
         self,
-        loc: Tuple[int, int],
+        loc: Loc,
         value: Optional[str] = None,
         special: Optional[bool] = False,
         EOF: Optional[bool] = False
@@ -34,7 +41,7 @@ class Token:
         self.EOF = EOF
 
 
-def create_normal_token(text, line, col):
+def create_normal_token(text, line, col) -> Optional[Token]:
     if not text:
         return
 
@@ -56,7 +63,7 @@ def create_normal_token(text, line, col):
 
 
 class Tokenizer:
-    def __init__(self, input: str):
+    def __init__(self, input: str) -> None:
         # We should not strip input here, or pos will be wrong
         self._input = input
         self._length = len(input)
@@ -64,31 +71,31 @@ class Tokenizer:
 
         self._reset()
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator['Token']:
         self._reset()
         return self
 
-    def __next__(self):
+    def __next__(self) -> Token:
         if self._ended:
             raise StopIteration()
 
         return self._next()
 
-    def _reset(self):
+    def _reset(self) -> None:
         self._pos = 0
         self._line = 1
         self._column = 1
 
         self._ended = False
 
-    def _end(self):
+    def _end(self) -> Token:
         self._ended = True
         return Token(
             loc=(self._line, self._column),
             EOF=True
         )
 
-    def _next(self):
+    def _next(self) -> Token:
         token = self._saved_token
         if token:
             self._saved_token = None

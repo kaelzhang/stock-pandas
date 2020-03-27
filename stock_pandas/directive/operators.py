@@ -1,38 +1,63 @@
+from numpy import ndarray
 from stock_pandas.common import compare_cross
 
 
-def cross(left, right):
+def cross(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     cross, _ = compare_cross(left, right)
     return cross
 
 
-def cross_up(left, right):
+def cross_up(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     cross, less = compare_cross(left, right)
     return cross & less
 
 
-def cross_down(left, right):
+def cross_down(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     cross, less = compare_cross(left, right)
     return cross & ~ less
 
 
-def less_than(left, right):
+def less_than(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     return left < right
 
 
-def less_than_or_equal(left, right):
+def less_than_or_equal(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     return left <= right
 
 
-def equal(left, right):
+def equal(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     return left == right
 
 
-def larger_than_or_equal(left, right):
+def larger_than_or_equal(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     return left >= right
 
 
-def larger_than(left, right):
+def larger_than(
+    left: ndarray,
+    right: ndarray
+) -> ndarray:
     return left > right
 
 

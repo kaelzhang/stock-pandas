@@ -1,5 +1,12 @@
+from typing import (
+    Optional,
+    Tuple,
+    Callable
+)
+
+from numpy import ndarray
+
 from stock_pandas.common import (
-    # is_not_nan,
     join_args,
     command_full_name
 )
@@ -14,19 +21,19 @@ class Directive:
 
     def __init__(
         self,
-        command,
-        operator=None,
-        expression=None
-    ):
+        command: 'Command',
+        operator: Optional['Operator'] = None,
+        expression: Optional['Command'] = None
+    ) -> None:
         self.command = command
         self.operator = operator
         self.expression = expression
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.command}{self.operator}{self.expression}' \
             if self.operator else str(self.command)
 
-    def run(self, df, s: slice):
+    def run(self, df, s: slice) -> Tuple[ndarray, int]:
         left, period_left = self.command.run(df, s)
 
         if not self.operator:
@@ -63,16 +70,16 @@ class Command:
     def __init__(
         self,
         name: str,
-        sub: str,
+        sub: Optional[str],
         args: list,
-        formula
-    ):
+        formula: Callable[..., Tuple[ndarray, int]]
+    ) -> None:
         self.name = name
         self.sub = sub
         self.args = args
         self.formula = formula
 
-    def __str__(self):
+    def __str__(self) -> str:
         name = command_full_name(self.name, self.sub)
 
         return f'{name}:{join_args(self.args)}' \
@@ -89,11 +96,11 @@ class Argument:
         'is_directive'
     )
 
-    def __init__(self, value: str, is_directive: bool = False):
+    def __init__(self, value: str, is_directive: bool = False) -> None:
         self.value = value
         self.is_directive = is_directive
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'({self.value})' if self.is_directive else str(self.value)
 
 
@@ -103,9 +110,13 @@ class Operator:
         'formula'
     )
 
-    def __init__(self, name, formula):
+    def __init__(
+        self,
+        name: str,
+        formula: Callable[[ndarray, ndarray], ndarray]
+    ) -> None:
         self.name = name
         self.formula = formula
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name

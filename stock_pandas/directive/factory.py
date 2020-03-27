@@ -1,5 +1,8 @@
 from typing import (
-    Tuple
+    Tuple,
+    Union,
+    List,
+    Optional
 )
 
 from .types import (
@@ -10,7 +13,9 @@ from .types import (
 )
 
 from .operators import OPERATORS
-from .parser import Node
+from .parser import (
+    Node
+)
 
 from stock_pandas.commands import (
     COMMANDS,
@@ -122,7 +127,7 @@ def process_command_name(
     context,
     name,
     sub
-) -> Tuple[int, int, CommandPreset]:
+) -> Tuple[str, Optional[str], CommandPreset]:
     name, name_loc = name
     sub, sub_loc = sub if sub else NONE_TUPLE
 
@@ -172,9 +177,9 @@ def process_command_name(
     return name, sub, subs_map.get(sub)
 
 
-def create_operator(_, operator):
+def create_operator(_, operator: str):
     # The operator has already been validated by parser
-    return Operator(operator, OPERATORS.get(operator))
+    return Operator(operator, OPERATORS.get(operator))  # type: ignore
 
 
 def create_argument(_, arg):
@@ -196,7 +201,7 @@ FACTORY = {
 
 
 def create_by_node(
-    node,
+    node: Union[Node, List[Node]],
     input: str,
     cache
 ):

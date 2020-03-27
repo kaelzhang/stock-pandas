@@ -2,7 +2,7 @@ from stock_pandas.common import rolling_calc
 import pandas._libs.window.aggregations as window_aggregations
 import numpy as np
 
-_ewma = window_aggregations.ewma
+_ewma = window_aggregations.ewma  # type: ignore
 
 
 def calc_ewma(
