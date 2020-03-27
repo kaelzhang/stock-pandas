@@ -1,18 +1,13 @@
-
-from pathlib import Path
-
 import pytest
-import pandas as pd
 import numpy as np
 
 from stock_pandas import StockDataFrame
-
-csv = (Path(__file__).parent.parent / 'example' / 'tencent.csv').resolve()
+from .common import get_tencent
 
 
 @pytest.fixture
 def stock():
-    return StockDataFrame(pd.read_csv(csv), date_column='time_key')
+    return get_tencent()
 
 
 def test_append(stock):

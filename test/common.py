@@ -1,8 +1,21 @@
+from pathlib import Path
+
 from stock_pandas import StockDataFrame
-from pandas import DataFrame, Series
+from pandas import (
+    DataFrame,
+    Series,
+    read_csv
+)
 
 simple_list = [2, 3, 4, 5, 6, 7]
 names = 'abcdef'
+
+
+csv = (Path(__file__).parent.parent / 'example' / 'tencent.csv').resolve()
+
+
+def get_tencent():
+    return StockDataFrame(read_csv(csv), date_column='time_key')
 
 
 def create_stock():
