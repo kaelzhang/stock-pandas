@@ -267,9 +267,25 @@ class StockDataFrame(DataFrame):
                 directive,
                 period
             )
-            self[name] = array
+            # self[name] = array
+            self._set_new_item(name, array)
+            # self._set_item(name, array)
 
         return name, array
+
+    def _set_new_item(
+        self,
+        name: str,
+        value: np.ndarray
+    ) -> None:
+        """Set a new column and avoid SettingWithCopyWarning by using
+        pandas internal APIs
+        """
+
+        value = np.atleast_2d(value)
+
+        self._data.set(name, value)
+        self._clear_item_cache()
 
     def _fulfill_series(self, column_name: str) -> np.ndarray:
         column_info = self._stock_columns_info_map.get(column_name)
@@ -299,7 +315,7 @@ class StockDataFrame(DataFrame):
         else:
             array[fulfill_slice] = partial[fulfill_slice]
 
-        self[column_name] = array
+        self._set_new_item(column_name, array)
 
         column_info.size = size
 

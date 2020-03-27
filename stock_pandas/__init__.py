@@ -1,10 +1,15 @@
 # beta version
-__version__ = '0.18.0'
+__version__ = '0.19.0'
 
-from .dataframe import StockDataFrame  # noqa
-from .common import DirectiveCache     # noqa
+from .dataframe import StockDataFrame
+from .common import DirectiveCache
 
-from .exceptions import (  # noqa
+from .exceptions import (
     DirectiveSyntaxError,
     DirectiveValueError
+)
+
+from .commands import (
+    COMMANDS,
+    CommandPreset
 )
