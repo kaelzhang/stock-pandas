@@ -1,6 +1,7 @@
 #
 # Indicators to show overbought or oversold position
 # ----------------------------------------------------
+from functools import partial
 import numpy as np
 
 from .base import (
@@ -23,19 +24,19 @@ from stock_pandas.math.ma import (
 # rsv
 # ----------------------------------------------------
 
-def rsv(df, s, period) -> ReturnType:
+def rsv(column_low, column_high, df, s, period) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
 
     # Lowest Low Value
-    llv = df['low'][s].rolling(
+    llv = df[column_low][s].rolling(
         min_periods=period,
         window=period,
         center=False
     ).min()
 
     # Highest High Value
-    hhv = df['high'][s].rolling(
+    hhv = df[column_high][s].rolling(
         min_periods=period,
         window=period,
         center=False
@@ -49,7 +50,7 @@ def rsv(df, s, period) -> ReturnType:
 
 
 COMMANDS['rsv'] = CommandPreset(
-    rsv,
+    partial(rsv, 'low', 'high'),
     [arg_period]
 )
 
