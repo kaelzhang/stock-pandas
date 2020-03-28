@@ -3,8 +3,7 @@ from typing import (
     Tuple,
     List,
     Optional,
-    Union,
-    Literal
+    Union
 )
 
 from .tokenizer import (
@@ -37,19 +36,11 @@ REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
 NotNode = Union[str, float, None]
 
-NodeLabel = Literal[
-    TYPE_DIRECTIVE,  # type: ignore
-    TYPE_COMMAND,    # type: ignore
-    TYPE_OPERATOR,   # type: ignore
-    TYPE_ARGUMENT,   # type: ignore
-    TYPE_SCALAR      # type: ignore
-]
-
 
 class Node:
     __slots__ = ('label', 'data', 'loc')
 
-    label: NodeLabel
+    label: int
     data: Tuple[Union['Node', NotNode], ...]
     loc: Loc
 
