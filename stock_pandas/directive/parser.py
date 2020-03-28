@@ -2,7 +2,9 @@ import re
 from typing import (
     Tuple,
     List,
-    Optional
+    Optional,
+    Union,
+    Literal
 )
 
 from .tokenizer import (
@@ -33,12 +35,22 @@ from .operators import OPERATORS
 
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
+NotNode = Union[str, float, None]
+
+NodeLabel = Literal[
+    TYPE_DIRECTIVE,  # type: ignore
+    TYPE_COMMAND,    # type: ignore
+    TYPE_OPERATOR,   # type: ignore
+    TYPE_ARGUMENT,   # type: ignore
+    TYPE_SCALAR      # type: ignore
+]
+
 
 class Node:
     __slots__ = ('label', 'data', 'loc')
 
-    label: int
-    data: Tuple
+    label: NodeLabel
+    data: Tuple[Union['Node', NotNode], ...]
     loc: Loc
 
     def __init__(self, t, data, loc):

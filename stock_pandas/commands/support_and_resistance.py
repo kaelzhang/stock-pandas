@@ -57,12 +57,14 @@ boll_band_args = [
     ('close', column_enums)
 ]
 
-COMMANDS['boll'] = CommandPreset(
-    boll,
-    [
-        (20, period_to_int),
-        ('close', column_enums)
-    ],
+COMMANDS['boll'] = (  # type: ignore
+    CommandPreset(
+        boll,
+        [
+            (20, period_to_int),
+            ('close', column_enums)
+        ]
+    ),
     dict(
         upper=CommandPreset(
             partial(boll_band, True),

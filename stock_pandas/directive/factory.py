@@ -2,7 +2,8 @@ from typing import (
     Tuple,
     Union,
     List,
-    Optional
+    Optional,
+    overload
 )
 
 from .types import (
@@ -14,7 +15,9 @@ from .types import (
 
 from .operators import OPERATORS
 from .parser import (
-    Node
+    Node,
+    NotNode,
+    Loc
 )
 
 from stock_pandas.commands import (
@@ -44,14 +47,19 @@ class Context:
         'cache'
     )
 
-    def __init__(self, input, loc, cache):
+    def __init__(
+        self,
+        input: str,
+        loc: Loc,
+        cache
+    ):
         self.input = input
         self.loc = loc
         self.cache = cache
 
 
 def create_directive(
-    context,
+    context: Context,
     command,
     operator,
     expression
@@ -65,7 +73,7 @@ def create_directive(
     return directive
 
 
-def create_command(context, name, sub, args):
+def create_command(context, name, sub, args) -> Command:
     name, sub, preset = process_command_name(context, name, sub)
 
     preset_args = preset.args
@@ -125,64 +133,66 @@ def create_command(context, name, sub, args):
 
 def process_command_name(
     context,
-    name,
-    sub
+    raw_name: Tuple[str, Loc],
+    raw_sub: Optional[Tuple[str, Loc]]
 ) -> Tuple[str, Optional[str], CommandPreset]:
-    name, name_loc = name
-    sub, sub_loc = sub if sub else NONE_TUPLE
+    """Gets the sanitized command infos, including:
+    - command name,
+    - optional sub command name
+    - and command preset
+    """
 
-    preset = COMMANDS.get(name, None)
+    name, name_loc = raw_name
+    sub, sub_loc = raw_sub if raw_sub is not None else NONE_TUPLE
 
-    if not preset:
+    if name not in COMMANDS:
         raise DirectiveValueError(
             context.input,
             f'unknown command "{name}"',
             name_loc
         )
 
-    if sub is None:
-        if preset.formula is None:
+    main_command_preset, subs_map, sub_aliases_map = COMMANDS[name]
+
+    # applies sub aliases, and get the real sub name
+    if sub is not None and sub_aliases_map is not None:
+        real_sub = sub_aliases_map.get(sub, sub)
+    else:
+        real_sub = sub
+
+    if real_sub is not None:
+        if subs_map is None:
             raise DirectiveValueError(
                 context.input,
-                f'sub command should be specified for command "{name}"',
-                name_loc
+                f'command "{name}" has no sub commands',
+                sub_loc
             )
 
-        return name, sub, preset
+        if real_sub not in subs_map:
+            raise DirectiveValueError(
+                context.input,
+                f'unknown sub command "{sub}" for command "{name}"',
+                sub_loc
+            )
 
-    sub_aliases_map = preset.sub_aliases_map
-    subs_map = preset.subs_map
+        return name, real_sub, subs_map[real_sub]
 
-    # apply sub aliases
-    sub = sub if sub_aliases_map is None else sub_aliases_map.get(sub, sub)
-
-    # macd.dif -> macd
-    if sub is None:
-        return name, sub, preset
-
-    if subs_map is None:
+    if main_command_preset is None:
         raise DirectiveValueError(
             context.input,
-            f'command "{name}" has no sub commands',
-            sub_loc
+            f'sub command should be specified for command "{name}"',
+            name_loc
         )
 
-    if sub not in subs_map:
-        raise DirectiveValueError(
-            context.input,
-            f'unknown sub command "{sub}" for command "{name}"',
-            sub_loc
-        )
-
-    return name, sub, subs_map.get(sub)
+    return name, None, main_command_preset
 
 
-def create_operator(_, operator: str):
+def create_operator(_, operator: str) -> Operator:
     # The operator has already been validated by parser
     return Operator(operator, OPERATORS.get(operator))  # type: ignore
 
 
-def create_argument(_, arg):
+def create_argument(_, arg) -> Argument:
     arg = arg[0]
 
     if isinstance(arg, Directive):
@@ -200,18 +210,47 @@ FACTORY = {
 }
 
 
+FactoryReturnType = Tuple[
+    Union[
+        Directive,
+        Command,
+        Argument,
+        Operator
+    ],
+    Loc
+]
+
+
+@overload
 def create_by_node(
-    node: Union[Node, List[Node]],
+    node: List[Union[Node, NotNode]],
     input: str,
     cache
-):
+) -> List[Union[FactoryReturnType, NotNode]]:
+    ...  # pragma: no cover
+
+
+@overload
+def create_by_node(
+    node: NotNode,
+    input: str,
+    cache
+) -> NotNode:
+    ...  # pragma: no cover
+
+
+def create_by_node(
+    node: Node,
+    input: str,
+    cache
+) -> FactoryReturnType:
     if isinstance(node, list):
         return [
-            create_by_node(arg, input, cache) for arg in node
+            create_by_node(arg, input, cache) for arg in node  # type: ignore
         ]
 
     if not isinstance(node, Node):
-        return node
+        return node  # type: ignore
 
     factory = FACTORY.get(node.label)
     loc = node.loc
@@ -223,7 +262,7 @@ def create_by_node(
     )
 
     args = [
-        create_by_node(arg, input, cache) for arg in node.data
+        create_by_node(arg, input, cache) for arg in node.data  # type: ignore
     ]
 
     # For node, we return the instance and loc

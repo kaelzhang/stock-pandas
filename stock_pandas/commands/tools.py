@@ -28,9 +28,13 @@ def column(df, s, column) -> ReturnType:
     return df.loc[s, column].to_numpy(), 0
 
 
-COMMANDS['column'] = CommandPreset(
-    column,
-    [(None, None)]
+COMMANDS['column'] = (
+    CommandPreset(
+        column,
+        [(None, None)]
+    ),
+    None,
+    None
 )
 
 
@@ -62,13 +66,17 @@ def increase(df, s, on_what: str, repeat: int, direction: int) -> ReturnType:
     ), period
 
 
-COMMANDS['increase'] = CommandPreset(
-    increase,
-    [
-        (None, None),
-        (1, repeat_to_int),
-        (1, to_direction)
-    ]
+COMMANDS['increase'] = (
+    CommandPreset(
+        increase,
+        [
+            (None, None),
+            (1, repeat_to_int),
+            (1, to_direction)
+        ]
+    ),
+    None,
+    None
 )
 
 styles = dict(
@@ -81,9 +89,13 @@ def style(df, s, style: str) -> ReturnType:
     return df[s].apply(styles[style], axis=1).to_numpy(), 1
 
 
-COMMANDS['style'] = CommandPreset(
-    style,
-    [(None, style_enums)]
+COMMANDS['style'] = (
+    CommandPreset(
+        style,
+        [(None, style_enums)]
+    ),
+    None,
+    None
 )
 
 
@@ -102,10 +114,14 @@ def repeat(df, s, command_str: str, repeat: int) -> ReturnType:
     ), repeat
 
 
-COMMANDS['repeat'] = CommandPreset(
-    repeat,
-    [
-        (None, None),
-        (1, repeat_to_int)
-    ]
+COMMANDS['repeat'] = (
+    CommandPreset(
+        repeat,
+        [
+            (None, None),
+            (1, repeat_to_int)
+        ]
+    ),
+    None,
+    None
 )

@@ -16,4 +16,4 @@ def parse(directive_str: str, cache) -> Directive:
 
     cache.set(directive_str, directive)
 
-    return directive
+    return directive  # type: ignore

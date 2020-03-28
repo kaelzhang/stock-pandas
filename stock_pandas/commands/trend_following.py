@@ -56,7 +56,11 @@ ma_args = [
     )
 ]
 
-COMMANDS['ma'] = CommandPreset(ma, ma_args)
+COMMANDS['ma'] = (
+    CommandPreset(ma, ma_args),
+    None,
+    None
+)
 
 
 # ema
@@ -72,7 +76,11 @@ def ema(df, s, period, column) -> ReturnType:
     ), period
 
 
-COMMANDS['ema'] = CommandPreset(ema, ma_args)
+COMMANDS['ema'] = (
+    CommandPreset(ema, ma_args),
+    None,
+    None
+)
 
 
 # macd
@@ -121,9 +129,11 @@ macd_args_all = [
     (9, period_to_int)
 ]
 
-COMMANDS['macd'] = CommandPreset(
-    macd,
-    macd_args,
+COMMANDS['macd'] = (  # type: ignore
+    CommandPreset(
+        macd,
+        macd_args
+    ),
     dict(
         signal=CommandPreset(macd_signal, macd_args_all),
         histogram=CommandPreset(macd_histogram, macd_args_all)
@@ -156,12 +166,16 @@ def bbi(df, s, a, b, c, d) -> ReturnType:
     ) / 4, max(a, b, c, d)
 
 
-COMMANDS['bbi'] = CommandPreset(
-    bbi,
-    [
-        (3, period_to_int),
-        (6, period_to_int),
-        (12, period_to_int),
-        (24, period_to_int)
-    ]
+COMMANDS['bbi'] = (
+    CommandPreset(
+        bbi,
+        [
+            (3, period_to_int),
+            (6, period_to_int),
+            (12, period_to_int),
+            (24, period_to_int)
+        ]
+    ),
+    None,
+    None
 )

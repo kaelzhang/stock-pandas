@@ -49,9 +49,13 @@ def rsv(column_low, column_high, df, s, period) -> ReturnType:
     return v.to_numpy(), period
 
 
-COMMANDS['rsv'] = CommandPreset(
-    partial(rsv, 'low', 'high'),
-    [arg_period]
+COMMANDS['rsv'] = (
+    CommandPreset(
+        partial(rsv, 'low', 'high'),
+        [arg_period]
+    ),
+    None,
+    None
 )
 
 
@@ -144,10 +148,11 @@ args_dj = [
 ]
 
 
-COMMANDS['kdj'] = CommandPreset(
+COMMANDS['kdj'] = (
+    None,
     # We must specify sub command for kdj, such as
     # 'kdj.k'
-    subs_map=dict(
+    dict(
         k=CommandPreset(
             kdj_k,
             args_k
@@ -162,7 +167,8 @@ COMMANDS['kdj'] = CommandPreset(
             kdj_j,
             args_dj
         )
-    )
+    ),
+    None
 )
 
 
@@ -188,7 +194,11 @@ def rsi(df, s, period) -> ReturnType:
     return 100 - 100 / (1. + smma_u / smma_d), period
 
 
-COMMANDS['rsi'] = CommandPreset(
-    rsi,
-    [arg_period]
+COMMANDS['rsi'] = (
+    CommandPreset(
+        rsi,
+        [arg_period]
+    ),
+    None,
+    None
 )
