@@ -28,13 +28,13 @@ def ma(df, s, period, column) -> ReturnType:
     """Gets simple moving average
 
     Args:
-        df (DataFrame): data
+        df (StockDataFrame): the stock data frame itself
         s (slice): the slice object
         period (int): size of the moving period
         column (str): column name to calculate
 
     Returns:
-        Tuple[pandas.Series, int]: the pandas Series object,
+        Tuple[np.ndarray, int]: the numpy ndarray object,
         and the period offset the indicator needs
     """
 
@@ -45,10 +45,11 @@ def ma(df, s, period, column) -> ReturnType:
 
 
 ma_args = [
-    # period
+    # parameter setting for `period`
     arg_period,
-    # column
+    # setting for `column`
     (
+        # The default value of the second parameter
         'close',
         # If the command use the default value,
         # then it will skip validating

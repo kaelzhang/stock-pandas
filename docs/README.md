@@ -11,8 +11,9 @@
   - Trend-following momentum indicators, such as **MA**, **EMA**, **MACD**, **BBI**
   - Dynamic support and resistance indicators, such as **BOLL**
   - Over-bought / over-sold indicators, such as **KDJ**, **RSI**
+  - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
 
-`stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6**
+`stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6** and Pandas >= **1.0.0**(for now)
 
 With the help of `stock-pandas` and mplfinance, we could easily draw something like:
 
@@ -489,3 +490,66 @@ Raises if
 ****
 
 ## Advanced Sections
+
+> How to extend stock-pandas and support more indicators,
+
+> This section is only recommended for contributors, but not for normal users, for that the API might change in the future.
+
+```py
+from stock_pandas import COMMANDS, CommandPreset
+```
+
+To add a new indicator to stock-pandas, you could update the `COMMANDS` dict.
+
+```py
+# The value of 'my-indicator' is a tuple
+COMMANDS['my-indicator'] = (
+    # The first item of the tuple is a CommandPreset instance
+    CommandPreset(
+        formula,
+        args_setting
+    ),
+    sub_commands_dict,
+    aliases_of_sub_commands
+)
+```
+
+You could check [here](https://github.com/kaelzhang/stock-pandas/blob/master/stock_pandas/commands/base.py#L54) to figure out the typings for `COMMANDS`.
+
+For a simplest indicator, such as simple moving average, you could check the implementation [here](https://github.com/kaelzhang/stock-pandas/blob/master/stock_pandas/commands/trend_following.py#L60).
+
+### formula(df, s, *args) -> Tuple[np.ndarray, int]
+
+`formula` is a Callable.
+
+- **df** `StockDataFrame` the first argument of `formula` is the stock dataframe itself
+- **s** `slice` sometimes, we don't need to calculate the whole dataframe but only part of it
+- **args** `Tuple[Any]` the args of the indicator which is defined by `args_setting`
+
+The Callable returns a tuple:
+- The first item of the tuple is the calculated result which is a numpy ndarray.
+- The second item of the tuple is the mininum periods to calculate the indicator.
+
+### args_setting: [(default, validate_and_coerce), ...]
+
+`args_setting` is a list of tuples.
+
+- The first item of each tuple is the default value of the parameter, and it could be `None` which implies it has no default value and is required.
+
+- The second item is a raisable callable which receives user input, validates it, coerces the type of the value and returns it. If the parameter has a default value and user don't specified a value, the function will be skipped.
+
+### sub_commands_dict: Dict[str, CommandPreset]
+
+A dict to declare sub commands, such as `boll.upper`.
+
+`sub_commands_dict` could be `None` which indicates the indicator has no sub commands
+
+### aliases_of_sub_commands: Dict[str, str]
+
+Which declares the shortcut or alias of the commands, such as `boll.u`
+
+```py
+dict(
+    u='upper'
+)
+```
