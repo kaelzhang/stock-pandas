@@ -1,5 +1,5 @@
 # beta version
-__version__ = '0.20.3'
+__version__ = '0.20.4'
 
 from .dataframe import StockDataFrame
 from .common import DirectiveCache

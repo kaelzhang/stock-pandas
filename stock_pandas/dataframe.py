@@ -2,7 +2,8 @@ from typing import (
     Tuple,
     Type,
     Union,
-    List
+    List,
+    Optional
 )
 
 from pandas import (
@@ -49,6 +50,8 @@ class StockDataFrame(DataFrame):
 
     Args definitions are the same as `pandas.DataFrame`
     """
+
+    _create_column: bool
 
     _stock_aliases_map = meta_property(
         KEY_ALIAS_MAP, lambda: {}
@@ -140,7 +143,7 @@ class StockDataFrame(DataFrame):
     def exec(
         self,
         directive_str: str,
-        create_column: bool = None
+        create_column: Optional[bool] = None
     ) -> np.ndarray:
         """Executes the given directive and
         returns a numpy ndarray according to the directive.
@@ -165,7 +168,8 @@ class StockDataFrame(DataFrame):
         original_create_column = self._create_column
 
         if explicit_create_column:
-            self._create_column = create_column
+            # Vscode extension pyright could not handle this, so type ignore
+            self._create_column = create_column  # type: ignore
         else:
             # cases
             # 1. called by users
