@@ -17,7 +17,7 @@ def test_append(stock):
     - directive operator and surrounding whitespaces
     """
 
-    current = stock[:'2020-02-04']
+    current = stock[:'2020-02-04']  # type:ignore
     kdj_j = current['kdj.j'][-1]
     counter = -1
 
@@ -64,7 +64,7 @@ def test_increase(stock):
 
 
 def test_repeat(stock):
-    stock = stock[:'2020-02-13']
+    stock = stock[:'2020-02-13']  # type: ignore
 
     assert stock['repeat:(style:bullish),1']['2020-02-13']
     assert stock['repeat:(style:bullish),2']['2020-02-13']

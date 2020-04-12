@@ -11,6 +11,7 @@
   - Trend-following momentum indicators, such as **MA**, **EMA**, **MACD**, **BBI**
   - Dynamic support and resistance indicators, such as **BOLL**
   - Over-bought / over-sold indicators, such as **KDJ**, **RSI**
+  - Other indicators, such as **LLV**, **HHV**
   - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
 
 `stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6** and Pandas >= **1.0.0**(for now)
@@ -344,6 +345,25 @@ Calculates indicator BBI (Bull and Bear Index) which is the average of `ma:3`, `
 - **b?** `int=6`
 - **c?** `int=12`
 - **d?** `int=24`
+
+### `llv`, Lowest of Low Values
+
+```
+llv:<period>,<column>
+```
+
+Gets the lowest of low prices in N periods
+
+- **period** `int`
+- **column?** `str='low'` Defaults to `'low'`. But you could also get the lowest value of close prices
+
+### `hhv`, Highest of High Values
+
+```
+hhv:<period>,<column>
+```
+
+Gets the highest of high prices in N periods. The arguments of `hhv` is the same as `llv`
 
 ## Built-in Commands for Statistics
 

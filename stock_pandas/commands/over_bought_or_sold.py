@@ -13,11 +13,64 @@ from .base import (
 )
 
 from stock_pandas.common import (
-    period_to_int
+    rolling_calc,
+    period_to_int,
+    column_enums
 )
 
 from stock_pandas.math.ma import (
     calc_smma
+)
+
+
+# llv & hhv
+# ----------------------------------------------------
+
+def llv(df, s, period, column) -> ReturnType:
+    """Gets LLV (Lowest of Low Value)
+    """
+
+    return rolling_calc(
+        df[column][s].to_numpy(),
+        period,
+        min
+    ), period
+
+
+COMMANDS['llv'] = (
+    CommandPreset(
+        llv,
+        [
+            arg_period,
+            ('low', column_enums)
+        ]
+    ),
+    None,
+    None
+)
+
+
+def hhv(df, s, period, column) -> ReturnType:
+    """Gets HHV (Highest of High Value)
+    """
+
+    return rolling_calc(
+        df[column][s].to_numpy(),
+        period,
+        max
+    ), period
+
+
+COMMANDS['hhv'] = (
+    CommandPreset(
+        hhv,
+        [
+            arg_period,
+            ('high', column_enums)
+        ]
+    ),
+    None,
+    None
 )
 
 
@@ -28,19 +81,8 @@ def rsv(column_low, column_high, df, s, period) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
 
-    # Lowest Low Value
-    llv = df[column_low][s].rolling(
-        min_periods=period,
-        window=period,
-        center=False
-    ).min()
-
-    # Highest High Value
-    hhv = df[column_high][s].rolling(
-        min_periods=period,
-        window=period,
-        center=False
-    ).max()
+    llv = df.exec(f'llv:{period},{column_low}')[s]
+    hhv = df.exec(f'hhv:{period},{column_high}')[s]
 
     v = (
         (df['close'][s] - llv) / (hhv - llv)
