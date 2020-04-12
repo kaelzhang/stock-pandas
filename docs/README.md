@@ -521,7 +521,7 @@ Raises if
 
 > How to extend stock-pandas and support more indicators,
 
-> This section is only recommended for contributors, but not for normal users, for that the API might change in the future.
+> This section is only recommended for contributors, but not for normal users, for that the definition of `COMMANDS` might change in the future.
 
 ```py
 from stock_pandas import COMMANDS, CommandPreset
@@ -530,8 +530,8 @@ from stock_pandas import COMMANDS, CommandPreset
 To add a new indicator to stock-pandas, you could update the `COMMANDS` dict.
 
 ```py
-# The value of 'my-indicator' is a tuple
-COMMANDS['my-indicator'] = (
+# The value of 'new-indicator' is a tuple
+COMMANDS['new-indicator'] = (
     # The first item of the tuple is a CommandPreset instance
     CommandPreset(
         formula,
@@ -548,10 +548,10 @@ For a simplest indicator, such as simple moving average, you could check the imp
 
 ### formula(df, s, *args) -> Tuple[np.ndarray, int]
 
-`formula` is a Callable.
+`formula` is a `Callable[[StockDataFrame, slice, ...], [ndarray, int]]`.
 
 - **df** `StockDataFrame` the first argument of `formula` is the stock dataframe itself
-- **s** `slice` sometimes, we don't need to calculate the whole dataframe but only part of it
+- **s** `slice` sometimes, we don't need to calculate the whole dataframe but only part of it. This argument is passed into the formula by `stock_pandas` and should not be changed manually.
 - **args** `Tuple[Any]` the args of the indicator which is defined by `args_setting`
 
 The Callable returns a tuple:
@@ -572,12 +572,20 @@ A dict to declare sub commands, such as `boll.upper`.
 
 `sub_commands_dict` could be `None` which indicates the indicator has no sub commands
 
-### aliases_of_sub_commands: Dict[str, str]
+### aliases_of_sub_commands: Dict[str, Optional[str]]
 
 Which declares the shortcut or alias of the commands, such as `boll.u`
 
 ```py
 dict(
     u='upper'
+)
+```
+
+If the value of an alias is `None`, which means it is an alias of the main command, such as `macd.dif`
+
+```py
+dict(
+    dif=None
 )
 ```
