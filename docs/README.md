@@ -357,6 +357,14 @@ Gets the lowest of low prices in N periods
 - **period** `int`
 - **column?** `str='low'` Defaults to `'low'`. But you could also get the lowest value of close prices
 
+```py
+# The 10-period lowest prices
+stock['llv:10']
+
+# The 10-period lowest close prices
+stock['llv:10,close']
+```
+
 ### `hhv`, Highest of High Values
 
 ```
