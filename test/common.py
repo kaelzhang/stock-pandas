@@ -47,3 +47,7 @@ def get_last(series):
         series = series.to_numpy()
 
     return series[index]
+
+
+def to_fixed(n: float, precision: int = 4):
+    return format(n, f'.{precision}f')

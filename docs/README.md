@@ -388,12 +388,12 @@ Just gets the series of a column. This command is designed to be used together w
 ### `increase`
 
 ```
-increase:<on_what>,<repeat>,<step>
+increase:<on>,<repeat>,<step>
 ```
 
 Gets a `bool`-type series each item of which is `True` if the value of indicator `on_what` increases in the last `period`-period.
 
-- **on_what** `str` the command name of an indicator.
+- **on** `str` the command name of an indicator on what the calculation should be based
 - **repeat?** `int=1`
 - **direction?** `1 | -1` the direction of "increase". `-1` means decreasing
 
@@ -437,6 +437,24 @@ The `repeat` command first gets the result of directive `bool_directive`, and de
 ```py
 # Whether the bullish candlestick repeats for 3 periods (maybe 3 days)
 stock['repeat:(style:bullish),3']
+```
+
+### `change`
+
+```
+change:<on>,<period>
+```
+
+Percentage change between the current and a prior element on a certain series
+
+Computes the percentage change from the immediately previous element by default. This is useful in comparing the percentage of change in a time series of prices.
+
+- **on** `str` the directive which returns a series of numbers, and the calculation will based on the series.
+- **period?** `int=2` `2` means we computes with the start value and the end value of a 2-period window.
+
+```py
+# Percentage change of 20-period simple moving average
+stock['change:(ma:20)']
 ```
 
 ## Operators

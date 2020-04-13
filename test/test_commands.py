@@ -2,7 +2,10 @@ import pytest
 import numpy as np
 
 from stock_pandas import StockDataFrame
-from .common import get_tencent
+from .common import (
+    get_tencent,
+    to_fixed
+)
 
 
 @pytest.fixture
@@ -110,3 +113,16 @@ def test_kdj(stock):
 
     kdjj = stock['kdj.j']['2020-02-07']
     assert stock['kdj.j:9,3,3,50']['2020-02-07'] == kdjj
+
+
+def test_change(stock):
+    change = stock['change:(column:close)']
+
+    assert to_fixed(change[-1]) == '-0.0313'
+    assert to_fixed(change[-2]) == '-0.0256'
+
+    assert np.isnan(change[0])
+
+    boll_change3 = stock['change:boll,3']
+
+    assert to_fixed(boll_change3[-1]) == '-0.0030'

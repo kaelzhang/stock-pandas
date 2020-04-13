@@ -14,6 +14,7 @@ from .base import (
 
 from stock_pandas.common import (
     repeat_to_int,
+    period_to_int,
     style_enums,
     to_direction,
 
@@ -52,14 +53,14 @@ def check_increase(direction, current, ndarray) -> bool:
     return True
 
 
-def increase(df, s, on_what: str, repeat: int, direction: int) -> ReturnType:
+def increase(df, s, on: str, repeat: int, direction: int) -> ReturnType:
     period = repeat + 1
 
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
     compare = partial(check_increase, direction, current)
 
     return rolling_calc(
-        df.exec(on_what)[s],
+        df.exec(on)[s],
         period,
         compare,
         False
@@ -99,8 +100,8 @@ COMMANDS['style'] = (
 )
 
 
-def repeat(df, s, command_str: str, repeat: int) -> ReturnType:
-    result = df.exec(command_str)[s]
+def repeat(df, s, on: str, repeat: int) -> ReturnType:
+    result = df.exec(on)[s]
 
     if repeat == 1:
         return result, repeat
@@ -120,6 +121,34 @@ COMMANDS['repeat'] = (
         [
             (None, None),
             (1, repeat_to_int)
+        ]
+    ),
+    None,
+    None
+)
+
+
+def change(df, s, on: str, period: int) -> ReturnType:
+    """Get the percentage change for `on`
+    """
+
+    target = df.exec(on)[s]
+
+    shift = period - 1
+
+    shifted = np.roll(target, shift)
+    # We perform a shift, not a roll
+    shifted[:shift] = np.nan
+
+    return target / shifted - 1, period
+
+
+COMMANDS['change'] = (
+    CommandPreset(
+        change,
+        [
+            (None, None),
+            (2, period_to_int)
         ]
     ),
     None,
