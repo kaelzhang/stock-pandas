@@ -132,24 +132,47 @@ def ewma(
         yield k
 
 
-def kdj_k(df, s, period_rsv, period_k, init) -> ReturnType:
+def kdj_k(
+    base: str,
+    df,
+    s: slice,
+    period_rsv: int,
+    period_k: int,
+    init: float
+) -> ReturnType:
     """Gets KDJ K
     """
 
-    rsv = df.exec(f'rsv:{period_rsv}')[s]
+    rsv = df.exec(f'{base}:{period_rsv}')[s]
 
     return np.fromiter(ewma(rsv, period_k, init), float), period_rsv
 
 
-def kdj_d(df, s, period_rsv, period_k, period_d, init) -> ReturnType:
-    k = df.exec(f'kdj.k:{period_rsv},{period_k},{init}')[s]
+def kdj_d(
+    base: str,
+    df,
+    s,
+    period_rsv: int,
+    period_k: int,
+    period_d: int,
+    init: float
+) -> ReturnType:
+    k = df.exec(f'{base}.k:{period_rsv},{period_k},{init}')[s]
 
     return np.fromiter(ewma(k, period_d, init), float), period_rsv
 
 
-def kdj_j(df, s, period_rsv, period_k, period_d, init) -> ReturnType:
-    k = df.exec(f'kdj.k:{period_rsv},{period_k},{init}')[s]
-    d = df.exec(f'kdj.d:{period_rsv},{period_k},{period_d},{init}')[s]
+def kdj_j(
+    base: str,
+    df,
+    s,
+    period_rsv: int,
+    period_k: int,
+    period_d: int,
+    init: float
+) -> ReturnType:
+    k = df.exec(f'{base}.k:{period_rsv},{period_k},{init}')[s]
+    d = df.exec(f'{base}.d:{period_rsv},{period_k},{period_d},{init}')[s]
 
     return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period_rsv
 
@@ -196,17 +219,17 @@ COMMANDS['kdj'] = (
     # 'kdj.k'
     dict(
         k=CommandPreset(
-            kdj_k,
+            partial(kdj_k, 'rsv'),
             args_k
         ),
 
         d=CommandPreset(
-            kdj_d,
+            partial(kdj_d, 'kdj'),
             args_dj
         ),
 
         j=CommandPreset(
-            kdj_j,
+            partial(kdj_j, 'kdj'),
             args_dj
         )
     ),
