@@ -13,7 +13,7 @@ from .base import (
 
 from stock_pandas.common import (
     period_to_int,
-    times_to_int,
+    times_to_float,
     column_enums,
 
     rolling_calc
@@ -53,7 +53,7 @@ def boll_band(upper: bool, df, s, period, times, column) -> ReturnType:
 
 boll_band_args = [
     (20, period_to_int),
-    (2, times_to_int),
+    (2., times_to_float),
     ('close', column_enums)
 ]
 

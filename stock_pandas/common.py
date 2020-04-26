@@ -2,19 +2,29 @@ from functools import partial
 from typing import (
     Callable,
     Optional,
-    Tuple
+    Tuple,
+    TypeVar,
+    Type
 )
 
 import numpy as np
 from pandas import DataFrame
 
+T = TypeVar('T', int, float)
 
-def to_int(name: str, larger_than: int, raw_value: str) -> int:
+
+def to_number(
+    type_ctr: Type[T],
+    type_name: str,
+    name: str,
+    larger_than: T,
+    raw_value: str
+) -> T:
     try:
-        value = int(raw_value)
+        value = type_ctr(raw_value)
     except ValueError:
         raise ValueError(
-            f'{name} must be a positive int, but got `{raw_value}`'
+            f'{name} must be a positive {type_name}, but got `{raw_value}`'
         )
 
     if value <= larger_than:
@@ -23,9 +33,10 @@ def to_int(name: str, larger_than: int, raw_value: str) -> int:
     return value
 
 
-period_to_int = partial(to_int, 'period', 1)
-times_to_int = partial(to_int, 'times', 0)
-repeat_to_int = partial(to_int, 'repeat', 0)
+period_to_int = partial(to_number, int, 'int', 'period', 1)
+repeat_to_int = partial(to_number, int, 'int', 'repeat', 0)
+
+times_to_float = partial(to_number, float, 'float', 'times', 0.)
 
 
 def create_enum(choices: list, name: str, value: str) -> str:

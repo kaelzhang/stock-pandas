@@ -261,7 +261,7 @@ boll.lower:<period>,<times>,<column>
 ```
 
 - **period?** `int=20`
-- **times?** `int=2`
+- **times?** `float=2.`
 - **column?** `str='close'`
 
 ```py
