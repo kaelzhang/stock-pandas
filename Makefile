@@ -11,7 +11,7 @@ fix:
 	autopep8 --in-place -r $(files)
 
 install:
-	pip install -r requirements.txt -r test-requirements.txt -r docs/requirements.txt
+	pip install -U -r requirements.txt -r test-requirements.txt -r docs/requirements.txt
 
 report:
 	codecov

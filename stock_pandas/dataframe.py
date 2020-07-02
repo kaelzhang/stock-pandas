@@ -134,11 +134,14 @@ class StockDataFrame(DataFrame):
 
         return result
 
-    def _direct_get_column(self, key: str) -> Series:
+    def get_column(self, key: str) -> Series:
         """Gets the column directly from dataframe by key
         """
 
-        return self._get_item_cache(key)
+        try:
+            return self._get_item_cache(key)
+        except KeyError:
+            raise KeyError(f'column "{key}" not found')
 
     def exec(
         self,
@@ -296,7 +299,7 @@ class StockDataFrame(DataFrame):
         column_info = self._stock_columns_info_map.get(column_name)
         size = len(self)
 
-        array = self._direct_get_column(column_name).to_numpy()
+        array = self.get_column(column_name).to_numpy()
 
         if size == column_info.size:
             # Already fulfilled

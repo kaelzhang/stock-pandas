@@ -16,6 +16,27 @@ def stock():
     return create_stock()
 
 
+def test_get_column(stock):
+    stock = stock.rename(columns={
+        'open': 'Open',
+        'close': 'Close',
+        'high': 'High',
+        'low': 'Low'
+    })
+
+    with pytest.raises(
+        KeyError,
+        match='column "close" not found'
+    ):
+        stock.get_column('close')
+
+    with pytest.raises(
+        KeyError,
+        match='column "close" not found'
+    ):
+        stock['ma:20']
+
+
 def test_astype(stock):
     stock = stock.astype({
         'open': 'float',

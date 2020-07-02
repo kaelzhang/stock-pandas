@@ -31,7 +31,7 @@ def llv(df, s, period, column) -> ReturnType:
     """
 
     return rolling_calc(
-        df[column][s].to_numpy(),
+        df.get_column(column)[s].to_numpy(),
         period,
         min
     ), period
@@ -55,7 +55,7 @@ def hhv(df, s, period, column) -> ReturnType:
     """
 
     return rolling_calc(
-        df[column][s].to_numpy(),
+        df.get_column(column)[s].to_numpy(),
         period,
         max
     ), period
@@ -85,7 +85,7 @@ def rsv(column_low, column_high, df, s, period) -> ReturnType:
     hhv = df.exec(f'hhv:{period},{column_high}')[s]
 
     v = (
-        (df['close'][s] - llv) / (hhv - llv)
+        (df.get_column('close')[s] - llv) / (hhv - llv)
     ).fillna(0).astype('float64') * 100
 
     return v.to_numpy(), period
@@ -246,7 +246,7 @@ def rsi(df, s, period) -> ReturnType:
     https://en.wikipedia.org/wiki/Relative_strength_index
     """
 
-    delta = df['close'].diff().to_numpy()
+    delta = df.get_column('close').diff().to_numpy()
 
     # gain
     U = (np.absolute(delta) + delta) / 2.

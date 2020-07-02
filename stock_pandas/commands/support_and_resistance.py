@@ -36,7 +36,7 @@ def boll_band(upper: bool, df, s, period, times, column) -> ReturnType:
         upper (bool): Get the upper band if True else the lower band
     """
 
-    prices = df[column][s].to_numpy()
+    prices = df.get_column(column)[s].to_numpy()
 
     ma = df.exec(f'ma:{period},{column}')[s]
     mstd = rolling_calc(

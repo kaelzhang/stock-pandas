@@ -39,7 +39,7 @@ def ma(df, s, period, column) -> ReturnType:
     """
 
     return calc_ma(
-        df[column][s].to_numpy(),
+        df.get_column(column)[s].to_numpy(),
         period
     ), period
 
@@ -72,7 +72,7 @@ def ema(df, s, period, column) -> ReturnType:
     """
 
     return calc_ewma(
-        df[column][s].to_numpy(),
+        df.get_column(column)[s].to_numpy(),
         period
     ), period
 
