@@ -54,4 +54,6 @@ settings = dict(
     ],
 )
 
-setup(**settings)
+
+if __name__ == '__main__':
+    setup(**settings)
