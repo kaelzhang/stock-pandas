@@ -36,6 +36,11 @@ def test_get_column(stock):
     ):
         stock['ma:20']
 
+    stock.alias('close', 'Close')
+
+    # get_column should apply alias
+    stock.get_column('close')
+
 
 def test_astype(stock):
     stock = stock.astype({

@@ -135,13 +135,21 @@ class StockDataFrame(DataFrame):
         return result
 
     def get_column(self, key: str) -> Series:
-        """Gets the column directly from dataframe by key
+        """Gets the column directly from dataframe by key.
+
+        This method applies column name aliases before getting the value.
         """
+
+        origin_key = key
+
+        if key in self._stock_aliases_map:
+            # Map alias, if the key is an alias
+            key = self._stock_aliases_map[key]
 
         try:
             return self._get_item_cache(key)
         except KeyError:
-            raise KeyError(f'column "{key}" not found')
+            raise KeyError(f'column "{origin_key}" not found')
 
     def exec(
         self,
