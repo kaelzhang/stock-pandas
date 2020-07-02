@@ -113,6 +113,45 @@ stock.alias('Open', 'open')
 stock.alias('buy_point', 'kdj.j < 0')
 ```
 
+### stock.get_column(key: str) -> pd.Series
+
+Directly gets the column value by `key`, returns a pandas `Series`.
+
+If the given `key` is an alias name, it will return the value of corresponding original column.
+
+If the column is not found, a `KeyError` will be raised.
+
+```py
+stock = StockDataFrame({
+    'open' : ...,
+    'high' : ...,
+    'low'  : ...,
+    'close': [5, 6, 7, 8, 9]
+})
+
+stock.get_column('close')
+# 0    5
+# 1    6
+# 2    7
+# 3    8
+# 4    9
+# Name: close, dtype: float64
+```
+
+```py
+try:
+    stock.get_column('Close')
+except KeyError as e:
+    print(e)
+
+    # KeyError: column "Close" not found
+
+stock.alias('Close', 'close')
+
+stock.get_column('Close')
+# The same as `stock.get_column('close')`
+```
+
 ### stock.append(other, *args, **kwargs) -> StockDataFrame
 
 Appends rows of `other` to the end of caller, returning a new object.
