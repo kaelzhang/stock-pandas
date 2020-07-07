@@ -430,7 +430,7 @@ Just gets the series of a column. This command is designed to be used together w
 increase:<on>,<repeat>,<step>
 ```
 
-Gets a `bool`-type series each item of which is `True` if the value of indicator `on_what` increases in the last `period`-period.
+Gets a `bool`-type series each item of which is `True` if the value of indicator `on` increases in the last `period`-period.
 
 - **on** `str` the command name of an indicator on what the calculation should be based
 - **repeat?** `int=1`
