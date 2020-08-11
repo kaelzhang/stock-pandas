@@ -11,6 +11,8 @@ from pandas import (
     Series,
     to_datetime
 )
+from pandas.core.generic import NDFrame
+
 import numpy as np
 
 from .directive import parse
@@ -298,10 +300,7 @@ class StockDataFrame(DataFrame):
         pandas internal APIs
         """
 
-        value = np.atleast_2d(value)
-
-        self._data.set(name, value)
-        self._clear_item_cache()
+        NDFrame._set_item(self, name, value)
 
     def _fulfill_series(self, column_name: str) -> np.ndarray:
         column_info = self._stock_columns_info_map.get(column_name)
