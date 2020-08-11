@@ -298,7 +298,9 @@ class StockDataFrame(DataFrame):
     ) -> None:
         """Set a new column and avoid SettingWithCopyWarning by using
         pandas internal APIs
-        """
+
+        see: https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/frame.py#L3114
+        """  # noqa: E501
 
         NDFrame._set_item(self, name, value)
 
