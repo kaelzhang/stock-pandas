@@ -1,8 +1,7 @@
 from stock_pandas.common import rolling_calc
-import pandas._libs.window.aggregations as window_aggregations
-import numpy as np
+from ._lib import ewma
 
-_ewma = window_aggregations.ewma  # type: ignore
+import numpy as np
 
 
 def calc_ewma(
@@ -24,7 +23,7 @@ def calc_ewma(
         com = (period - 1.) / 2.
     """
 
-    return _ewma(
+    return ewma(
         # Sometimes, the series in a DataFrame is of int type
         array.astype(float),
         (period - 1.) / 2.,
@@ -50,7 +49,7 @@ def calc_smma(
     1. / period = 1. / (1. + com)
     """
 
-    return _ewma(
+    return ewma(
         array.astype(float),
         period - 1.,
         1,

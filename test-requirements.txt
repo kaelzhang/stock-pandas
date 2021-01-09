@@ -8,3 +8,4 @@ setuptools
 twine
 PyHamcrest
 mplfinance
+cython >= 0.29.21

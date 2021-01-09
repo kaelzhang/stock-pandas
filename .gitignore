@@ -1,3 +1,6 @@
+*.c
+*.cpp
+
 # Pandoc
 README.rst
 

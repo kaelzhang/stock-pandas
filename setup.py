@@ -1,8 +1,16 @@
+#!/usr/bin/env python3
 
 import os
-from setuptools import setup
 
-from stock_pandas import __version__
+from setuptools import (
+    setup,
+    Extension
+)
+from Cython.Build import cythonize
+import numpy as np
+
+# beta version
+__version__ = '0.25.3'
 
 
 # Utility function to read the README file.
@@ -26,6 +34,19 @@ settings = dict(
         'stock_pandas.directive',
         'stock_pandas.math'
     ],
+    ext_modules=cythonize(
+        Extension(
+            'stock_pandas.math._lib',
+            ['stock_pandas/math/_lib.pyx'],
+            language='c++',
+            include_dirs=[np.get_include()]
+        ),
+        compiler_directives={
+            'linetrace': False,
+            'language_level': 3
+        }
+    ),
+    zip_safe=False,
     version=__version__,
     author='Kael Zhang',
     author_email='i+pypi@kael.me',
