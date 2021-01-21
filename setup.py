@@ -39,7 +39,9 @@ settings = dict(
             'stock_pandas.math._lib',
             ['stock_pandas/math/_lib.pyx'],
             language='c++',
-            include_dirs=[np.get_include()]
+            include_dirs=[
+                np.get_include()
+            ]
         ),
         compiler_directives={
             'linetrace': False,

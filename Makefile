@@ -20,6 +20,9 @@ build: stock_pandas
 	rm -rf dist
 	python setup.py sdist bdist_wheel
 
+build-ext:
+	python setup.py build_ext --inplace
+
 build-doc:
 	sphinx-build -b html docs build_docs
 
