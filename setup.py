@@ -10,7 +10,7 @@ from setuptools import (
 import numpy as np
 
 # beta version
-__version__ = '0.25.4'
+__version__ = '0.25.5'
 
 
 USE_CYTHON = os.environ.get('STOCK_PANDAS_USE_CYTHON')
@@ -75,8 +75,10 @@ settings = dict(
     author='Kael Zhang',
     author_email='i+pypi@kael.me',
     description='The wrapper of `pandas.DataFrame` with stock statistics and indicators support.',  # noqa:E501
-    install_requires=read_requirements('requirements.txt'),
-    tests_require=read_requirements('test-requirements.txt'),
+    install_requires=[
+        'numpy >= 1.16.5',
+        'pandas >= 1.0.0'
+    ],
     license='MIT',
     keywords='pandas pandas-dataframe stock stat indicators macd',
     url='https://github.com/kaelzhang/stock-pandas',
