@@ -10,17 +10,20 @@ from setuptools import (
 import numpy as np
 
 # beta version
-__version__ = '0.25.5'
+__version__ = '0.25.6'
 
 
-USE_CYTHON = os.environ.get('STOCK_PANDAS_USE_CYTHON')
+BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
 
 
 # Utility function to read the README file.
 # Used for the long_description.  It's nice, because now 1) we have a top level
 # README file and 2) it's easier to type in the README file than to put a raw
 # string in below ...
-def read(*fname):
+def read(*fname) -> str:
+    if BUILDING:
+        return '<README.md>'
+
     return open(os.path.join(os.path.dirname(__file__), *fname)).read()
 
 
@@ -37,7 +40,7 @@ ext_kwargs = dict(
 
 # Distribution ref
 # https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules
-if USE_CYTHON:
+if BUILDING:
     from Cython.Build import cythonize
     extensions = cythonize(
         Extension(
