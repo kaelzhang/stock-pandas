@@ -18,16 +18,24 @@ report:
 
 build: stock_pandas
 	rm -rf dist
+	make build-ext
 	python setup.py sdist bdist_wheel
 
 build-ext:
+	STOCK_PANDAS_USE_CYTHON=1 python setup.py build_ext --inplace
+
+# Used to test build_ext without cython
+build-ext-no-cython:
 	python setup.py build_ext --inplace
 
 build-doc:
 	sphinx-build -b html docs build_docs
 
+upload:
+	twine upload --config-file ~/.pypirc -r pypi dist/*
+
 publish:
 	make build
-	twine upload --config-file ~/.pypirc -r pypi dist/*
+	make upload
 
 .PHONY: test build

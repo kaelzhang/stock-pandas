@@ -6,11 +6,14 @@ from setuptools import (
     setup,
     Extension
 )
-from Cython.Build import cythonize
+
 import numpy as np
 
 # beta version
 __version__ = '0.25.4'
+
+
+USE_CYTHON = os.environ.get('STOCK_PANDAS_USE_CYTHON')
 
 
 # Utility function to read the README file.
@@ -26,6 +29,38 @@ def read_requirements(filename):
         return f.read().splitlines()
 
 
+ext_kwargs = dict(
+    # Ignore warning caused by cpython for using deprecated apis
+    define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+    include_dirs=[np.get_include()]
+)
+
+# Distribution ref
+# https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules
+if USE_CYTHON:
+    from Cython.Build import cythonize
+    extensions = cythonize(
+        Extension(
+            'stock_pandas.math._lib',
+            ['stock_pandas/math/_lib.pyx'],
+            language='c++',
+            **ext_kwargs
+        ),
+        compiler_directives={
+            'linetrace': False,
+            'language_level': 3
+        }
+    )
+else:
+    extensions = [
+        Extension(
+            'stock_pandas.math._lib',
+            ['stock_pandas/math/_lib.cpp'],
+            **ext_kwargs
+        )
+    ]
+
+
 settings = dict(
     name='stock-pandas',
     packages=[
@@ -34,20 +69,7 @@ settings = dict(
         'stock_pandas.directive',
         'stock_pandas.math'
     ],
-    ext_modules=cythonize(
-        Extension(
-            'stock_pandas.math._lib',
-            ['stock_pandas/math/_lib.pyx'],
-            language='c++',
-            include_dirs=[
-                np.get_include()
-            ]
-        ),
-        compiler_directives={
-            'linetrace': False,
-            'language_level': 3
-        }
-    ),
+    ext_modules=extensions,
     zip_safe=False,
     version=__version__,
     author='Kael Zhang',
