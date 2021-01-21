@@ -10,7 +10,7 @@ from Cython.Build import cythonize
 import numpy as np
 
 # beta version
-__version__ = '0.25.3'
+__version__ = '0.25.4'
 
 
 # Utility function to read the README file.
