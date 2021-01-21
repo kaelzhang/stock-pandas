@@ -10,7 +10,7 @@ from setuptools import (
 import numpy as np
 
 # beta version
-__version__ = '0.25.6'
+__version__ = '0.25.7'
 
 
 BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
@@ -21,7 +21,7 @@ BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
 # README file and 2) it's easier to type in the README file than to put a raw
 # string in below ...
 def read(*fname) -> str:
-    if BUILDING:
+    if not BUILDING:
         return '<README.md>'
 
     return open(os.path.join(os.path.dirname(__file__), *fname)).read()

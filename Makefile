@@ -22,7 +22,7 @@ build: stock_pandas
 	python setup.py sdist bdist_wheel
 
 build-ext:
-	STOCK_PANDAS_USE_CYTHON=1 python setup.py build_ext --inplace
+	STOCK_PANDAS_BUILDING=1 python setup.py build_ext --inplace
 
 # Used to test build_ext without cython
 build-ext-no-cython:
