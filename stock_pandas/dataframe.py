@@ -15,7 +15,11 @@ from pandas.core.generic import NDFrame
 
 import numpy as np
 
-from .directive import parse
+from .directive import (
+    parse,
+    Directive,
+    DirectiveCache
+)
 
 from .common import (
     meta_property,
@@ -24,14 +28,21 @@ from .common import (
 
     KEY_ALIAS_MAP,
     KEY_COLUMNS_INFO_MAP,
-    KEY_DIRECTIVES_CACHE,
-
-    DirectiveCache
+    KEY_DIRECTIVES_CACHE
 )
 
 
 class ColumnInfo:
-    def __init__(self, size, directive, period) -> None:
+    size: int
+    directive: Directive
+    period: int
+
+    def __init__(
+        self,
+        size: int,
+        directive: Directive,
+        period: int
+    ) -> None:
         self.size = size
         self.directive = directive
         self.period = period
@@ -68,7 +79,7 @@ class StockDataFrame(DataFrame):
     )
 
     @property
-    def _constructor(self) -> Type['StockDataFrame']:
+    def _constructor(_) -> Type['StockDataFrame']:
         """This method overrides `DataFrame._constructor`
         which ensures the return type of several DataFrame methods
         """
@@ -197,7 +208,11 @@ class StockDataFrame(DataFrame):
 
         return series
 
-    def alias(self, as_name, src_name) -> None:
+    def alias(
+        self,
+        as_name: str,
+        src_name: str
+    ) -> None:
         """Defines column alias or directive alias
 
         Args:
@@ -249,12 +264,15 @@ class StockDataFrame(DataFrame):
         #   So `pandas.DataFrame.__getitem__` could index the right column
         return column_name
 
-    def _parse_directive(self, directive_str: str):
+    def _parse_directive(
+        self,
+        directive_str: str
+    ) -> Directive:
         return parse(directive_str, self._stock_directives_cache)
 
     def _get_or_calc_series(
         self,
-        directive,
+        directive: Directive,
         create_column: bool
     ) -> Tuple[str, np.ndarray]:
         """Gets the series column corresponds the `directive` or

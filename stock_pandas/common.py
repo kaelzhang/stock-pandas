@@ -73,18 +73,6 @@ def to_direction(value: str) -> int:
     raise ValueError(f'direction must be `1` or `-1`, but got `{value}`')
 
 
-# A simple cache
-class DirectiveCache:
-    def __init__(self):
-        self._store = {}
-
-    def set(self, key: str, value):
-        self._store[key] = value
-
-    def get(self, key: str, default=None):
-        return self._store.get(key, default)
-
-
 KEY_ALIAS_MAP = '__stock_aliases_map'
 KEY_COLUMNS_INFO_MAP = '__stock_columns_info_map'
 KEY_DIRECTIVES_CACHE = '__stock_directives_cache'
