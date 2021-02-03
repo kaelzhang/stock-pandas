@@ -16,6 +16,10 @@ def stock():
     return create_stock()
 
 
+def test_directive_stringify(stock):
+    assert stock.directive_stringify('boll') == 'boll:20,close'
+
+
 def test_get_column(stock):
     stock = stock.rename(columns={
         'open': 'Open',

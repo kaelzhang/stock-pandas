@@ -231,6 +231,21 @@ class StockDataFrame(DataFrame):
 
         self._stock_aliases_map[as_name] = src_name
 
+    def directive_stringify(
+        self,
+        directive_str: str
+    ) -> str:
+        """Stringify a `Directive` and get its full name
+        which is the actual column of the dataframe
+
+        Usage::
+            stock.directive_stringify('boll')
+
+            # It gets "boll:20,close"
+        """
+
+        return str(self._parse_directive(directive_str))
+
     def _map_keys(self, keys) -> List:
         return [
             self._map_single_key(key)

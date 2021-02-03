@@ -178,6 +178,17 @@ Appends rows of `other` to the end of caller, returning a new object.
 
 This method has nearly the same hehavior of [`pandas.DataFrame.append()`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.append.html), but instead it returns an instance of `StockDataFrame`
 
+### stock.directive_stringify(directive: str) -> str
+
+> Since 0.26.0
+
+Gets the full name of the `directive` which is also the actual column name of the data frame
+
+```py
+stock.directive_stringify('kdj.j')
+# "kdj.j:9,3,3,50.0"
+```
+
 ## Syntax of `directive`
 
 ```ebnf
