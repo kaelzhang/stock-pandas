@@ -49,3 +49,20 @@ def test_drop(stock: StockDataFrame):
     stock['boll']
 
     assert stock.iloc[-1][name] != last_boll
+
+
+def test_iloc_range(stock: StockDataFrame):
+    stock['boll']
+
+    name = stock.directive_stringify('boll')
+
+    length = len(stock)
+
+    last_boll = stock.iloc[-1][name]
+
+    stock = stock.iloc[10:]
+
+    assert isinstance(stock, StockDataFrame)
+
+    assert stock.iloc[-1][name] == last_boll
+    assert len(stock) == length - 10
