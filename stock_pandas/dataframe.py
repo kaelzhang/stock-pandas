@@ -1,4 +1,5 @@
 from typing import (
+    # Dict,
     Tuple,
     Type,
     Union,
@@ -57,6 +58,9 @@ class ColumnInfo:
             self.period
         )
 
+    def __repr__(self) -> str:
+        return f'<ColumnInfo {self.directive}, size:{self.size}, period:{self.period}>'  # noqa: E501
+
 
 class StockDataFrame(DataFrame):
     """The wrapper class for `pandas.DataFrame`
@@ -65,6 +69,10 @@ class StockDataFrame(DataFrame):
     """
 
     _create_column: bool
+
+    # _stock_aliases_map: Dict[str]
+    # _stock_columns_info_map: Dict[ColumnInfo]
+    # _stock_directives_cache: DirectiveCache
 
     _stock_aliases_map = meta_property(
         KEY_ALIAS_MAP, lambda: {}
