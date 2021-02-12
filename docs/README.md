@@ -189,6 +189,25 @@ stock.directive_stringify('kdj.j')
 # "kdj.j:9,3,3,50.0"
 ```
 
+### stock.rolling_calc(size, on, apply, forward, fill) -> np.ndarray
+
+> Since 0.27.0
+
+Applies a 1-D function along the given column or directive `on`
+
+- **size** `int` the size of the rolling window
+- **on** `str | Directive` along which the function should be applied
+- **apply** `Callable[[np.ndarray], Any]` the 1-D function to apply
+- **forward?** `bool = False` whether we should look backward (default value) to get each rolling window or not
+- **fill?** `Any = np.nan` the value used to fill where there are not enough items to form a rolling window
+
+```py
+stock.rolling_calc(5, 'open', max)
+
+# Whose return value equals to
+stock['hhv:5,open'].to_numpy()
+```
+
 ## Syntax of `directive`
 
 ```ebnf

@@ -222,10 +222,14 @@ def rolling_calc(
     period: int,
     func: Callable,
     fill=np.nan,
-    stride: int = 8
+    stride: int = 8,
+    shift: bool = True
 ) -> np.ndarray:
     """Creates a `period`-period rolling window and apply
     `func` to the items
+
+    Args:
+        shift (:obj:`bool`, optional)
     """
 
     length = len(array)
@@ -239,7 +243,12 @@ def rolling_calc(
         rolling_window(array, period, stride)
     )
 
-    return shift_and_fill(unshifted, period, fill)
+    if shift:
+        # If use shift, then we will add values to the begin of the array
+        return shift_and_fill(unshifted, period, fill)
+
+    # If no shift
+    return np.append(unshifted, np.repeat(fill, period - 1))
 
 
 DEFAULT_ARG_VALUE = ''

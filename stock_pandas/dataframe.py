@@ -1,6 +1,6 @@
 from typing import (
     # Dict,
-    Tuple,
+    Any, Callable, Tuple,
     Type,
     Union,
     List,
@@ -26,6 +26,7 @@ from .common import (
     meta_property,
     copy_stock_metas,
     ensure_return_type,
+    rolling_calc,
 
     KEY_ALIAS_MAP,
     KEY_COLUMNS_INFO_MAP,
@@ -85,6 +86,9 @@ class StockDataFrame(DataFrame):
     _stock_directives_cache = meta_property(
         KEY_DIRECTIVES_CACHE, lambda: DirectiveCache()
     )
+
+    # Methods that used by pandas and sub classes
+    # --------------------------------------------------------------------
 
     @property
     def _constructor(_) -> Type['StockDataFrame']:
@@ -154,6 +158,9 @@ class StockDataFrame(DataFrame):
         result = StockDataFrame(result)
 
         return result
+
+    # Public Methods of stock-pandas
+    # --------------------------------------------------------------------
 
     def get_column(self, key: str) -> Series:
         """Gets the column directly from dataframe by key.
@@ -253,6 +260,41 @@ class StockDataFrame(DataFrame):
         """
 
         return str(self._parse_directive(directive_str))
+
+    def rolling_calc(
+        self,
+        size: int,
+        on: str,
+        apply: Callable[[np.ndarray], Any],
+        forward: bool = False,
+        fill=np.nan
+    ) -> np.ndarray:
+        """Apply a 1-D function along the given column `on`
+
+        Args:
+            size (int): the size of the rolling window
+            on (str | Directive): along which the function should be applied
+            apply (Callable): the 1-D function to apply
+            forward (:obj:`bool`, optional): whether we should look backward
+                (default value) to get each rolling window or not
+            fill (:obj:`any`): the value used to fill where there are
+                not enough items to form a rolling window
+        """
+
+        array = self[on].to_numpy()
+
+        *_, stride = array.strides
+
+        return rolling_calc(
+            array,
+            size,
+            apply,
+            fill,
+            stride,
+            not forward
+        )
+
+    # --------------------------------------------------------------------
 
     def _map_keys(self, keys) -> List:
         return [

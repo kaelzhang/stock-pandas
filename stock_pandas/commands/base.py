@@ -15,6 +15,13 @@ from stock_pandas.common import (
 
 
 ReturnType = Tuple[ndarray, int]
+CommandFormula = Callable[..., ReturnType]
+CommandArgs = List[
+    Tuple[
+        Optional[Any],
+        Optional[Callable]
+    ]
+]
 
 
 class CommandPreset:
@@ -23,15 +30,13 @@ class CommandPreset:
         'args'
     )
 
+    formula: CommandFormula
+    args: CommandArgs
+
     def __init__(
         self,
-        formula: Callable[..., ReturnType],
-        args: List[
-            Tuple[
-                Optional[Any],
-                Optional[Callable]
-            ]
-        ]
+        formula: CommandFormula,
+        args: CommandArgs
     ) -> None:
         self.formula = formula
         self.args = args
