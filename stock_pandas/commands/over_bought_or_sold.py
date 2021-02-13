@@ -213,26 +213,28 @@ args_dj = [
 ]
 
 
+kdj_commands = dict(
+    k=CommandPreset(
+        partial(kdj_k, 'rsv'),
+        args_k
+    ),
+
+    d=CommandPreset(
+        partial(kdj_d, 'kdj'),
+        args_dj
+    ),
+
+    j=CommandPreset(
+        partial(kdj_j, 'kdj'),
+        args_dj
+    )
+)
+
 COMMANDS['kdj'] = (
     None,
     # We must specify sub command for kdj, such as
     # 'kdj.k'
-    dict(
-        k=CommandPreset(
-            partial(kdj_k, 'rsv'),
-            args_k
-        ),
-
-        d=CommandPreset(
-            partial(kdj_d, 'kdj'),
-            args_dj
-        ),
-
-        j=CommandPreset(
-            partial(kdj_j, 'kdj'),
-            args_dj
-        )
-    ),
+    kdj_commands,
     None
 )
 
@@ -265,5 +267,37 @@ COMMANDS['rsi'] = (
         [arg_period]
     ),
     None,
+    None
+)
+
+
+# kdjc
+# ----------------------------------------------------
+
+COMMANDS['rsvc'] = (
+    CommandPreset(
+        partial(rsv, 'close', 'close'),
+        [arg_period]
+    ),
+    None,
+    None
+)
+
+COMMANDS['kdjc'] = (
+    None,
+    dict(
+        k=CommandPreset(
+            partial(kdj_k, 'rsvc'),
+            kdj_commands['k'].args
+        ),
+        d=CommandPreset(
+            partial(kdj_d, 'kdjc'),
+            kdj_commands['d'].args
+        ),
+        j=CommandPreset(
+            partial(kdj_j, 'kdjc'),
+            kdj_commands['j'].args
+        )
+    ),
     None
 )

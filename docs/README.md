@@ -374,7 +374,7 @@ rsv:<period>
 
 Calculates the raw stochastic value which is often used to calculate KDJ
 
-### `kdj`, stochastic oscillator
+### `kdj`, a variety of stochastic oscillator
 
 The variety of [Stochastic Oscillator](https://en.wikipedia.org/wiki/Stochastic_oscillator) indicator created by [Dr. George Lane](https://en.wikipedia.org/wiki/George_Lane_(technical_analyst)), which follows the formula:
 
@@ -411,6 +411,12 @@ stock['kdj.d:9,3,3,50.0']
 # The KDJ serieses of with parameters 9, 9, and 9
 stock[['kdj.k:9,9', 'kdj.d:9,9', 'kdj.j:9,9,9']]
 ```
+
+### `kdjc`, another variety of stochastic oscillator
+
+Unlike `kdj`, `kdjc` uses close value instead of high and low value to calculate `rsv`, which makes the indicator more sensitive than `kdj`
+
+The arguments of `kdjc` are the same as `kdj`
 
 ### `rsi`, Relative Strength Index
 
