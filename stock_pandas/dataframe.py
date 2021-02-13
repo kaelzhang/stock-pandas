@@ -1,6 +1,8 @@
 from typing import (
-    # Dict,
-    Any, Callable, Tuple,
+    Dict,
+    Any,
+    Callable,
+    Tuple,
     Type,
     Union,
     List,
@@ -24,43 +26,20 @@ from .directive import (
 
 from .common import (
     meta_property,
-    copy_stock_metas,
-    ensure_return_type,
     rolling_calc,
+)
+
+from .meta import (
+    ColumnInfo,
+
+    copy_stock_metas,
+    copy_clean_stock_metas,
+    ensure_return_type,
 
     KEY_ALIAS_MAP,
     KEY_COLUMNS_INFO_MAP,
     KEY_DIRECTIVES_CACHE
 )
-
-
-class ColumnInfo:
-    size: int
-    directive: Directive
-    period: int
-
-    def __init__(
-        self,
-        size: int,
-        directive: Directive,
-        period: int
-    ) -> None:
-        self.size = size
-        self.directive = directive
-        self.period = period
-
-    def update(self, size) -> 'ColumnInfo':
-        """Creates a new ColumnInfo and update the size
-        """
-
-        return ColumnInfo(
-            size,
-            self.directive,
-            self.period
-        )
-
-    def __repr__(self) -> str:
-        return f'<ColumnInfo {self.directive}, size:{self.size}, period:{self.period}>'  # noqa: E501
 
 
 class StockDataFrame(DataFrame):
@@ -69,11 +48,13 @@ class StockDataFrame(DataFrame):
     Args definitions are the same as `pandas.DataFrame`
     """
 
-    _create_column: bool
+    _create_column: bool = False
+    __indexer_slice: Optional[slice] = None
+    __indexer_axis: int = 0
 
-    # _stock_aliases_map: Dict[str]
-    # _stock_columns_info_map: Dict[ColumnInfo]
-    # _stock_directives_cache: DirectiveCache
+    _stock_aliases_map: Dict[str, str]
+    _stock_columns_info_map: Dict[str, ColumnInfo]
+    _stock_directives_cache: DirectiveCache
 
     _stock_aliases_map = meta_property(
         KEY_ALIAS_MAP, lambda: {}
@@ -106,9 +87,37 @@ class StockDataFrame(DataFrame):
         super().__finalize__(other, *args, **kwargs)
 
         if isinstance(other, StockDataFrame):
-            copy_stock_metas(other, self)
+            copy_clean_stock_metas(
+                other,
+                self,
+                self.__indexer_slice,
+                self.__indexer_axis
+            )
 
         return self
+
+    def _slice(self, slice_obj: slice, axis: int = 0) -> 'StockDataFrame':
+        """This method is called in several cases, self.iloc[slice] for example
+
+        We mark the slice and axis here to prevent extra calculations
+        """
+
+        print('_slice', slice_obj, axis)
+
+        self.__indexer_slice = slice_obj
+        self.__indexer_axis = axis
+
+        try:
+            result = super()._slice(slice_obj, axis)
+        except Exception as e:
+            raise e
+        finally:
+            self.__indexer_slice = None
+            self.__indexer_axis = 0
+
+        return result
+
+    # --------------------------------------------------------------------
 
     def __init__(
         self,
@@ -128,8 +137,6 @@ class StockDataFrame(DataFrame):
 
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
-
-        self._create_column = False
 
         if date_column:
             self[date_column] = to_datetime(self[date_column])
@@ -207,8 +214,7 @@ class StockDataFrame(DataFrame):
         original_create_column = self._create_column
 
         if explicit_create_column:
-            # Vscode extension pyright could not handle this, so type ignore
-            self._create_column = create_column  # type: ignore
+            self._create_column = create_column
         else:
             # cases
             # 1. called by users

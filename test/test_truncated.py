@@ -20,13 +20,15 @@ def test_drop(stock):
 
     stock = stock.drop(index=[0, 1, 2], columns=['open', 'ma:2,open'])
 
-    columns_info_map = stock.__stock_columns_info_map
+    columns_info_map = stock._stock_columns_info_map
 
     assert 'open' not in columns_info_map
 
     assert 'ma:2,open' not in columns_info_map, 'columns should be cleaned'
 
     stock = stock.append(get_stock_update())
+
+    print(stock)
 
     assert get_last(stock['ma:2']) == 8.5
     assert get_last(stock['ma:2,high']) == 17.5
@@ -35,8 +37,16 @@ def test_drop(stock):
 def test_slice(stock):
     assert get_last(stock['ma:2']) == 7.5
 
+    # print(stock.__stock_columns_info_map['ma:2,close'])
+
     stock = stock[5:]
+
+    # print(stock.__stock_columns_info_map['ma:2,close'])
+
+    # assert stock.__stock_columns_info_map['ma:2,close'].size == 1
+
     stock = stock.append(get_stock_update())
+
     assert get_last(stock['ma:2']) == 8.5
 
 

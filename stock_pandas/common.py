@@ -8,7 +8,7 @@ from typing import (
 )
 
 import numpy as np
-from pandas import DataFrame
+
 
 T = TypeVar('T', int, float)
 
@@ -73,83 +73,6 @@ def to_direction(value: str) -> int:
     raise ValueError(f'direction must be `1` or `-1`, but got `{value}`')
 
 
-KEY_ALIAS_MAP = '__stock_aliases_map'
-KEY_COLUMNS_INFO_MAP = '__stock_columns_info_map'
-KEY_DIRECTIVES_CACHE = '__stock_directives_cache'
-
-
-def copy_stock_metas(source, target) -> None:
-    columns = target.columns
-
-    # If the new dataframe has been truncated,
-    # Then we need to clean the column info
-
-    # We just set the size of the info to zero to avoid complexity
-    need_clean = len(target) < len(source)
-
-    source_aliases_map = getattr(source, KEY_ALIAS_MAP, None)
-
-    if source_aliases_map is not None:
-        aliases_map = {}
-        for alias, column in source_aliases_map.items():
-            # Column `column` might be dropped in `target`
-            # by dataframe.drop(columns=some_columns)
-            # so we need to check it
-
-            # TODO: if alias is in columns, something wrong happened
-            # - support .iloc, loc, and other indexing and setting methods
-            if column in columns:
-                aliases_map[alias] = column
-
-        # Use `object.__setattr__` to avoid pandas UserWarning:
-        # > Pandas doesn't allow columns to be created via a new attribute name
-        object.__setattr__(target, KEY_ALIAS_MAP, aliases_map)
-
-    source_columns_info_map = getattr(source, KEY_COLUMNS_INFO_MAP, None)
-
-    if source_columns_info_map is not None:
-        columns_info_map = {}
-        for column, info in source_columns_info_map.items():
-            if column in columns:
-
-                # Set the size to 0,
-                # which indicates that the column needs to be calculated again
-                columns_info_map[
-                    column
-                ] = info.update(0) if need_clean else info
-
-        object.__setattr__(target, KEY_COLUMNS_INFO_MAP, columns_info_map)
-
-    source_stock_directives_cache = getattr(source, KEY_DIRECTIVES_CACHE, None)
-
-    if source_stock_directives_cache is not None:
-        object.__setattr__(
-            target,
-            KEY_DIRECTIVES_CACHE,
-            source_stock_directives_cache
-        )
-
-
-def ensure_return_type(
-    cls,
-    method: str,
-    should_apply_constructor: bool
-) -> None:
-    def helper(self, *args, **kwargs):
-        ret = getattr(super(cls, self), method)(*args, **kwargs)
-
-        if should_apply_constructor:
-            ret = cls(ret)
-
-        copy_stock_metas(self, ret)
-
-        return ret
-
-    helper.__doc__ = getattr(DataFrame, method).__doc__
-
-    setattr(cls, method, helper)
-
-
 def create_meta_property(key, create, self):
     value = getattr(self, key, None)
 
@@ -193,8 +116,8 @@ def join_args(args: list) -> str:
 def rolling_window(
     array: np.ndarray,
     period: int,
-    # A stride for float is 8
-    stride: int = 8
+    # A byte stride for float is 8
+    byte_stride: int = 8
 ) -> np.ndarray:
     """Gets an `period`-period rolling window for 1d array
     """
@@ -202,7 +125,7 @@ def rolling_window(
     return np.lib.stride_tricks.as_strided(
         array,
         shape=(len(array) - period + 1, period),
-        strides=(stride, stride)
+        strides=(byte_stride, byte_stride)
     )
 
 
@@ -222,7 +145,9 @@ def rolling_calc(
     period: int,
     func: Callable,
     fill=np.nan,
-    stride: int = 8,
+    # Not the stride of window, but the byte stride of np.ndarray.
+    # The stride of window is always `1` for stock-pandas?
+    byte_stride: int = 8,
     shift: bool = True
 ) -> np.ndarray:
     """Creates a `period`-period rolling window and apply
@@ -240,7 +165,7 @@ def rolling_calc(
     unshifted = np.apply_along_axis(
         func,
         1,
-        rolling_window(array, period, stride)
+        rolling_window(array, period, byte_stride)
     )
 
     if shift:

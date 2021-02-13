@@ -1,6 +1,6 @@
 files = stock_pandas test *.py
 test_files = *
-# test_files = manipulate
+# test_files = truncated
 
 test:
 	pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
