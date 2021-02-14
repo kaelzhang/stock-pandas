@@ -1,7 +1,10 @@
 from typing import (
     Optional
 )
-from copy import deepcopy
+from copy import (
+    copy,
+    deepcopy
+)
 
 from pandas import DataFrame
 
@@ -52,7 +55,6 @@ class ColumnInfo:
 
 KEY_ALIAS_MAP = '__stock_aliases_map'
 KEY_COLUMNS_INFO_MAP = '__stock_columns_info_map'
-KEY_DIRECTIVES_CACHE = '__stock_directives_cache'
 
 OptionalSlice = Optional[slice]
 
@@ -83,68 +85,13 @@ def update_info_size(
     return info.update(size)
 
 
-def copy_directive_cache(source, target):
-    source_stock_directives_cache = getattr(source, KEY_DIRECTIVES_CACHE, None)
-
-    if source_stock_directives_cache is not None:
-        object.__setattr__(
-            target,
-            KEY_DIRECTIVES_CACHE,
-            source_stock_directives_cache
-        )
+def set_attr(target, key, value) -> None:
+    object.__setattr__(target, key, value)
 
 
-def copy_clean_stock_metas(
-    source,
-    target,
-    slice_obj: OptionalSlice = None,
-    axis: int = 0
-) -> None:
-    copy_directive_cache(source, target)
-
-    columns = target.columns
-
-    # target_length = len(target)
-    # source_length = len(source)
-
-    need_clean = len(target) < len(source)
-
-    source_aliases_map = getattr(source, KEY_ALIAS_MAP, None)
-
-    if source_aliases_map is not None:
-        aliases_map = {}
-        for alias, column in source_aliases_map.items():
-            # Column `column` might be dropped in `target`
-            # by dataframe.drop(columns=some_columns)
-            # so we need to check it
-
-            # TODO: if alias is in columns, something wrong happened
-            # - support .iloc, loc, and other indexing and setting methods
-            if column in columns:
-                aliases_map[alias] = column
-
-        # Use `object.__setattr__` to avoid pandas UserWarning:
-        # > Pandas doesn't allow columns to be created via a new attribute name
-        object.__setattr__(target, KEY_ALIAS_MAP, aliases_map)
-
-    source_columns_info_map = getattr(source, KEY_COLUMNS_INFO_MAP, None)
-
-    if source_columns_info_map is not None:
-        columns_info_map = {}
-        for column, info in source_columns_info_map.items():
-            if column in columns:
-
-                # Set the size to 0,
-                # which indicates that the column needs to be calculated again
-                columns_info_map[
-                    column
-                ] = update_info_size(
-                    info,
-                    slice_obj,
-                    axis
-                ) if need_clean else info
-
-        object.__setattr__(target, KEY_COLUMNS_INFO_MAP, columns_info_map)
+def init_stock_metas(target) -> None:
+    set_attr(target, KEY_ALIAS_MAP, {})
+    set_attr(target, KEY_COLUMNS_INFO_MAP, {})
 
 
 def copy_stock_metas(
@@ -154,19 +101,62 @@ def copy_stock_metas(
     """Simply copy metadata from source to target
     """
 
-    copy_directive_cache(source, target)
+    set_attr(
+        target,
+        KEY_ALIAS_MAP,
+        copy(getattr(source, KEY_ALIAS_MAP))
+    )
 
-    source_aliases_map = getattr(source, KEY_ALIAS_MAP, None)
-    if source_aliases_map is not None:
-        object.__setattr__(target, KEY_ALIAS_MAP, source_aliases_map)
+    set_attr(
+        target,
+        KEY_COLUMNS_INFO_MAP,
+        deepcopy(getattr(source, KEY_COLUMNS_INFO_MAP))
+    )
 
-    source_columns_info_map = getattr(source, KEY_COLUMNS_INFO_MAP, None)
-    if source_columns_info_map is not None:
-        object.__setattr__(
-            target,
-            KEY_COLUMNS_INFO_MAP,
-            deepcopy(source_columns_info_map)
-        )
+
+def copy_clean_stock_metas(
+    source,
+    target,
+    slice_obj: OptionalSlice = None,
+    axis: int = 0
+) -> None:
+    # copy_directive_cache(source, target)
+
+    columns = target.columns
+
+    source_aliases_map = getattr(source, KEY_ALIAS_MAP)
+
+    aliases_map = {}
+    for alias, column in source_aliases_map.items():
+        # Column `column` might be dropped in `target`
+        # by dataframe.drop(columns=some_columns)
+        # so we need to check it
+
+        # TODO: if alias is in columns, something wrong happened
+        # - support .iloc, loc, and other indexing and setting methods
+        if column in columns:
+            aliases_map[alias] = column
+
+    set_attr(target, KEY_ALIAS_MAP, aliases_map)
+
+    need_clean = len(target) < len(source)
+    source_columns_info_map = getattr(source, KEY_COLUMNS_INFO_MAP)
+
+    columns_info_map = {}
+    for column, info in source_columns_info_map.items():
+        if column in columns:
+
+            # Set the size to 0,
+            # which indicates that the column needs to be calculated again
+            columns_info_map[
+                column
+            ] = update_info_size(
+                info,
+                slice_obj,
+                axis
+            ) if need_clean else info
+
+    set_attr(target, KEY_COLUMNS_INFO_MAP, columns_info_map)
 
 
 def ensure_return_type(

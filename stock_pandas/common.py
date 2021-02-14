@@ -73,21 +73,6 @@ def to_direction(value: str) -> int:
     raise ValueError(f'direction must be `1` or `-1`, but got `{value}`')
 
 
-def create_meta_property(key, create, self):
-    value = getattr(self, key, None)
-
-    if value is not None:
-        return value
-
-    value = create()
-    object.__setattr__(self, key, value)
-    return value
-
-
-def meta_property(key, create):
-    return property(partial(create_meta_property, key, create))
-
-
 def compare_cross(
     left: np.ndarray,
     right: np.ndarray

@@ -24,21 +24,18 @@ from .directive import (
     DirectiveCache
 )
 
-from .common import (
-    meta_property,
-    rolling_calc,
-)
+from .common import rolling_calc
 
 from .meta import (
     ColumnInfo,
 
+    init_stock_metas,
     copy_stock_metas,
     copy_clean_stock_metas,
     ensure_return_type,
 
     KEY_ALIAS_MAP,
-    KEY_COLUMNS_INFO_MAP,
-    KEY_DIRECTIVES_CACHE
+    KEY_COLUMNS_INFO_MAP
 )
 
 
@@ -48,25 +45,21 @@ class StockDataFrame(DataFrame):
     Args definitions are the same as `pandas.DataFrame`
     """
 
-    _create_column: bool = False
-    __indexer_slice: Optional[slice] = None
-    __indexer_axis: int = 0
+    _stock_create_column: bool = False
+    _stock_indexer_slice: Optional[slice] = None
+    _stock_indexer_axis: int = 0
 
-    _stock_aliases_map: Dict[str, str]
-    _stock_columns_info_map: Dict[str, ColumnInfo]
-    _stock_directives_cache: DirectiveCache
+    # Directive cache can be shared between instances,
+    # so declare as static property
+    _stock_directives_cache = DirectiveCache()
 
-    _stock_aliases_map = meta_property(
-        KEY_ALIAS_MAP, lambda: {}
-    )
+    @property
+    def _stock_aliases_map(self) -> Dict[str, str]:
+        return getattr(self, KEY_ALIAS_MAP)
 
-    _stock_columns_info_map = meta_property(
-        KEY_COLUMNS_INFO_MAP, lambda: {}
-    )
-
-    _stock_directives_cache = meta_property(
-        KEY_DIRECTIVES_CACHE, lambda: DirectiveCache()
-    )
+    @property
+    def _stock_columns_info_map(self) -> Dict[str, ColumnInfo]:
+        return getattr(self, KEY_COLUMNS_INFO_MAP)
 
     # Methods that used by pandas and sub classes
     # --------------------------------------------------------------------
@@ -90,8 +83,8 @@ class StockDataFrame(DataFrame):
             copy_clean_stock_metas(
                 other,
                 self,
-                self.__indexer_slice,
-                self.__indexer_axis
+                self._stock_indexer_slice,
+                self._stock_indexer_axis
             )
 
         return self
@@ -104,16 +97,16 @@ class StockDataFrame(DataFrame):
 
         print('_slice', slice_obj, axis)
 
-        self.__indexer_slice = slice_obj
-        self.__indexer_axis = axis
+        self._stock_indexer_slice = slice_obj
+        self._stock_indexer_axis = axis
 
         try:
             result = super()._slice(slice_obj, axis)
         except Exception as e:
             raise e
         finally:
-            self.__indexer_slice = None
-            self.__indexer_axis = 0
+            self._stock_indexer_slice = None
+            self._stock_indexer_axis = 0
 
         return result
 
@@ -137,6 +130,8 @@ class StockDataFrame(DataFrame):
 
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
+        else:
+            init_stock_metas(self)
 
         if date_column:
             self[date_column] = to_datetime(self[date_column])
@@ -211,21 +206,21 @@ class StockDataFrame(DataFrame):
         # We should call self.exec() without `create_column`
         # inside command formulas
         explicit_create_column = isinstance(create_column, bool)
-        original_create_column = self._create_column
+        original_create_column = self._stock_create_column
 
         if explicit_create_column:
-            self._create_column = create_column
+            self._stock_create_column = create_column
         else:
             # cases
             # 1. called by users
             # 2. or called by command formulas
-            create_column = self._create_column
+            create_column = self._stock_create_column
 
         series = self._calc(directive_str)
 
         if explicit_create_column:
             # Set back to default value, since we complete calculatiing
-            self._create_column = original_create_column
+            self._stock_create_column = original_create_column
 
         return series
 
@@ -434,7 +429,10 @@ class StockDataFrame(DataFrame):
     def _calc(self, directive_str: str) -> np.ndarray:
         directive = self._parse_directive(directive_str)
 
-        _, series = self._get_or_calc_series(directive, self._create_column)
+        _, series = self._get_or_calc_series(
+            directive,
+            self._stock_create_column
+        )
 
         return series
 
