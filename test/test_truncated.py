@@ -1,3 +1,4 @@
+from stock_pandas.dataframe import StockDataFrame
 import pytest
 
 from .common import (
@@ -53,3 +54,29 @@ def test_iloc_slice(stock):
     stock = stock.append(get_stock_update())
 
     assert get_last(stock['ma:2']) == 8.5
+
+
+def test_slice_with_object(stock: StockDataFrame):
+    stock['ma:2']
+
+    stock = stock.iloc[1:5]
+
+    assert stock._stock_columns_info_map['ma:2,close'].size == 4
+
+
+def test_slice_with_step(stock: StockDataFrame):
+    stock['ma:2']
+
+    stock = stock.iloc[0::2]
+
+    assert stock._stock_columns_info_map['ma:2,close'].size == 0
+
+
+def test_invalid_slicing(stock: StockDataFrame):
+    with pytest.raises(AssertionError):
+        # However, it might never happen,
+        # but there is a assertion in super()._slice
+        # we have to test about this case
+        stock._slice({})
+
+    assert stock._stock_indexer_slice is None

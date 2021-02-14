@@ -92,8 +92,6 @@ class StockDataFrame(DataFrame):
         We mark the slice and axis here to prevent extra calculations
         """
 
-        print('_slice', slice_obj, axis)
-
         self._stock_indexer_slice = slice_obj
         self._stock_indexer_axis = axis
 
