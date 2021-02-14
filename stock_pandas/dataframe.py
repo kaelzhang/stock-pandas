@@ -53,13 +53,8 @@ class StockDataFrame(DataFrame):
     # so declare as static property
     _stock_directives_cache = DirectiveCache()
 
-    @property
-    def _stock_aliases_map(self) -> Dict[str, str]:
-        return getattr(self, KEY_ALIAS_MAP)
-
-    @property
-    def _stock_columns_info_map(self) -> Dict[str, ColumnInfo]:
-        return getattr(self, KEY_COLUMNS_INFO_MAP)
+    _stock_aliases_map: Dict[str, str]
+    _stock_columns_info_map: Dict[str, ColumnInfo]
 
     # Methods that used by pandas and sub classes
     # --------------------------------------------------------------------

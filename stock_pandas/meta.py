@@ -53,8 +53,8 @@ class ColumnInfo:
         return f'<ColumnInfo {self.directive}, size:{self.size}, period:{self.period}>'  # noqa: E501
 
 
-KEY_ALIAS_MAP = '__stock_aliases_map'
-KEY_COLUMNS_INFO_MAP = '__stock_columns_info_map'
+KEY_ALIAS_MAP = '_stock_aliases_map'
+KEY_COLUMNS_INFO_MAP = '_stock_columns_info_map'
 
 OptionalSlice = Optional[slice]
 
@@ -120,8 +120,6 @@ def copy_clean_stock_metas(
     slice_obj: OptionalSlice = None,
     axis: int = 0
 ) -> None:
-    # copy_directive_cache(source, target)
-
     columns = target.columns
 
     source_aliases_map = getattr(source, KEY_ALIAS_MAP)
