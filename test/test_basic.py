@@ -16,7 +16,7 @@ def stock():
     return create_stock()
 
 
-def test_directive_stringify(stock):
+def test_directive_stringify(stock: StockDataFrame):
     assert stock.directive_stringify('boll') == 'boll:20,close'
 
 

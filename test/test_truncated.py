@@ -37,13 +37,9 @@ def test_drop(stock):
 def test_slice(stock):
     assert get_last(stock['ma:2']) == 7.5
 
-    # print(stock.__stock_columns_info_map['ma:2,close'])
-
     stock = stock[5:]
 
-    # print(stock.__stock_columns_info_map['ma:2,close'])
-
-    # assert stock.__stock_columns_info_map['ma:2,close'].size == 1
+    assert stock._stock_columns_info_map['ma:2,close'].size == 1
 
     stock = stock.append(get_stock_update())
 

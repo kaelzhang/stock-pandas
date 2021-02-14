@@ -32,10 +32,7 @@ from .meta import (
     init_stock_metas,
     copy_stock_metas,
     copy_clean_stock_metas,
-    ensure_return_type,
-
-    KEY_ALIAS_MAP,
-    KEY_COLUMNS_INFO_MAP
+    ensure_return_type
 )
 
 
@@ -61,14 +58,18 @@ class StockDataFrame(DataFrame):
 
     @property
     def _constructor(_) -> Type['StockDataFrame']:
-        """This method overrides `DataFrame._constructor`
+        """
+        This method overrides `DataFrame._constructor`
         which ensures the return type of several DataFrame methods
         """
 
         return StockDataFrame
 
     def __finalize__(self, other, *args, **kwargs) -> 'StockDataFrame':
-        """This method overrides `DataFrame.__finalize__`
+        """
+        Propagate metadata from other to self.
+
+        This method overrides `DataFrame.__finalize__`
         which ensures the meta info of StockDataFrame
         """
 
@@ -78,14 +79,15 @@ class StockDataFrame(DataFrame):
             copy_clean_stock_metas(
                 other,
                 self,
-                self._stock_indexer_slice,
-                self._stock_indexer_axis
+                other._stock_indexer_slice,
+                other._stock_indexer_axis
             )
 
         return self
 
     def _slice(self, slice_obj: slice, axis: int = 0) -> 'StockDataFrame':
-        """This method is called in several cases, self.iloc[slice] for example
+        """
+        This method is called in several cases, self.iloc[slice] for example
 
         We mark the slice and axis here to prevent extra calculations
         """
@@ -159,37 +161,43 @@ class StockDataFrame(DataFrame):
     # Public Methods of stock-pandas
     # --------------------------------------------------------------------
 
-    def get_column(self, key: str) -> Series:
-        """Gets the column directly from dataframe by key.
+    def get_column(self, name: str) -> Series:
+        """
+        Gets the column directly from dataframe by key.
 
         This method applies column name aliases before getting the value.
+
+        Args:
+            name (str): The name of the column
+
+        Returns:
+            np.Series
         """
 
-        origin_key = key
+        origin_name = name
 
-        if key in self._stock_aliases_map:
+        if name in self._stock_aliases_map:
             # Map alias, if the key is an alias
-            key = self._stock_aliases_map[key]
+            name = self._stock_aliases_map[name]
 
         try:
-            return self._get_item_cache(key)
+            return self._get_item_cache(name)
         except KeyError:
-            raise KeyError(f'column "{origin_key}" not found')
+            raise KeyError(f'column "{origin_name}" not found')
 
     def exec(
         self,
         directive_str: str,
         create_column: Optional[bool] = None
     ) -> np.ndarray:
-        """Executes the given directive and
-        returns a numpy ndarray according to the directive.
+        """
+        Executes the given directive and returns a numpy ndarray according to the directive.
 
         This method is **NOT** Thread-safe.
 
         Args:
-            directive (str): directive
-            create_column (:obj:`bool`, optional): whether we should create a
-            column for the calculated series.
+            directive_str (str): directive
+            create_column (:obj:`bool`, optional): whether we should create a column for the calculated series.
 
         Returns:
             np.ndarray
@@ -224,7 +232,8 @@ class StockDataFrame(DataFrame):
         as_name: str,
         src_name: str
     ) -> None:
-        """Defines column alias or directive alias
+        """
+        Defines column alias or directive alias
 
         Args:
             as_name (str): the alias name
@@ -246,13 +255,19 @@ class StockDataFrame(DataFrame):
         self,
         directive_str: str
     ) -> str:
-        """Stringify a `Directive` and get its full name
-        which is the actual column of the dataframe
+        """
+        Stringify a `Directive` and get its full name which is the actual column of the dataframe
 
         Usage::
-            stock.directive_stringify('boll')
 
+            stock.directive_stringify('boll')
             # It gets "boll:20,close"
+
+        Args:
+            directive_str (str): directive
+
+        Returns:
+            str
         """
 
         return str(self._parse_directive(directive_str))
@@ -271,10 +286,17 @@ class StockDataFrame(DataFrame):
             size (int): the size of the rolling window
             on (str | Directive): along which the function should be applied
             apply (Callable): the 1-D function to apply
-            forward (:obj:`bool`, optional): whether we should look backward
-                (default value) to get each rolling window or not
-            fill (:obj:`any`): the value used to fill where there are
-                not enough items to form a rolling window
+            forward (:obj:`bool`, optional): whether we should look backward (default value) to get each rolling window or not
+            fill (:obj:`any`): the value used to fill where there are not enough items to form a rolling window
+
+        Returns:
+            np.ndarray
+
+        Usage::
+
+            stock.rolling_calc(5, 'high', max)
+            # Gets the 5-period highest of high value, which is equivalent to
+            stock.exec('hhv:5').to_numpy()
         """
 
         array = self[on].to_numpy()
