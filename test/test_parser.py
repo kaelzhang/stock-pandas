@@ -193,7 +193,8 @@ def test_invalid_columns():
         ('ma:5 > 0)', 'expect EOF')
     ]
 
-    def parse(input): return Parser(input).parse()
+    def parse(input):
+        return Parser(input).parse()
 
     for directive_str, err_msg in CASES:
         with pytest.raises(DirectiveSyntaxError, match=err_msg):
