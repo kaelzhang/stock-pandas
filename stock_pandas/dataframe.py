@@ -440,7 +440,9 @@ class StockDataFrame(DataFrame):
 
 
 METHODS_TO_ENSURE_RETURN_TYPE = [
-    ('append', False),
+    # TODO:
+    # astype needs special treatment
+    # astype(dict_like) could not ensure return type
     ('astype', True)
 ]
 
