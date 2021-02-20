@@ -77,6 +77,17 @@ def update_info_size(
     start = slice_obj.start
 
     if stop is not None:
+        # Case 1:
+        #          stop
+        #           |       size
+        #           |        |
+        # ---------------------------------
+
+        # Case 2:
+        #                   stop
+        #          size      |
+        #           |        |
+        # ---------------------------------
         size = min(size, stop)
 
     if start is not None:

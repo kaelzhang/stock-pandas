@@ -26,7 +26,7 @@ The code example is available at [here](https://github.com/kaelzhang/stock-panda
 
 For now, before installing `stock-pandas` in your environment
 
-You must have `g++` compiler installed
+#### Have `g++` compiler installed
 
 ```sh
 # With yum, for CentOS, Amazon Linux, etc
@@ -39,7 +39,17 @@ apt-get install g++
 xcode-select --install
 ```
 
-Install `stock-pandas`
+If you use docker with `Dockerfile` and use python image,
+
+```Dockerfile
+FROM python:3.8
+
+...
+```
+
+The default `python:3.8` image already contains g++, so we do not install g++ additionally.
+
+#### Install `stock-pandas`
 
 ```sh
 # Installing `stock-pandas` requires `numpy` to be installed first
