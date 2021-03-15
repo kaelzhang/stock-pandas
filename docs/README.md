@@ -369,7 +369,7 @@ stock['boll']
 
 # bollinger upper band, a shortcut for stock['boll.upper']
 stock['boll.u']
-stock['boll.upper]
+stock['boll.upper']
 
 # bollinger lower band, which is equivalent to stock['boll.l']
 stock['boll.lower']
@@ -577,7 +577,7 @@ whether `left` crosses through `right` from the down side of `right` to the uppe
 whether `left` crosses down `right`.
 
 ```py
-# Which we call them __dead crosses__
+# Which we call them "dead crosses"
 stock['macd \\ macd.signal']
 ```
 

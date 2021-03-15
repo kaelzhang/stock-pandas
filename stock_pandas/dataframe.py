@@ -284,7 +284,7 @@ class StockDataFrame(DataFrame):
             size (int): the size of the rolling window
             on (str | Directive): along which the function should be applied
             apply (Callable): the 1-D function to apply
-            forward (:obj:`bool`, optional): whether we should look backward (default value) to get each rolling window or not
+            forward (:obj:`bool`, optional): whether we should look forward to get each rolling window or not (default value)
             fill (:obj:`any`): the value used to fill where there are not enough items to form a rolling window
 
         Returns:
