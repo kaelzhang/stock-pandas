@@ -73,14 +73,25 @@ def test_slice_with_step(stock: StockDataFrame):
     assert stock._stock_columns_info_map['ma:2,close'].size == 0
 
 
-def test_slice_with_negative(stock: StockDataFrame):
+def test_slice_with_negative_start(stock: StockDataFrame):
     stock['ma:2']
 
     stock = stock.iloc[-2:]
     stock = stock.drop(columns=['name'])
 
-    assert stock._stock_columns_info_map['ma:2,close'].size == 8
+    assert stock._stock_columns_info_map['ma:2,close'].size == 2
     assert not np.isnan(stock.values).any()
+
+
+def test_slice_with_negative_end(stock: StockDataFrame):
+    stock['ma:2']
+    length = len(stock)
+
+    stock = stock.iloc[:-2]
+    stock = stock.drop(columns=['name'])
+
+    assert stock._stock_columns_info_map['ma:2,close'].size == length - 2
+    assert np.isnan(stock.values).any()
 
 
 def test_invalid_slicing(stock: StockDataFrame):

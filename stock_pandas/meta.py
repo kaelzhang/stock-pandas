@@ -61,6 +61,7 @@ OptionalSlice = Optional[slice]
 
 def update_info_size(
     info: ColumnInfo,
+    source_length: int,
     slice_obj: OptionalSlice,
     axis: int
 ) -> ColumnInfo:
@@ -77,6 +78,9 @@ def update_info_size(
     start = slice_obj.start
 
     if stop is not None:
+        if stop < 0:
+            stop = source_length + stop
+
         # Case 1:
         #          stop
         #           |       size
@@ -91,6 +95,9 @@ def update_info_size(
         size = min(size, stop)
 
     if start is not None:
+        if start < 0:
+            start = source_length + start
+
         size -= start
 
     return info.update(size)
@@ -148,7 +155,9 @@ def copy_clean_stock_metas(
 
     set_attr(target, KEY_ALIAS_MAP, aliases_map)
 
-    need_clean = len(target) < len(source)
+    source_length = len(source)
+
+    need_clean = len(target) < source_length
     source_columns_info_map = getattr(source, KEY_COLUMNS_INFO_MAP)
 
     columns_info_map = {}
@@ -161,6 +170,7 @@ def copy_clean_stock_metas(
                 column
             ] = update_info_size(
                 info,
+                source_length,
                 slice_obj,
                 axis
             ) if need_clean else info
