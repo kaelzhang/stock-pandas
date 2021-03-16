@@ -1,5 +1,6 @@
 from stock_pandas.dataframe import StockDataFrame
 import pytest
+import numpy as np
 
 from .common import (
     create_stock,
@@ -70,6 +71,16 @@ def test_slice_with_step(stock: StockDataFrame):
     stock = stock.iloc[0::2]
 
     assert stock._stock_columns_info_map['ma:2,close'].size == 0
+
+
+def test_slice_with_negative(stock: StockDataFrame):
+    stock['ma:2']
+
+    stock = stock.iloc[-2:]
+    stock = stock.drop(columns=['name'])
+
+    assert stock._stock_columns_info_map['ma:2,close'].size == 8
+    assert not np.isnan(stock.values).any()
 
 
 def test_invalid_slicing(stock: StockDataFrame):
