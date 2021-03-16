@@ -91,3 +91,22 @@ def test_invalid_slicing(stock: StockDataFrame):
         stock._slice({})
 
     assert stock._stock_indexer_slice is None
+
+
+def test_columns_manipulate(stock: StockDataFrame):
+    stock = stock.drop(columns=['name'])
+
+    indicators = ['ma:2', 'ma:2,open']
+
+    columns_names = [
+        stock.directive_stringify(indicator)
+        for indicator in indicators
+    ]
+
+    for indicator in indicators:
+        stock[indicator]
+
+    stock = stock.iloc[1:]
+    stock = stock[columns_names + ['open']]
+
+    assert not np.isnan(stock.values).any()
