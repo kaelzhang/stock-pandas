@@ -10,7 +10,7 @@ from setuptools import (
 import numpy as np
 
 # beta version
-__version__ = '0.29.3'
+__version__ = '0.30.0'
 
 
 BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
@@ -34,7 +34,7 @@ def read_requirements(filename):
 
 ext_kwargs = dict(
     # Ignore warning caused by cpython for using deprecated apis
-    define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+    define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
     include_dirs=[np.get_include()]
 )
 
@@ -89,18 +89,18 @@ settings = dict(
     long_description_content_type='text/markdown',
     python_requires='>=3.6',
     classifiers=[
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: Implementation :: CPython",
-        "Natural Language :: English",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Financial and Insurance Industry",
-        "Operating System :: OS Independent",
-        "Development Status :: 4 - Beta",
-        "Topic :: Utilities",
-        "License :: OSI Approved :: Apache Software License",
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Natural Language :: English',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Financial and Insurance Industry',
+        'Operating System :: OS Independent',
+        'Development Status :: 4 - Beta',
+        'Topic :: Utilities',
+        'License :: OSI Approved :: Apache Software License',
     ],
 )
 

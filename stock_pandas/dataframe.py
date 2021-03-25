@@ -21,7 +21,8 @@ import numpy as np
 from .directive import (
     parse,
     Directive,
-    DirectiveCache
+    DirectiveCache,
+    directive_cache
 )
 
 from .common import rolling_calc
@@ -42,13 +43,15 @@ class StockDataFrame(DataFrame):
     Args definitions are the same as `pandas.DataFrame`
     """
 
+    _date_col: Optional[str] = None
+
     _stock_create_column: bool = False
     _stock_indexer_slice: Optional[slice] = None
     _stock_indexer_axis: int = 0
 
     # Directive cache can be shared between instances,
     # so declare as static property
-    _stock_directives_cache = DirectiveCache()
+    _stock_directives_cache: DirectiveCache = directive_cache
 
     _stock_aliases_map: Dict[str, str]
     _stock_columns_info_map: Dict[str, ColumnInfo]
@@ -110,7 +113,7 @@ class StockDataFrame(DataFrame):
     def __init__(
         self,
         data=None,
-        date_column=None,
+        date_col: Optional[str] = None,
         *args,
         **kwargs
     ) -> None:
@@ -128,9 +131,11 @@ class StockDataFrame(DataFrame):
         else:
             init_stock_metas(self)
 
-        if date_column:
-            self[date_column] = to_datetime(self[date_column])
-            self.set_index(date_column, inplace=True)
+        self._date_col = date_col
+
+        if date_col:
+            self[date_col] = to_datetime(self[date_col])
+            self.set_index(date_col, inplace=True)
 
     def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
         if isinstance(key, str):

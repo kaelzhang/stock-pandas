@@ -4,6 +4,9 @@ from .types import Directive
 from .cache import DirectiveCache
 
 
+directive_cache = DirectiveCache()
+
+
 def parse(
     directive_str: str,
     cache: DirectiveCache
@@ -19,3 +22,7 @@ def parse(
     directive, _ = create_by_node(ast, directive_str, cache)
 
     return cache.set(directive_str, directive)
+
+
+def directive_stringify(directive_str: str) -> str:
+    return str(parse(directive_str, directive_cache))

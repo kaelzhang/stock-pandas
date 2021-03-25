@@ -3,7 +3,11 @@ import itertools
 import pytest
 import pandas as pd
 
-from stock_pandas import StockDataFrame
+from stock_pandas import (
+    StockDataFrame,
+    directive_stringify
+)
+
 from .common import (
     simple_list,
     create_stock,
@@ -18,6 +22,7 @@ def stock():
 
 def test_directive_stringify(stock: StockDataFrame):
     assert stock.directive_stringify('boll') == 'boll:20,close'
+    assert directive_stringify('boll') == 'boll:20,close'
 
 
 def test_get_column(stock):

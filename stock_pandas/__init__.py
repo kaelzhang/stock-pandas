@@ -1,5 +1,8 @@
 from .dataframe import StockDataFrame
-from .directive import DirectiveCache
+from .directive import (
+    DirectiveCache,
+    directive_stringify
+)
 
 from .exceptions import (
     DirectiveSyntaxError,

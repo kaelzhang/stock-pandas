@@ -218,6 +218,19 @@ stock.rolling_calc(5, 'open', max)
 stock['hhv:5,open'].to_numpy()
 ```
 
+### directive_stringify(directive_str) -> str
+
+> since 0.30.0
+
+Similar to `stock.directive_stringify()` but could be called without class initialization
+
+```py
+from stock_pandas import directive_stringify
+
+directive_stringify('boll')
+# boll:21,close
+```
+
 ## Syntax of `directive`
 
 ```ebnf
