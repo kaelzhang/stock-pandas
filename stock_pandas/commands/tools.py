@@ -29,6 +29,8 @@ def column(df, s, column) -> ReturnType:
     return df.loc[s, column].to_numpy(), 0
 
 
+# TODO:
+# Posibility to deprecate this command
 COMMANDS['column'] = (
     CommandPreset(
         column,

@@ -432,12 +432,12 @@ stock['kdj.d']
 stock['kdj.d:9,3,3,50.0']
 
 # The KDJ serieses of with parameters 9, 9, and 9
-stock[['kdj.k:9,9', 'kdj.d:9,9', 'kdj.j:9,9,9']]
+stock[['kdj.k:9,9', 'kdj.d:9,9,9', 'kdj.j:9,9,9']]
 ```
 
 ### `kdjc`, another variety of stochastic oscillator
 
-Unlike `kdj`, `kdjc` uses close value instead of high and low value to calculate `rsv`, which makes the indicator more sensitive than `kdj`
+Unlike `kdj`, `kdjc` uses **close** value instead of high and low value to calculate `rsv`, which makes the indicator more sensitive than `kdj`
 
 The arguments of `kdjc` are the same as `kdj`
 
@@ -502,6 +502,11 @@ column:<name>
 Just gets the series of a column. This command is designed to be used together with an operator to compare with another command or as a parameter of some statistics command.
 
 - **name** `str` the name of the column
+
+```py
+# A bool-type series indicates whether the current price is higher than the upper bollinger band
+stock['column:close > boll.upper']
+```
 
 ### `increase`
 

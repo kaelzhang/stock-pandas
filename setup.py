@@ -10,7 +10,7 @@ from setuptools import (
 import numpy as np
 
 # beta version
-__version__ = '0.30.0'
+__version__ = '0.30.1'
 
 
 BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
