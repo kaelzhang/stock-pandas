@@ -9,9 +9,6 @@ from stock_pandas import (
 )
 
 from .common import (
-    # simple_list,
-    # create_stock,
-    # get_stock_update,
     get_tencent
 )
 
@@ -87,7 +84,7 @@ def test_append_series(tencent: DataFrame):
 def test_append_series_without_time_key(tencent: DataFrame):
     head = tencent.iloc[:10]
     new = tencent.iloc[10]
-    new.drop(TIME_KEY, inplace=True)
+    new = new.drop(TIME_KEY)
 
     check_append_no_time_key(head, new)
 

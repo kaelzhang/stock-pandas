@@ -48,6 +48,7 @@ class StockDataFrame(DataFrame):
     """
 
     _date_col: Optional[str] = None
+    _to_datetime_kwargs: dict = {}
 
     _stock_create_column: bool = False
     _stock_indexer_slice: Optional[slice] = None
