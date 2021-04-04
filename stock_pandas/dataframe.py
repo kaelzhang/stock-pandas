@@ -183,14 +183,16 @@ class StockDataFrame(DataFrame):
     def append(
         self,
         other,
-        ignore_index: bool = False,
         *args,
         **kwargs
     ) -> 'StockDataFrame':
-        if self._date_col is not None:
-            # We do not allow ignore_index if date_col is specified
-            ignore_index = False
+        """
+        Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
 
+        The args of this method is the same as `pandas.DataFrame.append`
+        """
+
+        if self._date_col is not None:
             other = apply_date(
                 self._date_col,
                 self._to_datetime_kwargs,
@@ -198,7 +200,7 @@ class StockDataFrame(DataFrame):
                 other
             )
 
-        return super().append(other, ignore_index, *args, **kwargs)
+        return super().append(other, *args, **kwargs)
 
     def get_column(self, name: str) -> Series:
         """

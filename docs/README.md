@@ -186,7 +186,7 @@ stock.get_column('Close')
 
 Appends rows of `other` to the end of caller, returning a new object.
 
-This method has nearly the same hehavior of [`pandas.DataFrame.append()`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.append.html), but instead it returns an instance of `StockDataFrame`
+This method has nearly the same hehavior of [`pandas.DataFrame.append()`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.append.html), but instead it returns an instance of `StockDataFrame`, and it applies `date_col` to the newly-appended row(s) if possible.
 
 ### stock.directive_stringify(directive: str) -> str
 

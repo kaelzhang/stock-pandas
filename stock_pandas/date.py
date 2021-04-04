@@ -1,7 +1,4 @@
-from typing import (
-    TypeVar,
-    Union
-)
+from typing import TypeVar
 
 from functools import partial
 
@@ -25,22 +22,19 @@ def apply_date(
         if date_col not in data.columns:
             return data
 
-        data = data.copy()
-        apply_date_to_df(data, date_col)
+        df = data.copy()
+        apply_date_to_df(df, date_col, to_datetime_kwargs)
 
-        return data
+        return df
 
     if isinstance(data, Series):
         if date_col not in data.keys():
             return data
 
-        data: Series = data.copy()
-        date = data[date_col]
-        data.drop(date_col, inplace=True)
-        data.rename(
-            to_datetime(date, **to_datetime_kwargs)
-        )
-        return data
+        series: Series = data.copy()
+        apply_date_to_series(series, date_col, to_datetime_kwargs)
+
+        return series
 
     if isinstance(data, dict):
         date_series = data.get(date_col)
@@ -48,21 +42,36 @@ def apply_date(
         if date_series is None:
             return data
 
-        data = data.copy()
-        data[date_col] = to_datetime(date_series, **to_datetime_kwargs)
-        return data
+        series = Series(data)
+        apply_date_to_series(series, date_col, to_datetime_kwargs)
+
+        return series
 
     if allow_list and isinstance(data, list):
-        apply = partial(apply_date, to_datetime_kwargs, False)
-        return map(apply, data)
+        apply = partial(apply_date, date_col, to_datetime_kwargs, False)
+        return list(map(apply, data))
 
-    raise TypeError('the data to append to a stock data frame with a date column must be of type DataFrame, Series/dict-like object or list of these')
+    prefix = '' if allow_list else 'list of '
+
+    raise TypeError(f'the data to append to a stock data frame with a date column must be of type DataFrame, Series/dict-like object or list of these, but got {prefix}{type(data)}')
 
 
-def apply_date_to_df(
-    data: Union[DataFrame, Series],
+def apply_date_to_series(
+    series: Series,
     date_col: str,
     to_datetime_kwargs: dict
 ):
-    data[date_col] = to_datetime(data[date_col], **to_datetime_kwargs)
-    data.set_index(date_col, inplace=True)
+    date = series[date_col]
+    series.drop(date_col, inplace=True)
+    series.rename(
+        to_datetime(date, **to_datetime_kwargs), inplace=True
+    )
+
+
+def apply_date_to_df(
+    df: DataFrame,
+    date_col: str,
+    to_datetime_kwargs: dict
+):
+    df[date_col] = to_datetime(df[date_col], **to_datetime_kwargs)
+    df.set_index(date_col, inplace=True)
