@@ -11,8 +11,7 @@ from typing import (
 
 from pandas import (
     DataFrame,
-    Series,
-    to_datetime
+    Series
 )
 from pandas.core.generic import NDFrame
 
@@ -34,6 +33,11 @@ from .meta import (
     copy_stock_metas,
     copy_clean_stock_metas,
     ensure_return_type
+)
+
+from .date import (
+    apply_date,
+    apply_date_to_df
 )
 
 
@@ -114,6 +118,7 @@ class StockDataFrame(DataFrame):
         self,
         data=None,
         date_col: Optional[str] = None,
+        to_datetime_kwargs: dict = {},
         *args,
         **kwargs
     ) -> None:
@@ -132,10 +137,10 @@ class StockDataFrame(DataFrame):
             init_stock_metas(self)
 
         self._date_col = date_col
+        self._to_datetime_kwargs = to_datetime_kwargs
 
         if date_col:
-            self[date_col] = to_datetime(self[date_col])
-            self.set_index(date_col, inplace=True)
+            apply_date_to_df(self, date_col, to_datetime_kwargs)
 
     def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
         if isinstance(key, str):
@@ -163,6 +168,26 @@ class StockDataFrame(DataFrame):
 
     # Public Methods of stock-pandas
     # --------------------------------------------------------------------
+
+    def append(
+        self,
+        other,
+        ignore_index: bool = False,
+        *args,
+        **kwargs
+    ) -> 'StockDataFrame':
+        if self._date_col is not None:
+            # We do not allow ignore_index if date_col is specified
+            ignore_index = False
+
+            other = apply_date(
+                self._date_col,
+                self._to_datetime_kwargs,
+                True,
+                other
+            )
+
+        return super().append(other, ignore_index, *args, **kwargs)
 
     def get_column(self, name: str) -> Series:
         """
