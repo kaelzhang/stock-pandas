@@ -25,4 +25,11 @@ def parse(
 
 
 def directive_stringify(directive_str: str) -> str:
+    """
+    Gets the full name of the `directive_str` which is also the actual column name of the data frame
+
+    Args:
+        directive_str (str): the directive
+    """
+
     return str(parse(directive_str, directive_cache))

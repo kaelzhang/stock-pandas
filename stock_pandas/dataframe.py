@@ -122,6 +122,17 @@ class StockDataFrame(DataFrame):
         *args,
         **kwargs
     ) -> None:
+        """
+        Creates a stock data frame
+
+        Args:
+            data (ndarray, Iterable, dict, DataFrame, StockDataFrame): data
+            date_col (:obj:`str`, optional): If set, then the column named `date_col` will convert and set as the DateTimeIndex of the data frame
+            to_datetime_kwargs (dict): the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
+            *args: other pandas.DataFrame arguments
+            **kwargs: other pandas.DataFrame keyworded arguments
+        """
+
         DataFrame.__init__(self, data, *args, **kwargs)
 
         if self.columns.nlevels > 1:
