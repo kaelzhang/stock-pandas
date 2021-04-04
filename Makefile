@@ -33,7 +33,7 @@ build-doc:
 	sphinx-build -b html docs build_docs
 
 upload:
-	twine upload --config-file ~/.pypirc -r pypi dist/*
+	STOCK_PANDAS_UPLOADING=1 twine upload --config-file ~/.pypirc -r pypi dist/*
 
 publish:
 	make build
