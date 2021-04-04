@@ -40,6 +40,11 @@ from .date import (
     apply_date_to_df
 )
 
+from .time_frame import (
+    TimeFrame,
+    TimeFrameArg
+)
+
 
 class StockDataFrame(DataFrame):
     """The wrapper class for `pandas.DataFrame`
@@ -49,6 +54,7 @@ class StockDataFrame(DataFrame):
 
     _date_col: Optional[str] = None
     _to_datetime_kwargs: dict = {}
+    _time_frame: Optional[TimeFrame] = None
 
     _stock_create_column: bool = False
     _stock_indexer_slice: Optional[slice] = None
@@ -120,6 +126,7 @@ class StockDataFrame(DataFrame):
         data=None,
         date_col: Optional[str] = None,
         to_datetime_kwargs: dict = {},
+        time_frame: TimeFrameArg = None,
         *args,
         **kwargs
     ) -> None:
@@ -130,6 +137,7 @@ class StockDataFrame(DataFrame):
             data (ndarray, Iterable, dict, DataFrame, StockDataFrame): data
             date_col (:obj:`str`, optional): If set, then the column named `date_col` will convert and set as the DateTimeIndex of the data frame
             to_datetime_kwargs (dict): the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
+            time_frame (str, TimeFrame):
             *args: other pandas.DataFrame arguments
             **kwargs: other pandas.DataFrame keyworded arguments
         """
@@ -145,6 +153,8 @@ class StockDataFrame(DataFrame):
 
         if isinstance(data, StockDataFrame):
             copy_stock_metas(data, self)
+            # TODO:
+            # more meta properties, such as date_col, etc
         else:
             init_stock_metas(self)
 
