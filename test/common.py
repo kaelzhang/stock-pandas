@@ -14,7 +14,10 @@ names = 'abcdef'
 csv = (Path(__file__).parent.parent / 'example' / 'tencent.csv').resolve()
 
 
-def get_tencent(date_col: bool = True):
+def get_tencent(date_col: bool = True, stock: bool = True):
+    if not stock:
+        return read_csv(csv)
+
     if date_col:
         return StockDataFrame(read_csv(csv), date_col='time_key')
     else:

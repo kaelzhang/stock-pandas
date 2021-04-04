@@ -11,7 +11,8 @@ from stock_pandas import (
 from .common import (
     simple_list,
     create_stock,
-    get_stock_update
+    get_stock_update,
+    get_tencent
 )
 
 
@@ -141,3 +142,14 @@ def test_multi_index():
             index=['A', 'B', 'C'],
             columns=columns
         )
+
+
+def test_date_col_pollution_issue_21():
+    csv = get_tencent(stock=False)
+
+    StockDataFrame(csv, date_col='time_key')
+
+    try:
+        csv['time_key']
+    except Exception as e:
+        raise RuntimeError(f'date_col should not change the original dataframe, error: {e}')

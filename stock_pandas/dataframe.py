@@ -117,13 +117,19 @@ class StockDataFrame(DataFrame):
         *args,
         **kwargs
     ) -> None:
+        # Fixes #21
+        if isinstance(data, DataFrame) and date_col is not None:
+            # Specifying date_col will change the original df in place,
+            # so copy it.
+            data = data.copy()
+
         DataFrame.__init__(self, data, *args, **kwargs)
 
         if self.columns.nlevels > 1:
             # For now, I admit,
             # there are a lot of works to support MultiIndex dataframes
             raise ValueError(
-                'stock-pandas does not support dataframes with MultiIndex columns'  # noqa:E501
+                'stock-pandas does not support dataframes with MultiIndex columns'
             )
 
         if isinstance(data, StockDataFrame):
