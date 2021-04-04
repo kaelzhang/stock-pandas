@@ -149,6 +149,13 @@ def test_date_col_pollution_issue_21():
 
     StockDataFrame(csv, date_col='time_key')
 
+    with pytest.raises(KeyError, match='time_key'):
+        csv['time_key']
+
+    csv = get_tencent(stock=False)
+
+    StockDataFrame(csv, date_col='time_key', copy=True)
+
     try:
         csv['time_key']
     except Exception as e:

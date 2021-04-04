@@ -117,12 +117,6 @@ class StockDataFrame(DataFrame):
         *args,
         **kwargs
     ) -> None:
-        # Fixes #21
-        if isinstance(data, DataFrame) and date_col is not None:
-            # Specifying date_col will change the original df in place,
-            # so copy it.
-            data = data.copy()
-
         DataFrame.__init__(self, data, *args, **kwargs)
 
         if self.columns.nlevels > 1:
@@ -410,7 +404,7 @@ class StockDataFrame(DataFrame):
         pandas internal APIs
 
         see: https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/frame.py#L3114
-        """  # noqa: E501
+        """
 
         NDFrame._set_item(self, name, value)
 
