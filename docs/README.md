@@ -3,16 +3,36 @@
 [![](https://img.shields.io/pypi/v/stock-pandas.svg)](https://pypi.org/project/stock-pandas/)
 [![](https://img.shields.io/pypi/l/stock-pandas.svg)](https://github.com/kaelzhang/stock-pandas)
 
+
+[ma]: #ma-simple-moving-averages
+[ema]: #ema-exponential-moving-average
+[macd]: #macd-moving-average-convergence-divergence
+[boll]: #boll-bollinger-bands
+[rsv]: #rsv-raw-stochastic-value
+[kdj]: #kdj-a-variety-of-stochastic-oscillator
+[kdj]: #kdjc-another-variety-of-stochastic-oscillator
+[rsi]: #rsi-relative-strength-index
+[bbi]: #bbi-bull-and-bear-index
+[llv]: #llv-lowest-of-low-values
+[hhv]: #hhv-highest-of-high-values
+[column]: #column
+[increase]: #increase
+[style]: #style
+[repeat]: #repeat
+[change]: #change
+
+
 # [stock-pandas](https://github.com/kaelzhang/stock-pandas)
 
 **stock-pandas** inherits and extends `pandas.DataFrame` to support:
 - Stock Statistics
 - Stock Indicators, including:
-  - Trend-following momentum indicators, such as **MA**, **EMA**, **MACD**, **BBI**
-  - Dynamic support and resistance indicators, such as **BOLL**
-  - Over-bought / over-sold indicators, such as **KDJ**, **RSI**
-  - Other indicators, such as **LLV**, **HHV**
+  - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi]
+  - Dynamic support and resistance indicators, such as [**BOLL**][boll]
+  - Over-bought / over-sold indicators, such as [**KDJ**][kdj], [**RSI**][rsi]
+  - Other indicators, such as [**LLV**][llv], [**HHV**][hhv]
   - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
+- Time frames management
 
 `stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6** and Pandas >= **1.0.0**(for now)
 
