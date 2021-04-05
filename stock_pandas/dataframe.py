@@ -36,11 +36,10 @@ from .meta import (
 )
 
 from .cumulative import (
-    # apply_date,
-    # apply_date_to_df,
+    Cumulator,
+    Cumulators,
     CumulatorMixin,
-    # TimeFrameMixin,
-    # TimeFrameArg
+    TimeFrameArg
 )
 
 
@@ -124,7 +123,10 @@ class StockDataFrame(
         data=None,
         date_col: Optional[str] = None,
         to_datetime_kwargs: dict = {},
-        # time_frame: TimeFrameArg = None,
+        time_frame: TimeFrameArg = None,
+        cumulators: Optional[Cumulators] = None,
+        # TODO:
+        # cumulate: bool = False,
         *args,
         **kwargs
     ) -> None:
@@ -158,11 +160,14 @@ class StockDataFrame(
         else:
             init_stock_metas(self)
 
-        self.cumulator.init(
+        self._cumulator.init(
             self,
-            is_stock,
-            date_col,
-            to_datetime_kwargs
+            is_stock=is_stock,
+            date_col=date_col,
+            to_datetime_kwargs=to_datetime_kwargs,
+            time_frame=time_frame,
+            cumulators=cumulators,
+            # cumulate=cumulate
         )
 
     def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
@@ -192,6 +197,9 @@ class StockDataFrame(
     # Public Methods of stock-pandas
     # --------------------------------------------------------------------
 
+    def add_cumulator(self, column_name: str, cumulator: Cumulator) -> None:
+        self._cumulator.add(column_name, cumulator)
+
     def append(
         self,
         other,
@@ -204,7 +212,7 @@ class StockDataFrame(
         The args of this method is the same as `pandas.DataFrame.append`
         """
 
-        return self.cumulator.append(
+        return self._cumulator.append(
             self,
             other,
             *args, **kwargs

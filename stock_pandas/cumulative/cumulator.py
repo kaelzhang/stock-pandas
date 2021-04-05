@@ -1,5 +1,6 @@
 from typing import (
-    # Callable,
+    Callable,
+    Dict,
     Optional
 )
 
@@ -13,8 +14,14 @@ from .date import (
     apply_date_to_df,
 )
 
+from .time_frame import (
+    TimeFrame,
+    TimeFrameArg
+)
 
-# Cumulator = Callable[[float, float], float]
+
+Cumulator = Callable[[float, float], float]
+Cumulators = Dict[str, Cumulator]
 
 
 def first(prev: float, _: float) -> float:
@@ -37,19 +44,40 @@ def add(prev: float, current: float) -> float:
     return prev + current
 
 
-class Cumulator:
+class _Cumulator:
+    CUMULATORS: Dict[str, Cumulator] = {
+        'open': first,
+        'high': high,
+        'low': low,
+        'close': last,
+        'volume': add
+    }
+
     def init(
         self,
         df,
         is_stock: bool,
         date_col: Optional[str],
-        to_datetime_kwargs: dict
+        to_datetime_kwargs: dict,
+        time_frame: TimeFrameArg,
+        cumulators: Optional[Cumulators],
+        # cumulate: bool
     ):
         self._date_col = date_col
         self._to_datetime_kwargs = to_datetime_kwargs
+        self._time_frame = TimeFrame.ensure(time_frame)
+
+        self._cumulators = (
+            # None means use the default cumulators
+            cumulators if cumulators is not None
+            else self.CUMULATORS
+        ).copy()
 
         if date_col:
             apply_date_to_df(df, date_col, to_datetime_kwargs)
+
+    def add(self, column_name, cumulator: Cumulator):
+        self._cumulators[column_name] = cumulator
 
     def append(
         self,
@@ -70,11 +98,11 @@ class Cumulator:
 
 class CumulatorMixin:
     @property
-    def cumulator(self) -> Cumulator:
+    def _cumulator(self) -> _Cumulator:
         cumulator = getattr(self, KEY_CUMULATOR, None)
 
         if cumulator is None:
-            cumulator = Cumulator()
+            cumulator = _Cumulator()
             set_attr(self, KEY_CUMULATOR, cumulator)
 
         return cumulator

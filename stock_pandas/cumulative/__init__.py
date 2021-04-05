@@ -3,5 +3,9 @@ from .manager import (
 )
 
 from .cumulator import (
+    Cumulator,
+    Cumulators,
     CumulatorMixin
 )
+
+from .time_frame import TimeFrameArg
