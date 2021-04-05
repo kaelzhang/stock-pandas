@@ -35,26 +35,24 @@ from .meta import (
     ensure_return_type
 )
 
-from .date import (
-    apply_date,
-    apply_date_to_df
+from .cumulative import (
+    # apply_date,
+    # apply_date_to_df,
+    CumulatorMixin,
+    # TimeFrameMixin,
+    # TimeFrameArg
 )
 
-from .time_frame import (
-    TimeFrame,
-    TimeFrameArg
-)
 
-
-class StockDataFrame(DataFrame):
+class StockDataFrame(
+    DataFrame,
+    # TimeFrameMixin,
+    CumulatorMixin
+):
     """The wrapper class for `pandas.DataFrame`
 
     Args definitions are the same as `pandas.DataFrame`
     """
-
-    _date_col: Optional[str] = None
-    _to_datetime_kwargs: dict = {}
-    _time_frame: Optional[TimeFrame] = None
 
     _stock_create_column: bool = False
     _stock_indexer_slice: Optional[slice] = None
@@ -126,7 +124,7 @@ class StockDataFrame(DataFrame):
         data=None,
         date_col: Optional[str] = None,
         to_datetime_kwargs: dict = {},
-        time_frame: TimeFrameArg = None,
+        # time_frame: TimeFrameArg = None,
         *args,
         **kwargs
     ) -> None:
@@ -151,18 +149,21 @@ class StockDataFrame(DataFrame):
                 'stock-pandas does not support dataframes with MultiIndex columns'
             )
 
-        if isinstance(data, StockDataFrame):
+        is_stock = isinstance(data, StockDataFrame)
+
+        if is_stock:
             copy_stock_metas(data, self)
             # TODO:
             # more meta properties, such as date_col, etc
         else:
             init_stock_metas(self)
 
-        self._date_col = date_col
-        self._to_datetime_kwargs = to_datetime_kwargs
-
-        if date_col:
-            apply_date_to_df(self, date_col, to_datetime_kwargs)
+        self.cumulator.init(
+            self,
+            is_stock,
+            date_col,
+            to_datetime_kwargs
+        )
 
     def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
         if isinstance(key, str):
@@ -203,15 +204,11 @@ class StockDataFrame(DataFrame):
         The args of this method is the same as `pandas.DataFrame.append`
         """
 
-        if self._date_col is not None:
-            other = apply_date(
-                self._date_col,
-                self._to_datetime_kwargs,
-                True,
-                other
-            )
-
-        return super().append(other, *args, **kwargs)
+        return self.cumulator.append(
+            self,
+            other,
+            *args, **kwargs
+        )
 
     def get_column(self, name: str) -> Series:
         """

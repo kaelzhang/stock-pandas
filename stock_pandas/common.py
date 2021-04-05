@@ -10,6 +10,10 @@ from typing import (
 import numpy as np
 
 
+def set_attr(target, key, value) -> None:
+    object.__setattr__(target, key, value)
+
+
 T = TypeVar('T', int, float)
 
 

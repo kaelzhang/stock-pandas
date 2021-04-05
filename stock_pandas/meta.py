@@ -9,6 +9,11 @@ from copy import (
 from pandas import DataFrame
 
 from .directive import Directive
+from .common import set_attr
+from .properties import (
+    KEY_ALIAS_MAP,
+    KEY_COLUMNS_INFO_MAP
+)
 
 
 class ColumnInfo:
@@ -52,9 +57,6 @@ class ColumnInfo:
     def __repr__(self) -> str:
         return f'<ColumnInfo {self.directive}, size:{self.size}, period:{self.period}>'  # noqa: E501
 
-
-KEY_ALIAS_MAP = '_stock_aliases_map'
-KEY_COLUMNS_INFO_MAP = '_stock_columns_info_map'
 
 OptionalSlice = Optional[slice]
 
@@ -101,10 +103,6 @@ def update_info_size(
         size -= start
 
     return info.update(size)
-
-
-def set_attr(target, key, value) -> None:
-    object.__setattr__(target, key, value)
 
 
 def init_stock_metas(target) -> None:
