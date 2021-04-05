@@ -1,4 +1,7 @@
-from typing import TypeVar
+from typing import (
+    List,
+    Union
+)
 
 from functools import partial
 
@@ -9,15 +12,22 @@ from pandas import (
 )
 
 
-T = TypeVar('T')
+ToBeAppended = Union[
+    DataFrame,
+    Series,
+    dict,
+    List[
+        Union[DataFrame, Series, dict]
+    ]
+]
 
 
 def apply_date(
     date_col: str,
     to_datetime_kwargs: dict,
     allow_list: bool,
-    data: T
-) -> T:
+    data: ToBeAppended
+) -> ToBeAppended:
     if isinstance(data, DataFrame):
         if date_col not in data.columns:
             return data

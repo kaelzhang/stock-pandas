@@ -125,8 +125,6 @@ class StockDataFrame(
         to_datetime_kwargs: dict = {},
         time_frame: TimeFrameArg = None,
         cumulators: Optional[Cumulators] = None,
-        # TODO:
-        # cumulate: bool = False,
         *args,
         **kwargs
     ) -> None:
@@ -166,8 +164,7 @@ class StockDataFrame(
             date_col=date_col,
             to_datetime_kwargs=to_datetime_kwargs,
             time_frame=time_frame,
-            cumulators=cumulators,
-            # cumulate=cumulate
+            cumulators=cumulators
         )
 
     def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
@@ -200,7 +197,16 @@ class StockDataFrame(
     def add_cumulator(self, column_name: str, cumulator: Cumulator) -> None:
         self._cumulator.add(column_name, cumulator)
 
-    def append(
+    def append(self, other, *args, **kwargs) -> 'StockDataFrame':
+        """
+        Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
+
+        The args of this method is the same as `pandas.DataFrame.append`
+        """
+
+        return self._cumulator.append(self, other, *args, **kwargs)
+
+    def cum_append(
         self,
         other,
         *args,
@@ -212,7 +218,7 @@ class StockDataFrame(
         The args of this method is the same as `pandas.DataFrame.append`
         """
 
-        return self._cumulator.append(
+        return self._cumulator.cum_append(
             self,
             other,
             *args, **kwargs
