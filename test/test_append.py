@@ -29,6 +29,7 @@ def check_append(head, new, ctor_twice=False):
 
     stock = stock.append(new)
 
+    assert isinstance(stock, StockDataFrame)
     assert TIME_KEY not in stock.columns
     assert isinstance(stock.iloc[-1].name, Timestamp)
 
@@ -45,6 +46,7 @@ def check_append_no_time_key(head, new, ctor_twice=False, **kwargs):
     # Should not raise if new contains no TIME_KEY
     stock = stock.append(new, **kwargs)
 
+    assert isinstance(stock, StockDataFrame)
     assert not isinstance(stock.iloc[-1].name, Timestamp)
 
     if not ctor_twice:

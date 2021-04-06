@@ -97,14 +97,14 @@ def define_class(name: str, cls: _TimeFrame):
     setattr(TimeFrame, name, timeFrame)
 
     # TimeFrame.ensure('1m')
-    timeFrames[name] = timeFrames
+    timeFrames[name] = timeFrame
 
 
 def unify_minute(n: int, date: Timestamp) -> int:
     return (
         (date.minute // n) * 10 ** MAGNITUDE_MINUTE
         + date.hour * 10 ** MAGNITUDE_HOUR
-        + date.date * 10 ** MAGNITUDE_DATE
+        + date.day * 10 ** MAGNITUDE_DATE
         + date.month * 10 ** MAGNITUDE_MONTH
         + date.year * 10 ** MAGNITUDE_YEAR
     )

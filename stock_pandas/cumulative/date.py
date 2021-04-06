@@ -81,7 +81,11 @@ def apply_date_to_series(
 def apply_date_to_df(
     df: DataFrame,
     date_col: str,
-    to_datetime_kwargs: dict
+    to_datetime_kwargs: dict,
+    check: bool = False
 ):
+    if check and date_col not in df.columns:
+        return
+
     df[date_col] = to_datetime(df[date_col], **to_datetime_kwargs)
     df.set_index(date_col, inplace=True)

@@ -13,3 +13,8 @@ from .commands import (
     COMMANDS,
     CommandPreset
 )
+
+from .cumulative import (
+    TimeFrame,
+    TimeFrameArg
+)

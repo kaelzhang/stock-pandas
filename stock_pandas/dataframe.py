@@ -205,7 +205,15 @@ class StockDataFrame(
         The args of this method is the same as `pandas.DataFrame.append`
         """
 
-        return self._cumulator.append(self, other, *args, **kwargs)
+        other = self._cumulator.apply_date_col(other)
+
+        concatenated = super().append(other, *args, **kwargs)
+
+        # If `self` is an empty
+        if not isinstance(concatenated, StockDataFrame):
+            ...
+
+        return concatenated
 
     def cum_append(
         self,

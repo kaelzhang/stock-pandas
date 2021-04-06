@@ -8,4 +8,7 @@ from .cumulator import (
     CumulatorMixin
 )
 
-from .time_frame import TimeFrameArg
+from .time_frame import (
+    TimeFrameArg,
+    TimeFrame
+)
