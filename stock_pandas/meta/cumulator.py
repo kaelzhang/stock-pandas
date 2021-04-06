@@ -74,7 +74,7 @@ def append(
     df: 'MetaDataFrame',
     to_append: ToAppend,
     *args, **kwargs
-):
+) -> 'MetaDataFrame':
     duplicates = df[to_append[0].name:]
 
     return df.drop(duplicates.index).append(to_append, *args, **kwargs)
@@ -104,13 +104,13 @@ class _Cumulator:
         time_frame: TimeFrameArg = None,
         cumulators: Optional[Cumulators] = None
     ):
-        is_stock = isinstance(source, df._constructor)
+        is_meta_df = isinstance(source, MetaDataFrame)
 
         if date_col is not None:
             self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
 
-            if is_stock:
+            if is_meta_df:
                 source_cumulator = source._cumulator
 
                 if source_cumulator._date_col is None:
@@ -131,14 +131,14 @@ class _Cumulator:
                     check=True
                 )
         else:
-            if is_stock:
+            if is_meta_df:
                 # We should copy the source's cumulator settings
                 self._merge_date_col(source._cumulator)
             else:
                 self._date_col = None
 
         if time_frame is None:
-            if is_stock:
+            if is_meta_df:
                 self._merge_time_frame(source._cumulator)
             else:
                 self._time_frame = None
@@ -456,6 +456,8 @@ class MetaDataFrame(DataFrame):
         other = self._cumulator.apply_date_col(other)
         concatenated = super().append(other, *args, **kwargs)
 
+        # Subclass could override property _constructor to change the
+        # return type
         Constructor = self._constructor
 
         if isinstance(concatenated, Constructor):
