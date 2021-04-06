@@ -1,5 +1,4 @@
 from typing import (
-    Dict,
     Any,
     Callable,
     Tuple,
@@ -9,13 +8,12 @@ from typing import (
     Optional
 )
 
-from pandas import (
-    DataFrame,
-    Series
-)
+from pandas import Series
 from pandas.core.generic import NDFrame
 
 import numpy as np
+
+from stock_pandas.meta.utils import ensure_return_type
 
 from .directive import (
     parse,
@@ -28,41 +26,21 @@ from .common import rolling_calc
 
 from .meta import (
     ColumnInfo,
-
-    init_stock_metas,
-    copy_stock_metas,
-    copy_clean_stock_metas,
-    ensure_return_type
-)
-
-from .cumulative import (
-    Cumulator,
-    Cumulators,
-    CumulatorMixin,
-    TimeFrameArg
+    MetaDataFrame
 )
 
 
-class StockDataFrame(
-    DataFrame,
-    # TimeFrameMixin,
-    CumulatorMixin
-):
+class StockDataFrame(MetaDataFrame):
     """The wrapper class for `pandas.DataFrame`
 
     Args definitions are the same as `pandas.DataFrame`
     """
 
     _stock_create_column: bool = False
-    _stock_indexer_slice: Optional[slice] = None
-    _stock_indexer_axis: int = 0
 
     # Directive cache can be shared between instances,
     # so declare as static property
     _stock_directives_cache: DirectiveCache = directive_cache
-
-    _stock_aliases_map: Dict[str, str]
-    _stock_columns_info_map: Dict[str, ColumnInfo]
 
     # Methods that used by pandas and sub classes
     # --------------------------------------------------------------------
@@ -76,102 +54,7 @@ class StockDataFrame(
 
         return StockDataFrame
 
-    # TODO:
-    # whether *args, **kwargs here are necessary
-    def __finalize__(self, other, *args, **kwargs) -> 'StockDataFrame':
-        """
-        Propagate metadata from other to self.
-
-        This method overrides `DataFrame.__finalize__`
-        which ensures the meta info of StockDataFrame
-        """
-
-        super().__finalize__(other, *args, **kwargs)
-
-        if isinstance(other, StockDataFrame):
-            copy_clean_stock_metas(
-                other,
-                self,
-                other._stock_indexer_slice,
-                other._stock_indexer_axis
-            )
-
-        return self
-
-    def _slice(self, slice_obj: slice, axis: int = 0) -> 'StockDataFrame':
-        """
-        This method is called in several cases, self.iloc[slice] for example
-
-        We mark the slice and axis here to prevent extra calculations
-        """
-
-        self._stock_indexer_slice = slice_obj
-        self._stock_indexer_axis = axis
-
-        try:
-            result = super()._slice(slice_obj, axis)
-        except Exception as e:
-            raise e
-        finally:
-            self._stock_indexer_slice = None
-            self._stock_indexer_axis = 0
-
-        return result
-
     # --------------------------------------------------------------------
-
-    def __init__(
-        self,
-        data=None,
-        date_col: Optional[str] = None,
-        to_datetime_kwargs: dict = {},
-        time_frame: TimeFrameArg = None,
-        cumulators: Optional[Cumulators] = None,
-        source: Optional['StockDataFrame'] = None,
-        *args,
-        **kwargs
-    ) -> None:
-        """
-        Creates a stock data frame
-
-        Args:
-            data (ndarray, Iterable, dict, DataFrame, StockDataFrame): data
-            date_col (:obj:`str`, optional): If set, then the column named `date_col` will convert and set as the DateTimeIndex of the data frame
-            to_datetime_kwargs (dict): the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
-            time_frame (str, TimeFrame): defines the time frame of the stock
-            source (:obj:`StockDataFrame`, optional): the source to copy meta data from if the source is a StockDataFrame. Defaults to `data`
-            *args: other pandas.DataFrame arguments
-            **kwargs: other pandas.DataFrame keyworded arguments
-        """
-
-        DataFrame.__init__(self, data, *args, **kwargs)
-
-        if self.columns.nlevels > 1:
-            # For now, I admit,
-            # there are a lot of works to support MultiIndex dataframes
-            raise ValueError(
-                'stock-pandas does not support dataframes with MultiIndex columns'
-            )
-
-        if source is None:
-            source = data
-
-        is_stock = isinstance(source, StockDataFrame)
-
-        if is_stock:
-            copy_stock_metas(source, self)
-        else:
-            init_stock_metas(self)
-
-        self._cumulator.init(
-            self,
-            source,
-            is_stock=is_stock,
-            date_col=date_col,
-            to_datetime_kwargs=to_datetime_kwargs,
-            time_frame=time_frame,
-            cumulators=cumulators
-        )
 
     def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
         if isinstance(key, str):
@@ -199,52 +82,6 @@ class StockDataFrame(
 
     # Public Methods of stock-pandas
     # --------------------------------------------------------------------
-
-    def add_cumulator(self, column_name: str, cumulator: Cumulator) -> None:
-        self._cumulator.add(column_name, cumulator)
-
-    def append(self, other, *args, **kwargs) -> 'StockDataFrame':
-        """
-        Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
-
-        The args of this method is the same as `pandas.DataFrame.append`
-        """
-
-        other = self._cumulator.apply_date_col(other)
-
-        concatenated = super().append(other, *args, **kwargs)
-
-        if isinstance(concatenated, StockDataFrame):
-            # super().append will lose metas
-            concatenated._cumulator.init(
-                concatenated,
-                self,
-                True
-            )
-        else:
-            # If `self` is an empty StockDataFrame,
-            # super().append() returns a DataFrame
-            concatenated = StockDataFrame(concatenated, source=self)
-
-        return concatenated
-
-    def cum_append(
-        self,
-        other,
-        *args,
-        **kwargs
-    ) -> 'StockDataFrame':
-        """
-        Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
-
-        The args of this method is the same as `pandas.DataFrame.append`
-        """
-
-        return self._cumulator.cum_append(
-            self,
-            other,
-            *args, **kwargs
-        )
 
     def get_column(self, name: str) -> Series:
         """

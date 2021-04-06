@@ -16,6 +16,15 @@ from pandas._libs.tslibs import Timestamp
 from stock_pandas.properties import KEY_CUMULATOR
 from stock_pandas.common import set_attr
 
+from .utils import (
+    ColumnInfo,
+
+    init_stock_metas,
+    copy_stock_metas,
+    copy_clean_stock_metas,
+    # ensure_return_type
+)
+
 from .date import (
     apply_date,
     apply_date_to_df
@@ -62,7 +71,7 @@ def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
 
 
 def append(
-    df: DataFrame,
+    df: 'MetaDataFrame',
     to_append: ToAppend,
     *args, **kwargs
 ):
@@ -90,12 +99,13 @@ class _Cumulator:
         self,
         df,
         source,
-        is_stock: bool,
         date_col: Optional[str] = None,
         to_datetime_kwargs: dict = {},
         time_frame: TimeFrameArg = None,
         cumulators: Optional[Cumulators] = None
     ):
+        is_stock = isinstance(source, df._constructor)
+
         if date_col is not None:
             self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
@@ -178,7 +188,7 @@ class _Cumulator:
 
     def cum_append(
         self,
-        to,
+        to: 'MetaDataFrame',
         # TODO:
         # support other types
         other: DataFrame,
@@ -312,7 +322,114 @@ class _Cumulator:
         self._to_append.append(cumulated)
 
 
-class CumulatorMixin:
+class MetaDataFrame(DataFrame):
+    """
+    The subclass of pandas.DataFrame which ensures return type of all kinds methods to be MetaDataFrame
+    """
+
+    _stock_indexer_slice: Optional[slice] = None
+    _stock_indexer_axis: int = 0
+
+    _stock_aliases_map: Dict[str, str]
+    _stock_columns_info_map: Dict[str, ColumnInfo]
+
+    # Methods that used by pandas and sub classes
+    # --------------------------------------------------------------------
+
+    # TODO:
+    # whether *args, **kwargs here are necessary
+    def __finalize__(self, other, *args, **kwargs) -> 'MetaDataFrame':
+        """
+        Propagate metadata from other to self.
+
+        This method overrides `DataFrame.__finalize__`
+        which ensures the meta info of StockDataFrame
+        """
+
+        super().__finalize__(other, *args, **kwargs)
+
+        if isinstance(other, MetaDataFrame):
+            copy_clean_stock_metas(
+                other,
+                self,
+                other._stock_indexer_slice,
+                other._stock_indexer_axis
+            )
+
+        return self
+
+    def _slice(self, slice_obj: slice, axis: int = 0) -> 'MetaDataFrame':
+        """
+        This method is called in several cases, self.iloc[slice] for example
+
+        We mark the slice and axis here to prevent extra calculations
+        """
+
+        self._stock_indexer_slice = slice_obj
+        self._stock_indexer_axis = axis
+
+        try:
+            result = super()._slice(slice_obj, axis)
+        except Exception as e:
+            raise e
+        finally:
+            self._stock_indexer_slice = None
+            self._stock_indexer_axis = 0
+
+        return result
+
+    # --------------------------------------------------------------------
+
+    def __init__(
+        self,
+        data=None,
+        date_col: Optional[str] = None,
+        to_datetime_kwargs: dict = {},
+        time_frame: TimeFrameArg = None,
+        cumulators: Optional[Cumulators] = None,
+        source: Optional['MetaDataFrame'] = None,
+        *args,
+        **kwargs
+    ) -> None:
+        """
+        Creates a stock data frame
+
+        Args:
+            data (ndarray, Iterable, dict, DataFrame, StockDataFrame): data
+            date_col (:obj:`str`, optional): If set, then the column named `date_col` will convert and set as the DateTimeIndex of the data frame
+            to_datetime_kwargs (dict): the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
+            time_frame (str, TimeFrame): defines the time frame of the stock
+            source (:obj:`StockDataFrame`, optional): the source to copy meta data from if the source is a StockDataFrame. Defaults to `data`
+            *args: other pandas.DataFrame arguments
+            **kwargs: other pandas.DataFrame keyworded arguments
+        """
+
+        DataFrame.__init__(self, data, *args, **kwargs)
+
+        if self.columns.nlevels > 1:
+            # For now, I admit,
+            # there are a lot of works to support MultiIndex dataframes
+            raise ValueError(
+                'stock-pandas does not support dataframes with MultiIndex columns'
+            )
+
+        if source is None:
+            source = data
+
+        if isinstance(source, MetaDataFrame):
+            copy_stock_metas(source, self)
+        else:
+            init_stock_metas(self)
+
+        self._cumulator.init(
+            self,
+            source,
+            date_col=date_col,
+            to_datetime_kwargs=to_datetime_kwargs,
+            time_frame=time_frame,
+            cumulators=cumulators
+        )
+
     @property
     def _cumulator(self) -> _Cumulator:
         cumulator = getattr(self, KEY_CUMULATOR, None)
@@ -322,3 +439,52 @@ class CumulatorMixin:
             set_attr(self, KEY_CUMULATOR, cumulator)
 
         return cumulator
+
+    # Public Methods of stock-pandas
+    # --------------------------------------------------------------------
+
+    def add_cumulator(self, column_name: str, cumulator: Cumulator) -> None:
+        self._cumulator.add(column_name, cumulator)
+
+    def append(self, other, *args, **kwargs) -> 'MetaDataFrame':
+        """
+        Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
+
+        The args of this method is the same as `pandas.DataFrame.append`
+        """
+
+        other = self._cumulator.apply_date_col(other)
+        concatenated = super().append(other, *args, **kwargs)
+
+        Constructor = self._constructor
+
+        if isinstance(concatenated, Constructor):
+            # super().append will lose metas
+            concatenated._cumulator.init(
+                concatenated,
+                self
+            )
+        else:
+            # If `self` is an empty StockDataFrame,
+            # super().append() returns a DataFrame
+            concatenated = Constructor(concatenated, source=self)
+
+        return concatenated
+
+    def cum_append(
+        self,
+        other,
+        *args,
+        **kwargs
+    ) -> 'MetaDataFrame':
+        """
+        Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
+
+        The args of this method is the same as `pandas.DataFrame.append`
+        """
+
+        return self._cumulator.cum_append(
+            self,
+            other,
+            *args, **kwargs
+        )

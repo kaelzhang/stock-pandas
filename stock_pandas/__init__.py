@@ -14,7 +14,7 @@ from .commands import (
     CommandPreset
 )
 
-from .cumulative import (
+from .meta import (
     TimeFrame,
     TimeFrameArg
 )

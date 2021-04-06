@@ -8,9 +8,9 @@ from copy import (
 
 from pandas import DataFrame
 
-from .directive import Directive
-from .common import set_attr
-from .properties import (
+from stock_pandas.directive import Directive
+from stock_pandas.common import set_attr
+from stock_pandas.properties import (
     KEY_ALIAS_MAP,
     KEY_COLUMNS_INFO_MAP
 )
