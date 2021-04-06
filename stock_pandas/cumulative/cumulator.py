@@ -30,6 +30,7 @@ from .time_frame import (
 
 Cumulator = Callable[[ndarray], float]
 Cumulators = Dict[str, Cumulator]
+ToAppend = List[Series]
 
 
 def first(array: ndarray) -> float:
@@ -61,6 +62,18 @@ def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
     return ValueError(f'{message} or a "{date_col}" column')
 
 
+def append(
+    df: DataFrame,
+    to_append: ToAppend,
+    *args, **kwargs
+):
+    timestamp = to_append[0].name
+
+    duplicates = df[timestamp:]
+
+    return df.drop(duplicates.index).append(to_append, *args, **kwargs)
+
+
 class _Cumulator:
     CUMULATORS: Dict[str, Cumulator] = {
         'open': first,
@@ -70,29 +83,41 @@ class _Cumulator:
         'volume': add
     }
 
-    _to_be_cumulated: Optional[DataFrame]
-    _to_be_appended: List[Series]
+    _to_cumulate: Optional[DataFrame]
+
+    def __repr__(self) -> str:
+        return f'<Cumulator date_col:{self._date_col}, time_frame:{self._time_frame}>'
 
     def init(
         self,
         df,
+        source,
         is_stock: bool,
         date_col: Optional[str],
         to_datetime_kwargs: dict,
         time_frame: TimeFrameArg,
         cumulators: Optional[Cumulators]
     ):
-        self._date_col = date_col
-
         if date_col is not None:
+            self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
 
             apply_date_to_df(df, date_col, to_datetime_kwargs)
+        else:
+            if is_stock:
+                self._merge_date_col(source._cumulator)
+            else:
+                self._date_col = None
+
+        if time_frame is None:
+            if is_stock:
+                self._merge_time_frame(source._cumulator)
+            else:
+                self._time_frame = None
+
+            return
 
         self._time_frame = TimeFrame.ensure(time_frame)
-
-        if self._time_frame is None:
-            return
 
         self._cumulators = (
             # None means use the default cumulators
@@ -100,18 +125,33 @@ class _Cumulator:
             else self.CUMULATORS
         ).copy()
 
-        # TODO:
-        # check the type of self._to_be_cumulated
-        self._to_be_cumulated = None
-        self._to_be_cumulated_inited = False
-        self._to_be_appended = []
+        self._to_cumulate = None
+        self._to_cumulate_inited = False
+
+    def _merge_date_col(self, source_cumulator: '_Cumulator'):
+        self._date_col = source_cumulator._date_col
+
+        if source_cumulator._date_col is None:
+            return
+
+        self._to_datetime_kwargs = source_cumulator._to_datetime_kwargs
+
+    def _merge_time_frame(self, source_cumulator: '_Cumulator'):
+        self._time_frame = source_cumulator._time_frame
+
+        if source_cumulator._time_frame is None:
+            return
+
+        self._cumulators = source_cumulator._cumulators.copy()
+        self._to_cumulate = source_cumulator._to_cumulate
+        self._to_cumulate_inited = source_cumulator._to_cumulate_inited
 
     def add(self, column_name, cumulator: Cumulator):
         self._cumulators[column_name] = cumulator
 
     def append(
         self,
-        df,
+        to,
         other: ToBeAppended,
         *args, **kwargs
     ):
@@ -123,11 +163,11 @@ class _Cumulator:
                 other
             )
 
-        return DataFrame.append(df, other, *args, **kwargs)
+        return DataFrame.append(to, other, *args, **kwargs)
 
     def cum_append(
         self,
-        df,
+        to,
         # TODO:
         # support other types
         other: DataFrame,
@@ -142,12 +182,13 @@ class _Cumulator:
         other = self._convert_to_date_df(other)
 
         last_timestamp = (
-            None if self._to_be_cumulated is None
-            else self._to_be_cumulated.iloc[-1].name
+            None if self._to_cumulate is None
+            else self._to_cumulate.iloc[-1].name
         )
 
         start = None
         last = None
+        to_append: ToAppend = []
 
         for timestamp in other.index:
             if not isinstance(timestamp, Timestamp):
@@ -165,19 +206,20 @@ class _Cumulator:
                 != self._time_frame.unify(timestamp)
             ):
                 self._cumulate(
-                    None if last is None else other[start:last]
+                    None if last is None else other[start:last],
+                    to_append
                 )
 
                 start = timestamp
 
             last = timestamp
 
-        self._to_be_cumulated = other[start:]
+        self._to_cumulate = other[start:]
 
         # Append the rows even the latest time frame is not closed
-        self._append_to_be_appended(self._to_be_cumulated)
+        self._pre_append(self._to_be_cumulated)
 
-        return self._append(df)
+        return append(to, to_append, *args, **kwargs)
 
     def _convert_to_date_df(
         self,
@@ -192,52 +234,52 @@ class _Cumulator:
 
         return other
 
-    def _cumulated(
+    def _cumulate(
         self,
-        to_be_cumulated: Optional[DataFrame]
+        to_cumulate: Optional[DataFrame],
+        to_append: ToAppend
     ):
-        to_be_cumulated = [
+        to_cumulate = [
             item
-            for item in [to_be_cumulated, self._to_be_cumulated]
+            for item in [to_cumulate, self._to_cumulate]
             if item is not None
         ]
-        self._to_be_cumulated = None
+        self._to_cumulate = None
 
-        if not to_be_cumulated:
+        if not to_cumulate:
             return
 
-        if len(to_be_cumulated) == 2:
-            to_be_cumulated = concat(to_be_cumulated)
+        if len(to_cumulate) == 2:
+            to_cumulate = concat(to_cumulate)
+            self._pre_append(to_cumulate, to_append)
+        else:
+            self._pre_append(to_cumulate[0], to_append)
 
-        self._append_to_be_appended(to_be_cumulated)
-
-    def _append_to_be_appended(self, to_be_cumulated: DataFrame):
-        if len(to_be_cumulated) == 1:
-            self._to_be_appended.append(to_be_cumulated)
+    def _pre_append(
+        self,
+        to_cumulate: DataFrame,
+        to_append: ToAppend
+    ):
+        if len(to_cumulate) == 1:
+            # We do not need to cumulate
+            to_append.append(to_cumulate)
             return
 
         # Use the values of the last row except columns of self._cumulators
-        to_be_appended = to_be_cumulated.iloc[-1].copy()
+        cumulated = to_cumulate.iloc[-1].copy()
 
         # Use the index of the first row
-        to_be_appended.rename(to_be_cumulated.iloc[0].name)
+        cumulated.rename(to_cumulate.iloc[0].name)
 
-        for column_name in to_be_appended.columns:
+        for column_name in cumulated.index:
             cumulator = self._cumulators.get(column_name)
 
             if cumulator is not None:
-                to_be_appended[column_name] = cumulator(
-                    to_be_appended[column_name].to_numpy()
+                cumulated[column_name] = cumulator(
+                    cumulated[column_name].to_numpy()
                 )
 
-        self._to_be_appended.append(to_be_appended)
-
-    def _append(self, df):
-        timestamp = self._to_be_appended[0].name
-
-        duplicates = df[timestamp:]
-
-        return df.drop(duplicates.index).append(self._to_be_appended)
+        to_append.append(cumulated)
 
 
 class CumulatorMixin:

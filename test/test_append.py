@@ -21,21 +21,34 @@ def tencent() -> DataFrame:
     return get_tencent(stock=False)
 
 
-def check_append(head, new):
+def check_append(head, new, ctor_twice=False):
     stock = StockDataFrame(head, date_col=TIME_KEY, copy=True)
+
+    if ctor_twice:
+        stock = StockDataFrame(stock)
+
     stock = stock.append(new)
 
     assert TIME_KEY not in stock.columns
     assert isinstance(stock.iloc[-1].name, Timestamp)
 
+    if not ctor_twice:
+        check_append(head, new, ctor_twice=True)
 
-def check_append_no_time_key(head, new, **kwargs):
+
+def check_append_no_time_key(head, new, ctor_twice=False, **kwargs):
     stock = StockDataFrame(head, date_col=TIME_KEY, copy=True)
+
+    if ctor_twice:
+        stock = StockDataFrame(stock)
 
     # Should not raise if new contains no TIME_KEY
     stock = stock.append(new, **kwargs)
 
     assert not isinstance(stock.iloc[-1].name, Timestamp)
+
+    if not ctor_twice:
+        check_append_no_time_key(head, new, ctor_twice=True, **kwargs)
 
 
 def test_append_without_date_col(tencent: DataFrame):

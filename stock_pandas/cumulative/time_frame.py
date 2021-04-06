@@ -81,23 +81,23 @@ MAGNITUDE_MONTH = 5
 MAGNITUDE_YEAR = 7
 
 
-def define(name: str, s: str, unify: TimeFrameUnifier):
+def define(suffix: str, name: str, unify: TimeFrameUnifier):
     class NewClass(_TimeFrame):
         _unify = unify
 
-    NewClass.__name__ = f'TimeFrame{name}'
+    NewClass.__name__ = f'TimeFrame{suffix}'
 
-    define_class(name, s, NewClass)
+    define_class(name, NewClass)
 
 
-def define_class(name: str, s: str, cls: _TimeFrame):
+def define_class(name: str, cls: _TimeFrame):
     timeFrame = cls()
 
     # TimeFrame.M1 => TimeFrameM1
-    setattr(TimeFrame, s, timeFrame)
+    setattr(TimeFrame, name, timeFrame)
 
     # TimeFrame.ensure('1m')
-    timeFrames[s] = timeFrames
+    timeFrames[name] = timeFrames
 
 
 def unify_minute(n: int, date: Timestamp) -> int:

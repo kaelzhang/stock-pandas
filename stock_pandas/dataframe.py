@@ -155,13 +155,12 @@ class StockDataFrame(
 
         if is_stock:
             copy_stock_metas(data, self)
-            # TODO:
-            # more meta properties, such as date_col, etc
         else:
             init_stock_metas(self)
 
         self._cumulator.init(
             self,
+            data,
             is_stock=is_stock,
             date_col=date_col,
             to_datetime_kwargs=to_datetime_kwargs,
