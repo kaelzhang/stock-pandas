@@ -132,3 +132,22 @@ def test_append_invalid_type(tencent: DataFrame):
 
     with pytest.raises(TypeError, match="list of <class 'list'>"):
         stock.append([[]])
+
+
+# Github issue #22
+def test_empty_df_append(tencent: DataFrame):
+    stock = StockDataFrame(date_col=TIME_KEY)
+
+    stock = stock.append(tencent)
+
+    assert isinstance(stock, StockDataFrame)
+    assert stock._cumulator._date_col == TIME_KEY
+
+
+def test_append_meta(tencent: DataFrame):
+    stock = StockDataFrame(tencent.iloc[:1], date_col=TIME_KEY)
+
+    stock = stock.append(tencent)
+
+    assert isinstance(stock, StockDataFrame)
+    assert stock._cumulator._date_col == TIME_KEY

@@ -127,6 +127,7 @@ class StockDataFrame(
         to_datetime_kwargs: dict = {},
         time_frame: TimeFrameArg = None,
         cumulators: Optional[Cumulators] = None,
+        source: Optional['StockDataFrame'] = None,
         *args,
         **kwargs
     ) -> None:
@@ -137,7 +138,8 @@ class StockDataFrame(
             data (ndarray, Iterable, dict, DataFrame, StockDataFrame): data
             date_col (:obj:`str`, optional): If set, then the column named `date_col` will convert and set as the DateTimeIndex of the data frame
             to_datetime_kwargs (dict): the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
-            time_frame (str, TimeFrame):
+            time_frame (str, TimeFrame): defines the time frame of the stock
+            source (:obj:`StockDataFrame`, optional): the source to copy meta data from if the source is a StockDataFrame. Defaults to `data`
             *args: other pandas.DataFrame arguments
             **kwargs: other pandas.DataFrame keyworded arguments
         """
@@ -151,16 +153,19 @@ class StockDataFrame(
                 'stock-pandas does not support dataframes with MultiIndex columns'
             )
 
-        is_stock = isinstance(data, StockDataFrame)
+        if source is None:
+            source = data
+
+        is_stock = isinstance(source, StockDataFrame)
 
         if is_stock:
-            copy_stock_metas(data, self)
+            copy_stock_metas(source, self)
         else:
             init_stock_metas(self)
 
         self._cumulator.init(
             self,
-            data,
+            source,
             is_stock=is_stock,
             date_col=date_col,
             to_datetime_kwargs=to_datetime_kwargs,
@@ -209,9 +214,17 @@ class StockDataFrame(
 
         concatenated = super().append(other, *args, **kwargs)
 
-        # If `self` is an empty
-        if not isinstance(concatenated, StockDataFrame):
-            ...
+        if isinstance(concatenated, StockDataFrame):
+            # super().append will lose metas
+            concatenated._cumulator.init(
+                concatenated,
+                self,
+                True
+            )
+        else:
+            # If `self` is an empty StockDataFrame,
+            # super().append() returns a DataFrame
+            concatenated = StockDataFrame(concatenated, source=self)
 
         return concatenated
 
