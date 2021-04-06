@@ -76,6 +76,8 @@ class StockDataFrame(
 
         return StockDataFrame
 
+    # TODO:
+    # whether *args, **kwargs here are necessary
     def __finalize__(self, other, *args, **kwargs) -> 'StockDataFrame':
         """
         Propagate metadata from other to self.

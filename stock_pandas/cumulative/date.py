@@ -41,7 +41,7 @@ def apply_date(
         if date_col not in data.keys():
             return data
 
-        series: Series = data.copy()
+        series = data.copy()
         apply_date_to_series(series, date_col, to_datetime_kwargs)
 
         return series
