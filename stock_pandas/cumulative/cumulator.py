@@ -102,9 +102,19 @@ class _Cumulator:
             self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
 
-            apply_date_to_df(df, date_col, to_datetime_kwargs)
+            if is_stock:
+                source_cumulator = source._cumulator
+
+                if source_cumulator._date_col is None:
+                    # Which means the source stock data frame has no date column, so we have to apply it
+                    apply_date_to_df(df, date_col, to_datetime_kwargs)
+                elif source_cumulator._date_col != date_col:
+                    raise ValueError(f'refuse to set date column as "{date_col}" since the original stock data frame already have a date column "{source_cumulator._date_col}"')
+            else:
+                apply_date_to_df(df, date_col, to_datetime_kwargs)
         else:
             if is_stock:
+                # We should copy the source's cumulator settings
                 self._merge_date_col(source._cumulator)
             else:
                 self._date_col = None
@@ -173,8 +183,8 @@ class _Cumulator:
         other: DataFrame,
         *args, **kwargs
     ):
-        if self._time_frame is None:
-            raise ValueError('time_frame must be specified before calling cum_append()')
+        if self._date_col is None or self._time_frame is None:
+            raise ValueError('date_col and time_frame must be specified before calling cum_append()')
 
         if not len(other):
             raise ValueError('the data frame to be appended is empty')

@@ -66,10 +66,22 @@ def test_append_df(tencent: DataFrame):
     new = tencent.iloc[10:15]
 
     check_append(head, new)
+    check_append(StockDataFrame(head), new)
     check_append(head, [new])
+    check_append(StockDataFrame(head), [new])
 
     check_append_no_time_key(head, new, ignore_index=True)
     check_append_no_time_key(head, [new], ignore_index=True)
+
+    head2 = head.copy()
+
+    time_key2 = f'{TIME_KEY}2'
+    head2[time_key2] = head2[TIME_KEY]
+
+    head2 = StockDataFrame(head2, date_col=TIME_KEY)
+
+    with pytest.raises(ValueError, match=time_key2):
+        StockDataFrame(head2, date_col=time_key2)
 
 
 def test_append_df_without_time_key(tencent: DataFrame):
