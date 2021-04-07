@@ -21,8 +21,7 @@ from .utils import (
 
     init_stock_metas,
     copy_stock_metas,
-    copy_clean_stock_metas,
-    # ensure_return_type
+    copy_clean_stock_metas
 )
 
 from .date import (
@@ -32,8 +31,11 @@ from .date import (
 
 from .time_frame import (
     TimeFrame,
-    TimeFrameArg
+    TimeFrameArg,
+    ensure_time_frame
 )
+
+from .manager import TimeFrameMixin
 
 
 Cumulator = Callable[[ndarray], float]
@@ -70,14 +72,41 @@ def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
     return ValueError(f'{message} or a "{date_col}" column')
 
 
-def append(
+def cum_append(
     df: 'MetaDataFrame',
     to_append: ToAppend,
     *args, **kwargs
-) -> 'MetaDataFrame':
+) -> DataFrame:
+    """
+    Returns:
+        DataFrame: this method does not ensure that the return type is MetaDataFrame due to the limitation of DataFrame.append
+    """
+
     duplicates = df[to_append[0].name:]
 
     return df.drop(duplicates.index).append(to_append, *args, **kwargs)
+
+
+def ensure_type(
+    df: DataFrame,
+    source: 'MetaDataFrame'
+) -> 'MetaDataFrame':
+    # Subclass could override property _constructor to change the
+    # return type
+    Constructor = source._constructor
+
+    if isinstance(df, MetaDataFrame):
+        # super().append will lose metas
+        df._cumulator.init(
+            df,
+            source
+        )
+    else:
+        # If `self` is an empty StockDataFrame,
+        # super().append() returns a DataFrame
+        df = Constructor(df, source=source)
+
+    return df
 
 
 class _Cumulator:
@@ -92,13 +121,17 @@ class _Cumulator:
     _to_cumulate: Optional[DataFrame]
     _to_append: ToAppend
 
+    _date_col: Optional[str] = None
+    _time_frame: Optional[TimeFrame] = None
+
     def __repr__(self) -> str:
         return f'<Cumulator date_col:{self._date_col}, time_frame:{self._time_frame}>'
 
-    def init(
+    def update(
         self,
-        df,
+        df: 'MetaDataFrame',
         source,
+        source_cumulator: '_Cumulator' = None,
         date_col: Optional[str] = None,
         to_datetime_kwargs: dict = {},
         time_frame: TimeFrameArg = None,
@@ -106,13 +139,14 @@ class _Cumulator:
     ):
         is_meta_df = isinstance(source, MetaDataFrame)
 
+        if is_meta_df and source_cumulator is None:
+            source_cumulator = source._cumulator
+
         if date_col is not None:
             self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
 
             if is_meta_df:
-                source_cumulator = source._cumulator
-
                 if source_cumulator._date_col is None:
                     # Which means the source stock data frame has no date column, so we have to apply it
                     apply_date_to_df(
@@ -133,19 +167,19 @@ class _Cumulator:
         else:
             if is_meta_df:
                 # We should copy the source's cumulator settings
-                self._merge_date_col(source._cumulator)
+                self._merge_date_col(source_cumulator)
             else:
                 self._date_col = None
 
         if time_frame is None:
             if is_meta_df:
-                self._merge_time_frame(source._cumulator)
+                self._merge_time_frame(source_cumulator)
             else:
                 self._time_frame = None
 
             return
 
-        self._time_frame = TimeFrame.ensure(time_frame)
+        self._time_frame = ensure_time_frame(time_frame)
 
         self._cumulators = (
             # None means use the default cumulators
@@ -193,7 +227,7 @@ class _Cumulator:
         # support other types
         other: DataFrame,
         *args, **kwargs
-    ) -> DataFrame:
+    ) -> 'MetaDataFrame':
         if self._date_col is None or self._time_frame is None:
             raise ValueError('date_col and time_frame must be specified before calling cum_append()')
 
@@ -241,7 +275,7 @@ class _Cumulator:
         # Append the rows even the latest time frame is not closed
         self._pre_append()
 
-        new = append(to, self._to_append, *args, **kwargs)
+        new = cum_append(to, self._to_append, *args, **kwargs)
         self._to_append.clear()
 
         return new
@@ -322,7 +356,7 @@ class _Cumulator:
         self._to_append.append(cumulated)
 
 
-class MetaDataFrame(DataFrame):
+class MetaDataFrame(DataFrame, TimeFrameMixin):
     """
     The subclass of pandas.DataFrame which ensures return type of all kinds methods to be MetaDataFrame
     """
@@ -338,7 +372,12 @@ class MetaDataFrame(DataFrame):
 
     # TODO:
     # whether *args, **kwargs here are necessary
-    def __finalize__(self, other, *args, **kwargs) -> 'MetaDataFrame':
+    def __finalize__(
+        self,
+        other,
+        method: Optional[str] = None,
+        *args, **kwargs
+    ) -> 'MetaDataFrame':
         """
         Propagate metadata from other to self.
 
@@ -346,15 +385,24 @@ class MetaDataFrame(DataFrame):
         which ensures the meta info of StockDataFrame
         """
 
-        super().__finalize__(other, *args, **kwargs)
+        super().__finalize__(other, method, *args, **kwargs)
 
-        if isinstance(other, MetaDataFrame):
+        if method != 'append' and method != 'concat':
+            # append:
+            # DataFrame.append is implemented with pandas.concat which
+            # does not ensure the return type as `self._constructor`.
+            # So we will handle method append specially
+
+            # concat:
+            # Inside pandas.concat, other is `_Concatenator`
             copy_clean_stock_metas(
                 other,
                 self,
                 other._stock_indexer_slice,
                 other._stock_indexer_axis
             )
+
+            self._cumulator.update(self, other)
 
         return self
 
@@ -383,6 +431,7 @@ class MetaDataFrame(DataFrame):
     def __init__(
         self,
         data=None,
+        # from_constructor: Optional[bool] = bool,
         date_col: Optional[str] = None,
         to_datetime_kwargs: dict = {},
         time_frame: TimeFrameArg = None,
@@ -416,12 +465,33 @@ class MetaDataFrame(DataFrame):
         if source is None:
             source = data
 
-        if isinstance(source, MetaDataFrame):
+        is_meta_frame = isinstance(source, MetaDataFrame)
+
+        if is_meta_frame:
             copy_stock_metas(source, self)
         else:
             init_stock_metas(self)
 
-        self._cumulator.init(
+        if (
+            not is_meta_frame
+            and date_col is None
+            and time_frame is None
+        ):
+            # Cases
+            # 1.
+            # StockDataFrame(dataframe)
+            # 2.
+            # created by self._constructor(new_data).__finalize__(self)
+            # we will update cumulator data in __finalize__
+            return
+
+        # Cases
+        # 1.
+        # StockDataFrame(stockdataframe)
+        # 2.
+        # StockDataFrame(dataframe, date_col='time')
+
+        self._cumulator.update(
             self,
             source,
             date_col=date_col,
@@ -443,6 +513,16 @@ class MetaDataFrame(DataFrame):
     # Public Methods of stock-pandas
     # --------------------------------------------------------------------
 
+    def cumulate(self) -> 'MetaDataFrame':
+        """
+        Cumulate the current data frame by its time frame, and returns a new object
+
+        Returns:
+            StockDataFrame
+        """
+
+        ...
+
     def add_cumulator(self, column_name: str, cumulator: Cumulator) -> None:
         self._cumulator.add(column_name, cumulator)
 
@@ -454,24 +534,16 @@ class MetaDataFrame(DataFrame):
         """
 
         other = self._cumulator.apply_date_col(other)
-        concatenated = super().append(other, *args, **kwargs)
+        appended = super().append(other, *args, **kwargs)
 
-        # Subclass could override property _constructor to change the
-        # return type
-        Constructor = self._constructor
-
-        if isinstance(concatenated, Constructor):
-            # super().append will lose metas
-            concatenated._cumulator.init(
-                concatenated,
-                self
-            )
+        if isinstance(appended, MetaDataFrame):
+            appended._cumulator.update(appended, self)
         else:
-            # If `self` is an empty StockDataFrame,
-            # super().append() returns a DataFrame
-            concatenated = Constructor(concatenated, source=self)
+            appended = self._constructor(appended, source=self)
 
-        return concatenated
+        copy_stock_metas(self, appended)
+
+        return appended
 
     def cum_append(
         self,
@@ -485,8 +557,10 @@ class MetaDataFrame(DataFrame):
         The args of this method is the same as `pandas.DataFrame.append`
         """
 
-        return self._cumulator.cum_append(
+        concatenated = self._cumulator.cum_append(
             self,
             other,
             *args, **kwargs
         )
+
+        return ensure_type(concatenated, self)

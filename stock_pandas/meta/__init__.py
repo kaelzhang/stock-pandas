@@ -3,5 +3,6 @@ from .utils import ColumnInfo
 
 from .time_frame import (
     TimeFrame,
-    TimeFrameArg
+    TimeFrameArg,
+    ensure_time_frame
 )

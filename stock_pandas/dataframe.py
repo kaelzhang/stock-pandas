@@ -11,7 +11,10 @@ from typing import (
 from pandas import Series
 from pandas.core.generic import NDFrame
 
-import numpy as np
+from numpy import (
+    ndarray,
+    nan
+)
 
 from stock_pandas.meta.utils import ensure_return_type
 
@@ -93,7 +96,7 @@ class StockDataFrame(MetaDataFrame):
             name (str): The name of the column
 
         Returns:
-            np.Series
+            Series
         """
 
         origin_name = name
@@ -111,7 +114,7 @@ class StockDataFrame(MetaDataFrame):
         self,
         directive_str: str,
         create_column: Optional[bool] = None
-    ) -> np.ndarray:
+    ) -> ndarray:
         """
         Executes the given directive and returns a numpy ndarray according to the directive.
 
@@ -122,7 +125,7 @@ class StockDataFrame(MetaDataFrame):
             create_column (:obj:`bool`, optional): whether we should create a column for the calculated series.
 
         Returns:
-            np.ndarray
+            ndarray
         """
 
         if self._is_normal_column(directive_str):
@@ -198,10 +201,10 @@ class StockDataFrame(MetaDataFrame):
         self,
         size: int,
         on: str,
-        apply: Callable[[np.ndarray], Any],
+        apply: Callable[[ndarray], Any],
         forward: bool = False,
-        fill=np.nan
-    ) -> np.ndarray:
+        fill=nan
+    ) -> ndarray:
         """Apply a 1-D function along the given column `on`
 
         Args:
@@ -212,7 +215,7 @@ class StockDataFrame(MetaDataFrame):
             fill (:obj:`any`): the value used to fill where there are not enough items to form a rolling window
 
         Returns:
-            np.ndarray
+            ndarray
 
         Usage::
 
@@ -279,7 +282,7 @@ class StockDataFrame(MetaDataFrame):
         self,
         directive: Directive,
         create_column: bool
-    ) -> Tuple[str, np.ndarray]:
+    ) -> Tuple[str, ndarray]:
         """Gets the series column corresponds the `directive` or
         calculate by using the `directive`
 
@@ -289,7 +292,7 @@ class StockDataFrame(MetaDataFrame):
             calculated series
 
         Returns:
-            Tuple[str, np.ndarray]: the name of the series, and the series
+            Tuple[str, ndarray]: the name of the series, and the series
         """
 
         name = str(directive)
@@ -317,7 +320,7 @@ class StockDataFrame(MetaDataFrame):
     def _set_new_item(
         self,
         name: str,
-        value: np.ndarray
+        value: ndarray
     ) -> None:
         """Set a new column and avoid SettingWithCopyWarning by using
         pandas internal APIs
@@ -327,7 +330,7 @@ class StockDataFrame(MetaDataFrame):
 
         NDFrame._set_item(self, name, value)
 
-    def _fulfill_series(self, column_name: str) -> np.ndarray:
+    def _fulfill_series(self, column_name: str) -> ndarray:
         column_info = self._stock_columns_info_map.get(column_name)
         size = len(self)
 
@@ -365,7 +368,7 @@ class StockDataFrame(MetaDataFrame):
         return column_name in self.columns and \
             column_name not in self._stock_columns_info_map
 
-    def _calc(self, directive_str: str) -> np.ndarray:
+    def _calc(self, directive_str: str) -> ndarray:
         directive = self._parse_directive(directive_str)
 
         _, series = self._get_or_calc_series(

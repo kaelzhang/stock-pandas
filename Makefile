@@ -1,6 +1,6 @@
 files = stock_pandas test *.py
 test_files = *
-# test_files = cum_append
+# test_files = append
 
 test:
 	pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing

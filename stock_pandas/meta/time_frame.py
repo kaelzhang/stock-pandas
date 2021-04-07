@@ -12,11 +12,11 @@ from pandas import (
 import pytz
 
 
-TimeFrameArg = Union[str, '_TimeFrame', None]
+TimeFrameArg = Union[str, 'TimeFrame', None]
 TimeFrameUnifier = Callable[[Timestamp], int]
 
 
-class _TimeFrame:
+class TimeFrame:
     def __init__(
         self,
         time_zone: Optional[str] = None,
@@ -28,7 +28,7 @@ class _TimeFrame:
     def __call__(
         self,
         time_zone: Optional[str] = None
-    ) -> '_TimeFrame':
+    ) -> 'TimeFrame':
         cls = type(self)
         return cls(time_zone)
 
@@ -48,30 +48,25 @@ class _TimeFrame:
         return self._unify(date)
 
 
-class TimeFrame(_TimeFrame):
-    @classmethod
-    def ensure(
-        cls,
-        value: TimeFrameArg
-    ) -> Optional['_TimeFrame']:
-        if value is None:
-            return None
-
-        if isinstance(value, cls):
-            return value
-
-        timeFrame = None
-
-        if type(value) is str:
-            timeFrame = timeFrames.get(value)
-
-        if timeFrame is None:
-            raise ValueError()
-
-        return timeFrame
+timeFrames: Dict[str, TimeFrame] = {}
 
 
-timeFrames: Dict[str, _TimeFrame] = {}
+def ensure_time_frame(value: TimeFrameArg) -> Optional['TimeFrame']:
+    if value is None:
+        return None
+
+    if isinstance(value, TimeFrame):
+        return value
+
+    timeFrame = None
+
+    if type(value) is str:
+        timeFrame = timeFrames.get(value)
+
+    if timeFrame is None:
+        raise ValueError()
+
+    return timeFrame
 
 
 MAGNITUDE_MINUTE = 0
@@ -82,7 +77,7 @@ MAGNITUDE_YEAR = 7
 
 
 def define(suffix: str, name: str, unify: TimeFrameUnifier):
-    class NewClass(_TimeFrame):
+    class NewClass(TimeFrame):
         _unify = unify
 
     NewClass.__name__ = f'TimeFrame{suffix}'
@@ -90,7 +85,7 @@ def define(suffix: str, name: str, unify: TimeFrameUnifier):
     define_class(name, NewClass)
 
 
-def define_class(name: str, cls: _TimeFrame):
+def define_class(name: str, cls: TimeFrame):
     timeFrame = cls()
 
     # TimeFrame.M1 => TimeFrameM1
