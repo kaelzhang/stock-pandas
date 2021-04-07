@@ -74,18 +74,23 @@ def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
 
 def cum_append(
     df: 'MetaDataFrame',
-    to_append: ToAppend
+    other: ToAppend
 ) -> DataFrame:
     """
     Returns:
         DataFrame: this method does not ensure that the return type is MetaDataFrame due to the limitation of DataFrame.append
     """
 
-    duplicates = df[to_append[0].name:]
+    duplicates = df[other[0].name:]
+
+    other = DataFrame(other)
+
+    if (df.columns.get_indexer(other.columns) >= 0).all():
+        other = other.reindex(columns=df.columns)
 
     return concat([
-        df.drop(duplicates),
-        *to_append
+        df.drop(duplicates.index),
+        other
     ])
 
 
@@ -230,8 +235,6 @@ class _Cumulator:
 
         other = self._convert_to_date_df(other)
 
-        print('>>>> to_cumulate', type(self._to_cumulate), self._to_cumulate)
-
         last_timestamp = (
             None if self._to_cumulate is None
             else self._to_cumulate.iloc[-1].name
@@ -339,14 +342,14 @@ class _Cumulator:
         cumulated = to_cumulate.iloc[-1].copy()
 
         # Use the index of the first row
-        cumulated.rename(to_cumulate.iloc[:1].name)
+        cumulated.rename(to_cumulate.iloc[0].name)
 
         for column_name in cumulated.index:
             cumulator = self._cumulators.get(column_name)
 
             if cumulator is not None:
                 cumulated[column_name] = cumulator(
-                    cumulated[column_name].to_numpy()
+                    to_cumulate[column_name].to_numpy()
                 )
 
         self._to_append.append(cumulated)
