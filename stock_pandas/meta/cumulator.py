@@ -74,8 +74,7 @@ def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
 
 def cum_append(
     df: 'MetaDataFrame',
-    to_append: ToAppend,
-    *args, **kwargs
+    to_append: ToAppend
 ) -> DataFrame:
     """
     Returns:
@@ -84,27 +83,22 @@ def cum_append(
 
     duplicates = df[to_append[0].name:]
 
-    return df.drop(duplicates.index).append(to_append, *args, **kwargs)
+    return concat([
+        df.drop(duplicates),
+        *to_append
+    ])
 
 
 def ensure_type(
     df: DataFrame,
     source: 'MetaDataFrame'
 ) -> 'MetaDataFrame':
-    # Subclass could override property _constructor to change the
-    # return type
-    Constructor = source._constructor
-
     if isinstance(df, MetaDataFrame):
-        # super().append will lose metas
-        df._cumulator.init(
-            df,
-            source
-        )
+        df._cumulator.update(df, source)
     else:
-        # If `self` is an empty StockDataFrame,
-        # super().append() returns a DataFrame
-        df = Constructor(df, source=source)
+        df = source._constructor(df, source=source)
+
+    copy_stock_metas(source, df)
 
     return df
 
@@ -227,7 +221,7 @@ class _Cumulator:
         # support other types
         other: DataFrame,
         *args, **kwargs
-    ) -> 'MetaDataFrame':
+    ) -> DataFrame:
         if self._date_col is None or self._time_frame is None:
             raise ValueError('date_col and time_frame must be specified before calling cum_append()')
 
@@ -236,9 +230,11 @@ class _Cumulator:
 
         other = self._convert_to_date_df(other)
 
+        print('>>>> to_cumulate', type(self._to_cumulate), self._to_cumulate)
+
         last_timestamp = (
             None if self._to_cumulate is None
-            else self._to_cumulate[-1].iloc[-1].name
+            else self._to_cumulate.iloc[-1].name
         )
 
         start = None
@@ -343,7 +339,7 @@ class _Cumulator:
         cumulated = to_cumulate.iloc[-1].copy()
 
         # Use the index of the first row
-        cumulated.rename(to_cumulate.iloc[0].name)
+        cumulated.rename(to_cumulate.iloc[:1].name)
 
         for column_name in cumulated.index:
             cumulator = self._cumulators.get(column_name)
@@ -536,14 +532,7 @@ class MetaDataFrame(DataFrame, TimeFrameMixin):
         other = self._cumulator.apply_date_col(other)
         appended = super().append(other, *args, **kwargs)
 
-        if isinstance(appended, MetaDataFrame):
-            appended._cumulator.update(appended, self)
-        else:
-            appended = self._constructor(appended, source=self)
-
-        copy_stock_metas(self, appended)
-
-        return appended
+        return ensure_type(appended, self)
 
     def cum_append(
         self,
