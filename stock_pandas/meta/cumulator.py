@@ -2,7 +2,8 @@ from typing import (
     Callable,
     Dict,
     List,
-    Optional
+    Optional,
+    Tuple
 )
 
 from numpy import ndarray
@@ -117,7 +118,7 @@ class _Cumulator:
         'volume': add
     }
 
-    _to_cumulate: Optional[DataFrame]
+    _unclosed: Optional[DataFrame]
     _to_append: ToAppend
 
     _date_col: Optional[str] = None
@@ -186,7 +187,7 @@ class _Cumulator:
             else self.CUMULATORS
         ).copy()
 
-        self._to_cumulate = None
+        self._unclosed = None
 
     def _merge_date_col(self, source_cumulator: '_Cumulator'):
         self._date_col = source_cumulator._date_col
@@ -203,7 +204,7 @@ class _Cumulator:
             return
 
         self._cumulators = source_cumulator._cumulators.copy()
-        self._to_cumulate = source_cumulator._to_cumulate
+        self._unclosed = source_cumulator._unclosed
 
     def add(self, column_name, cumulator: Cumulator):
         self._cumulators[column_name] = cumulator
@@ -224,20 +225,21 @@ class _Cumulator:
         to: 'MetaDataFrame',
         # TODO:
         # support other types
-        other: DataFrame,
-        *args, **kwargs
-    ) -> DataFrame:
+        other: DataFrame
+    ) -> Tuple[DataFrame, DataFrame]:
         if self._date_col is None or self._time_frame is None:
             raise ValueError('date_col and time_frame must be specified before calling cum_append()')
 
         if not len(other):
             raise ValueError('the data frame to be appended is empty')
 
+        current_unclosed = self._unclosed
+
         other = self._convert_to_date_df(other)
 
         last_timestamp = (
-            None if self._to_cumulate is None
-            else self._to_cumulate.iloc[-1].name
+            None if self._unclosed is None
+            else self._unclosed.iloc[-1].name
         )
 
         start = None
@@ -274,10 +276,16 @@ class _Cumulator:
         # Append the rows even the latest time frame is not closed
         self._pre_append()
 
-        new = cum_append(to, self._to_append, *args, **kwargs)
+        new = cum_append(to, self._to_append)
         self._to_append.clear()
 
-        return new
+        unclosed = self._unclosed
+
+        # TODO:
+        # Do not ruin self._unclosed
+        self._unclosed = current_unclosed
+
+        return new, unclosed
 
     def _convert_to_date_df(
         self,
@@ -297,19 +305,19 @@ class _Cumulator:
         to_cumulate: Optional[DataFrame]
     ) -> Optional[DataFrame]:
         """
-        Concat the givin data frame to self._to_cumulate
+        Concat the givin data frame to self._unclosed
         """
 
         to_concat = [
             item
-            for item in [to_cumulate, self._to_cumulate]
+            for item in [self._unclosed, to_cumulate]
             if item is not None
         ]
 
         if not to_concat:
             return
 
-        self._to_cumulate = (
+        self._unclosed = (
             concat(to_concat) if len(to_concat) == 2
             else to_concat[0]
         )
@@ -319,37 +327,37 @@ class _Cumulator:
         clean: bool = False
     ):
         """
-        Cumulate self._to_cumulate and append to self._to_append
+        Cumulate self._unclosed and append to self._to_append
 
         Args:
-            clean (:obj:`bool`, optional): True then clean self._to_cumulate
+            clean (:obj:`bool`, optional): True then clean self._unclosed
         """
 
-        to_cumulate = self._to_cumulate
+        unclosed = self._unclosed
 
-        if to_cumulate is None:
+        if unclosed is None:
             return
 
         if clean:
-            self._to_cumulate = None
+            self._unclosed = None
 
-        if len(to_cumulate) == 1:
+        if len(unclosed) == 1:
             # We do not need to cumulate
-            self._to_append.append(to_cumulate.iloc[0])
+            self._to_append.append(unclosed.iloc[0])
             return
 
         # Use the values of the last row except columns of self._cumulators
-        cumulated = to_cumulate.iloc[-1].copy()
+        cumulated = unclosed.iloc[-1].copy()
 
         # Use the index of the first row
-        cumulated.rename(to_cumulate.iloc[0].name)
+        cumulated.rename(unclosed.iloc[0].name, inplace=True)
 
         for column_name in cumulated.index:
             cumulator = self._cumulators.get(column_name)
 
             if cumulator is not None:
                 cumulated[column_name] = cumulator(
-                    to_cumulate[column_name].to_numpy()
+                    unclosed[column_name].to_numpy()
                 )
 
         self._to_append.append(cumulated)
@@ -549,10 +557,13 @@ class MetaDataFrame(DataFrame, TimeFrameMixin):
         The args of this method is the same as `pandas.DataFrame.append`
         """
 
-        concatenated = self._cumulator.cum_append(
+        concatenated, unclosed = self._cumulator.cum_append(
             self,
             other,
             *args, **kwargs
         )
 
-        return ensure_type(concatenated, self)
+        df = ensure_type(concatenated, self)
+        df._cumulator._unclosed = unclosed
+
+        return df
