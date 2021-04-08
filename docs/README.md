@@ -20,6 +20,7 @@
 [style]: #style
 [repeat]: #repeat
 [change]: #change
+[cumulation]: #cumulation
 
 
 # [stock-pandas](https://github.com/kaelzhang/stock-pandas)
@@ -32,7 +33,7 @@
   - Over-bought / over-sold indicators, such as [**KDJ**][kdj], [**RSI**][rsi]
   - Other indicators, such as [**LLV**][llv], [**HHV**][hhv]
   - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
-- Time frames management
+- To [cumulate][cumulation] kline data based on a given time frame.
 
 `stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6** and Pandas >= **1.0.0**(for now)
 
@@ -238,6 +239,26 @@ stock.rolling_calc(5, 'open', max)
 stock['hhv:5,open'].to_numpy()
 ```
 
+### stock.cumulate() -> StockDataFrame
+
+Cumulate the current data frame `stock` based on its time frame setting
+
+```py
+StockDataFrame(one_minute_kline_data_frame, time_frame='5m').cumulate()
+
+# And you will get a 5-minute kline data
+```
+
+see [Cumulation and DatetimeIndex][]
+
+### stock.cum_append(other: DataFrame) -> StockDataFrame
+
+Append `other` to the end of the current data frame `stock` and apply cumulation on them. And the following slice of code is equivalent to the above one:
+
+```py
+StockDataFrame(time_frame='5m').cum_append(one_minute_kline_data_frame)
+```
+
 ### directive_stringify(directive_str) -> str
 
 > since 0.30.0
@@ -249,6 +270,25 @@ from stock_pandas import directive_stringify
 
 directive_stringify('boll')
 # boll:21,close
+```
+
+## Cumulation and DatetimeIndex
+
+Suppose we have a csv file containing kline data of a stock in 1-minute time frame
+
+```
+time_key,open,close,high,low,volume
+2019-10-15 00:00:00,329.4,328.8,331.6,327.6,14202519
+2019-10-16 00:00:00,330.0,331.0,332.0,328.0,13953191
+2019-10-17 00:00:00,332.8,331.0,332.8,328.4,10339120
+2019-10-18 00:00:00,332.0,331.0,334.2,330.2,9904468
+2019-10-21 00:00:00,329.6,324.8,330.2,324.8,13947162
+2019-10-22 00:00:00,325.0,327.6,327.8,324.8,10448427
+2019-10-23 00:00:00,324.8,320.0,325.8,319.6,19855257
+2019-10-24 00:00:00,319.0,319.0,320.6,316.6,18472498
+2019-10-25 00:00:00,320.4,316.6,320.4,316.6,15789881
+2019-10-28 00:00:00,316.4,322.0,323.6,316.2,17610356
+2019-10-29 00:00:00,323.0,317.0,323.8,317.0,19927333
 ```
 
 ## Syntax of `directive`
