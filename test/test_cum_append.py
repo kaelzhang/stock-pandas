@@ -1,12 +1,8 @@
-from datetime import (
-    datetime,
-    timedelta
-)
 import math
 
 import pytest
 from pandas import DataFrame
-import numpy as np
+
 
 from stock_pandas import (
     StockDataFrame,
@@ -14,36 +10,18 @@ from stock_pandas import (
 )
 
 from .common import (
-    get_tencent
+    get_tencent,
+    get_1m_tencent,
+    TIME_KEY
 )
 
 
-TIME_KEY = 'time_key'
-FORMAT = '%Y-%m-%d %H:%M:%S'
-COLUMNS = ['open', 'high', 'low', 'close', 'volume']
+LENGTH = 20
 
 
-@pytest.fixture
-def tencent() -> DataFrame:
-    """
-    Change time index to 1-minute interval
-    """
-
-    df = get_tencent(stock=False)
-
-    time_array = []
-    date = datetime(2020, 1, 1)
-    step = timedelta(minutes=1)
-
-    for i in range(100):
-        time_array.append(date.strftime(FORMAT))
-        date += step
-
-    # change time_key from day to minute
-    df[TIME_KEY] = np.array(time_array)
-    df = df[['time_key', *COLUMNS]]
-
-    return df
+@pytest.fixture()
+def tencent():
+    return get_1m_tencent().iloc[:LENGTH]
 
 
 def expect_cumulated(
@@ -63,9 +41,9 @@ def expect_cumulated(
 
     for i in range(length):
         if i == length - 1 and rest:
-            source = origin.iloc[i * 5: i * 5 + rest]
+            source = origin.iloc[i * step: i * step + rest]
         else:
-            source = origin.iloc[i * 5: (i + 1) * 5]
+            source = origin.iloc[i * step: (i + 1) * step]
 
         series = cumulated.iloc[i]
 
@@ -82,14 +60,36 @@ def test_cum_append_from_empty(tencent):
         time_frame='5m'
     )
 
-    for i in range(100):
+    for i in range(LENGTH):
         stock_new = stock.cum_append(tencent.iloc[i:i + 1])
         assert isinstance(stock, StockDataFrame)
 
         expect_cumulated(tencent, stock, i)
         expect_cumulated(tencent, stock_new, i + 1)
+        expect_cumulated(
+            tencent,
+            StockDataFrame(
+                date_col=TIME_KEY,
+                time_frame='5m'
+            ).cum_append(
+                tencent.iloc[:i + 1]
+            ),
+            i + 1
+        )
 
         stock = stock_new
+
+
+def test_cumulate(tencent):
+    expect_cumulated(
+        tencent,
+        StockDataFrame(
+            tencent,
+            date_col=TIME_KEY,
+            time_frame='5m'
+        ).cumulate(),
+        LENGTH
+    )
 
 
 def test_cum_append_error():
@@ -114,5 +114,3 @@ def test_cum_append_error():
         StockDataFrame(date_col='non-exists', time_frame='5m').cum_append(
             tencent.iloc[:1]
         )
-
-

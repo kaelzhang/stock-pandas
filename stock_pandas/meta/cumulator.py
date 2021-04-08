@@ -265,6 +265,7 @@ class _Cumulator:
                 self._pre_append(True)
 
                 start = timestamp
+                last_timestamp = timestamp
 
             last = timestamp
 
@@ -519,7 +520,7 @@ class MetaDataFrame(DataFrame, TimeFrameMixin):
             StockDataFrame
         """
 
-        ...
+        return self._constructor(source=self).cum_append(self)
 
     def append(self, other, *args, **kwargs) -> 'MetaDataFrame':
         """
@@ -535,21 +536,16 @@ class MetaDataFrame(DataFrame, TimeFrameMixin):
 
     def cum_append(
         self,
-        other,
-        *args,
-        **kwargs
+        other: DataFrame
     ) -> 'MetaDataFrame':
         """
-        Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
+        Appends row(s) of other to the end of caller and applies cumulation to these rows, and returning a new object
 
-        The args of this method is the same as `pandas.DataFrame.append`
+        Args:
+            other (DataFrame): the new data frame to append
         """
 
-        concatenated, unclosed = self._cumulator.cum_append(
-            self,
-            other,
-            *args, **kwargs
-        )
+        concatenated, unclosed = self._cumulator.cum_append(self, other)
 
         df = ensure_type(concatenated, self)
         df._cumulator._unclosed = unclosed

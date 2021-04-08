@@ -1,14 +1,25 @@
 from pathlib import Path
+from datetime import (
+    datetime,
+    timedelta
+)
+import numpy as np
 
-from stock_pandas import StockDataFrame
 from pandas import (
     DataFrame,
     Series,
     read_csv
 )
 
+from stock_pandas import StockDataFrame
+
+
 simple_list = [2, 3, 4, 5, 6, 7]
 names = 'abcdef'
+
+TIME_KEY = 'time_key'
+FORMAT = '%Y-%m-%d %H:%M:%S'
+COLUMNS = ['open', 'high', 'low', 'close', 'volume']
 
 
 csv = (Path(__file__).parent.parent / 'example' / 'tencent.csv').resolve()
@@ -22,6 +33,28 @@ def get_tencent(date_col: bool = True, stock: bool = True):
         return StockDataFrame(read_csv(csv), date_col='time_key')
     else:
         return StockDataFrame(read_csv(csv))
+
+
+def get_1m_tencent() -> DataFrame:
+    """
+    Change time index to 1-minute interval
+    """
+
+    df = get_tencent(stock=False)
+
+    time_array = []
+    date = datetime(2020, 1, 1)
+    step = timedelta(minutes=1)
+
+    for i in range(100):
+        time_array.append(date.strftime(FORMAT))
+        date += step
+
+    # change time_key from day to minute
+    df[TIME_KEY] = np.array(time_array)
+    df = df[['time_key', *COLUMNS]]
+
+    return df
 
 
 def create_stock():
