@@ -65,7 +65,7 @@ def add(array: ndarray) -> float:
 
 
 def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
-    message = 'the target to be `cum_append()`ed must have a DateTimeIndex'
+    message = 'the target to be `cum_append()`ed must have a DatetimeIndex'
 
     if date_col is None:
         return ValueError(message)
@@ -123,9 +123,6 @@ class _Cumulator:
 
     _date_col: Optional[str] = None
     _time_frame: Optional[TimeFrame] = None
-
-    def __repr__(self) -> str:
-        return f'<Cumulator date_col:{self._date_col}, time_frame:{self._time_frame}>'
 
     def update(
         self,
@@ -206,9 +203,6 @@ class _Cumulator:
         self._cumulators = source_cumulator._cumulators.copy()
         self._unclosed = source_cumulator._unclosed
 
-    def add(self, column_name, cumulator: Cumulator):
-        self._cumulators[column_name] = cumulator
-
     def apply_date_col(self, other):
         if self._date_col is not None:
             other = apply_date(
@@ -227,8 +221,10 @@ class _Cumulator:
         # support other types
         other: DataFrame
     ) -> Tuple[DataFrame, DataFrame]:
-        if self._date_col is None or self._time_frame is None:
-            raise ValueError('date_col and time_frame must be specified before calling cum_append()')
+        # It is allowed to have a None date_col,
+        # but `other` must have a DatetimeIndex
+        if self._time_frame is None:
+            raise ValueError('refuse to cum_append() a stock data frame without time_frame specified')
 
         if not len(other):
             raise ValueError('the data frame to be appended is empty')
@@ -292,11 +288,10 @@ class _Cumulator:
         other: DataFrame
     ) -> DataFrame:
         date_col = self._date_col
-        to_datetime_kwargs = self._to_datetime_kwargs
 
         if date_col is not None and date_col in other.columns:
             other = other.copy()
-            apply_date_to_df(other, date_col, to_datetime_kwargs)
+            apply_date_to_df(other, date_col, self._to_datetime_kwargs)
 
         return other
 
@@ -314,8 +309,7 @@ class _Cumulator:
             if item is not None
         ]
 
-        if not to_concat:
-            return
+        # Logically, the length of to_concat must > 0
 
         self._unclosed = (
             concat(to_concat) if len(to_concat) == 2
@@ -334,9 +328,6 @@ class _Cumulator:
         """
 
         unclosed = self._unclosed
-
-        if unclosed is None:
-            return
 
         if clean:
             self._unclosed = None
@@ -529,9 +520,6 @@ class MetaDataFrame(DataFrame, TimeFrameMixin):
         """
 
         ...
-
-    def add_cumulator(self, column_name: str, cumulator: Cumulator) -> None:
-        self._cumulator.add(column_name, cumulator)
 
     def append(self, other, *args, **kwargs) -> 'MetaDataFrame':
         """

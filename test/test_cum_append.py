@@ -78,7 +78,6 @@ def expect_cumulated(
 
 def test_cum_append_from_empty(tencent):
     stock = StockDataFrame(
-        [],
         date_col=TIME_KEY,
         time_frame='5m'
     )
@@ -91,3 +90,29 @@ def test_cum_append_from_empty(tencent):
         expect_cumulated(tencent, stock_new, i + 1)
 
         stock = stock_new
+
+
+def test_cum_append_error():
+    tencent = get_tencent(stock=False)
+
+    with pytest.raises(ValueError, match='time_frame'):
+        StockDataFrame().cum_append(
+            tencent.iloc[:1]
+        )
+
+    with pytest.raises(ValueError, match='empty'):
+        StockDataFrame(time_frame='5m').cum_append(
+            DataFrame()
+        )
+
+    with pytest.raises(ValueError, match='DatetimeIndex'):
+        StockDataFrame(time_frame='5m').cum_append(
+            tencent.iloc[:1]
+        )
+
+    with pytest.raises(ValueError, match='non-exists'):
+        StockDataFrame(date_col='non-exists', time_frame='5m').cum_append(
+            tencent.iloc[:1]
+        )
+
+
