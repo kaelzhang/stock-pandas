@@ -2,6 +2,7 @@ from datetime import (
     datetime,
     timedelta
 )
+import math
 
 import pytest
 from pandas import DataFrame
@@ -19,10 +20,15 @@ from .common import (
 
 TIME_KEY = 'time_key'
 FORMAT = '%Y-%m-%d %H:%M:%S'
+COLUMNS = ['open', 'high', 'low', 'close', 'volume']
 
 
 @pytest.fixture
 def tencent() -> DataFrame:
+    """
+    Change time index to 1-minute interval
+    """
+
     df = get_tencent(stock=False)
 
     time_array = []
@@ -30,32 +36,58 @@ def tencent() -> DataFrame:
     step = timedelta(minutes=1)
 
     for i in range(100):
-        date += step
         time_array.append(date.strftime(FORMAT))
+        date += step
 
     # change time_key from day to minute
     df[TIME_KEY] = np.array(time_array)
-    df = df[['time_key', 'open', 'high', 'low', 'close', 'volume']]
+    df = df[['time_key', *COLUMNS]]
 
     return df
 
 
-def test_cum_append_basic(tencent):
+def expect_cumulated(
+    origin,
+    cumulated,
+    n_appended,
+    step=5
+):
+    length = len(cumulated)
+
+    assert length == math.ceil(n_appended / step), f'length not match for {n_appended}'
+
+    if n_appended == 0:
+        return
+
+    rest = n_appended % step
+
+    for i in range(length):
+        if i == length - 1 and rest:
+            source = origin.iloc[i * 5: i * 5 + rest]
+        else:
+            source = origin.iloc[i * 5: (i + 1) * 5]
+
+        series = cumulated.iloc[i]
+
+        assert series['open'] == source['open'].to_numpy()[0]
+        assert series['high'] == source['high'].to_numpy().max()
+        assert series['low'] == source['low'].to_numpy().min()
+        assert series['close'] == source['close'].to_numpy()[-1]
+        assert series['volume'] == source['volume'].to_numpy().sum()
+
+
+def test_cum_append_from_empty(tencent):
     stock = StockDataFrame(
         [],
         date_col=TIME_KEY,
         time_frame='5m'
     )
 
-    stock = stock.cum_append(tencent.iloc[:1])
+    for i in range(100):
+        stock_new = stock.cum_append(tencent.iloc[i:i + 1])
+        assert isinstance(stock, StockDataFrame)
 
-    assert stock.iloc[0]['open'] == 329.4
+        expect_cumulated(tencent, stock, i)
+        expect_cumulated(tencent, stock_new, i + 1)
 
-    stock_2 = stock.cum_append(tencent.iloc[1:2])
-
-    assert stock.iloc[0]['open'] == 329.4
-
-    assert stock_2.iloc[0]['open'] == 329.4
-    assert stock_2.iloc[0]['high'] == 332.0
-    assert stock_2.iloc[0]['low'] == 327.6
-    assert stock_2.iloc[0]['close'] == 331.0
+        stock = stock_new
