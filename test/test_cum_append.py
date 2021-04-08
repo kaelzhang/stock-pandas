@@ -24,6 +24,17 @@ def tencent():
     return get_1m_tencent().iloc[:LENGTH]
 
 
+def expect_cumulated_result(
+    series,
+    source
+):
+    assert series['open'] == source['open'].to_numpy()[0]
+    assert series['high'] == source['high'].to_numpy().max()
+    assert series['low'] == source['low'].to_numpy().min()
+    assert series['close'] == source['close'].to_numpy()[-1]
+    assert series['volume'] == source['volume'].to_numpy().sum()
+
+
 def expect_cumulated(
     origin,
     cumulated,
@@ -46,12 +57,20 @@ def expect_cumulated(
             source = origin.iloc[i * step: (i + 1) * step]
 
         series = cumulated.iloc[i]
+        expect_cumulated_result(series, source)
 
-        assert series['open'] == source['open'].to_numpy()[0]
-        assert series['high'] == source['high'].to_numpy().max()
-        assert series['low'] == source['low'].to_numpy().min()
-        assert series['close'] == source['close'].to_numpy()[-1]
-        assert series['volume'] == source['volume'].to_numpy().sum()
+
+def test_hour(tencent):
+    tencent = tencent.iloc[:50]
+
+    expect_cumulated_result(
+        StockDataFrame(
+            tencent,
+            date_col=TIME_KEY,
+            time_frame='1h'
+        ).cumulate().iloc[-1],
+        tencent
+    )
 
 
 def test_cum_append_from_empty(tencent):

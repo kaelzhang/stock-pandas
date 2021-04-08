@@ -35,7 +35,7 @@ def get_tencent(date_col: bool = True, stock: bool = True):
         return StockDataFrame(read_csv(csv))
 
 
-def get_1m_tencent() -> DataFrame:
+def get_1m_tencent(hour_offset: int = 0) -> DataFrame:
     """
     Change time index to 1-minute interval
     """
@@ -43,7 +43,7 @@ def get_1m_tencent() -> DataFrame:
     df = get_tencent(stock=False)
 
     time_array = []
-    date = datetime(2020, 1, 1)
+    date = datetime(2020, 1, 1, hour_offset)
     step = timedelta(minutes=1)
 
     for i in range(100):
