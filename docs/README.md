@@ -311,7 +311,7 @@ print(stock)
 ```
 
 ```
-                          open   high    low  close    volume
+                      open   high    low  close    volume
 2020-01-01 00:00:00  329.4  331.6  327.6  328.8  14202519
 2020-01-01 00:01:00  330.0  332.0  328.0  331.0  13953191
 2020-01-01 00:02:00  332.8  332.8  328.4  331.0  10339120
@@ -326,7 +326,7 @@ print(stock)
 
 You must have figured it out that the data frame now has [`DatetimeIndex`es][datetimeindex].
 
-But it will not become a 15-minute kline data unless we cumulate it, and only cumulate new frames if you use `stock.cum_append(them)` to cumulate `them`.
+But it will not become a 15-minute kline data unless we cumulate it, and only cumulates new frames if you use `stock.cum_append(them)` to cumulate `them`.
 
 ```py
 stock_15m = stock.cumulate()
@@ -343,6 +343,8 @@ Now we get a 15-minute kline
 2020-01-01 00:10:00  323.0  327.8  314.6  327.6  74409815.0
 2020-01-01 00:15:00  330.0  335.2  322.0  323.0  82452902.0
 ```
+
+For more details and about how to get full control of everything, check the online Google Colab notebook here.
 
 
 ## Syntax of `directive`
