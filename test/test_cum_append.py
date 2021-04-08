@@ -114,3 +114,22 @@ def test_cum_append_error():
         StockDataFrame(date_col='non-exists', time_frame='5m').cum_append(
             tencent.iloc[:1]
         )
+
+
+def test_cum_append_feat_indicator(tencent):
+    stock = StockDataFrame(
+        tencent.iloc[:19],
+        date_col=TIME_KEY,
+        time_frame='5m'
+    ).cumulate()
+
+    ma = stock['ma:2'][-1]
+
+    assert ma == stock.iloc[-2:]['close'].sum() / 2
+
+    stock = stock.cum_append(tencent.iloc[19:20])
+    assert stock._stock_columns_info_map['ma:2,close'].size == len(stock) - 1
+
+    new_ma = stock['ma:2'][-1]
+
+    assert ma != new_ma

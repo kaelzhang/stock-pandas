@@ -64,7 +64,7 @@ def ensure_time_frame(value: TimeFrameArg) -> Optional['TimeFrame']:
         timeFrame = timeFrames.get(value)
 
     if timeFrame is None:
-        raise ValueError()
+        raise ValueError(f'"{value}" is an invalid time frame')
 
     return timeFrame
 

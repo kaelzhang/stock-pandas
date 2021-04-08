@@ -114,7 +114,11 @@ def test_period_larger_than_size(stock):
 
 def test_aliases(stock):
     stock.alias('Open', 'open')
+
     assert list(stock['Open']) == simple_list
+
+    dropped = stock.drop(columns=['close'])
+    assert list(dropped['Open']) == simple_list
 
     with pytest.raises(ValueError, match='not exists'):
         stock.alias('some_column', 'not-exists')

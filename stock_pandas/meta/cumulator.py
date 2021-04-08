@@ -36,8 +36,6 @@ from .time_frame import (
     ensure_time_frame
 )
 
-from .manager import TimeFrameMixin
-
 
 Cumulator = Callable[[ndarray], float]
 Cumulators = Dict[str, Cumulator]
@@ -76,23 +74,25 @@ def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
 def cum_append(
     df: 'MetaDataFrame',
     other: ToAppend
-) -> DataFrame:
+) -> Tuple[DataFrame, 'MetaDataFrame']:
     """
     Returns:
-        DataFrame: this method does not ensure that the return type is MetaDataFrame due to the limitation of DataFrame.append
+        Tuple[DataFrame, StockDataFrame]: this method does not ensure that the return type is MetaDataFrame due to the limitation of DataFrame.append
     """
 
     duplicates = df[other[0].name:]
-
     other = DataFrame(other)
 
     if (df.columns.get_indexer(other.columns) >= 0).all():
         other = other.reindex(columns=df.columns)
 
-    return concat([
-        df.drop(duplicates.index),
-        other
-    ])
+    length = len(duplicates)
+    if length:
+        # Do not drop duplicates, because for now
+        # StockDataFrame will loose column info if drop rows
+        df = df._slice(slice(0, - length))
+
+    return concat([df, other]), df
 
 
 def ensure_type(
@@ -110,19 +110,18 @@ def ensure_type(
 
 
 class _Cumulator:
-    CUMULATORS: Dict[str, Cumulator] = {
+    _to_append: ToAppend
+
+    _date_col: Optional[str] = None
+    _time_frame: Optional[TimeFrame] = None
+    _unclosed: Optional[DataFrame] = None
+    _cumulators: Dict[str, Cumulator] = {
         'open': first,
         'high': high,
         'low': low,
         'close': last,
         'volume': add
     }
-
-    _unclosed: Optional[DataFrame]
-    _to_append: ToAppend
-
-    _date_col: Optional[str] = None
-    _time_frame: Optional[TimeFrame] = None
 
     def update(
         self,
@@ -134,16 +133,19 @@ class _Cumulator:
         time_frame: TimeFrameArg = None,
         cumulators: Optional[Cumulators] = None
     ):
-        is_meta_df = isinstance(source, MetaDataFrame)
+        # TODO:
+        # Split the logic about is_meta_frame
 
-        if is_meta_df and source_cumulator is None:
+        is_meta_frame = isinstance(source, MetaDataFrame)
+
+        if is_meta_frame and source_cumulator is None:
             source_cumulator = source._cumulator
 
         if date_col is not None:
             self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
 
-            if is_meta_df:
+            if is_meta_frame:
                 if source_cumulator._date_col is None:
                     # Which means the source stock data frame has no date column, so we have to apply it
                     apply_date_to_df(
@@ -162,29 +164,24 @@ class _Cumulator:
                     check=True
                 )
         else:
-            if is_meta_df:
+            if is_meta_frame:
                 # We should copy the source's cumulator settings
                 self._merge_date_col(source_cumulator)
             else:
                 self._date_col = None
 
         if time_frame is None:
-            if is_meta_df:
+            if is_meta_frame:
                 self._merge_time_frame(source_cumulator)
-            else:
-                self._time_frame = None
+        else:
+            self._time_frame = ensure_time_frame(time_frame)
 
-            return
-
-        self._time_frame = ensure_time_frame(time_frame)
-
-        self._cumulators = (
-            # None means use the default cumulators
-            cumulators if cumulators is not None
-            else self.CUMULATORS
-        ).copy()
-
-        self._unclosed = None
+        if cumulators is None:
+            if is_meta_frame:
+                self._cumulators = source_cumulator._cumulators
+        else:
+            # StockDataFrame(stockdataframe, cumulators=cumulators)
+            self._cumulators = cumulators
 
     def _merge_date_col(self, source_cumulator: '_Cumulator'):
         self._date_col = source_cumulator._date_col
@@ -220,7 +217,7 @@ class _Cumulator:
         # TODO:
         # support other types
         other: DataFrame
-    ) -> Tuple[DataFrame, DataFrame]:
+    ) -> Tuple[DataFrame, DataFrame, 'MetaDataFrame']:
         # It is allowed to have a None date_col,
         # but `other` must have a DatetimeIndex
         if self._time_frame is None:
@@ -273,7 +270,7 @@ class _Cumulator:
         # Append the rows even the latest time frame is not closed
         self._pre_append()
 
-        new = cum_append(to, self._to_append)
+        new, source = cum_append(to, self._to_append)
         self._to_append.clear()
 
         unclosed = self._unclosed
@@ -282,7 +279,7 @@ class _Cumulator:
         # Do not ruin self._unclosed
         self._unclosed = current_unclosed
 
-        return new, unclosed
+        return new, unclosed, source
 
     def _convert_to_date_df(
         self,
@@ -355,7 +352,7 @@ class _Cumulator:
         self._to_append.append(cumulated)
 
 
-class MetaDataFrame(DataFrame, TimeFrameMixin):
+class MetaDataFrame(DataFrame):
     """
     The subclass of pandas.DataFrame which ensures return type of all kinds methods to be MetaDataFrame
     """
@@ -369,12 +366,12 @@ class MetaDataFrame(DataFrame, TimeFrameMixin):
     # Methods that used by pandas and sub classes
     # --------------------------------------------------------------------
 
-    # TODO:
-    # whether *args, **kwargs here are necessary
     def __finalize__(
         self,
         other,
         method: Optional[str] = None,
+        # For now (pandas 1.2.3), args and kwargs are useless,
+        # however, let's keep them for forward compatibility
         *args, **kwargs
     ) -> 'MetaDataFrame':
         """
@@ -545,9 +542,11 @@ class MetaDataFrame(DataFrame, TimeFrameMixin):
             other (DataFrame): the new data frame to append
         """
 
-        concatenated, unclosed = self._cumulator.cum_append(self, other)
+        concatenated, unclosed, source = self._cumulator.cum_append(
+            self, other
+        )
 
-        df = ensure_type(concatenated, self)
+        df = ensure_type(concatenated, source)
         df._cumulator._unclosed = unclosed
 
         return df
