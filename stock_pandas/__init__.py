@@ -16,5 +16,6 @@ from .commands import (
 
 from .meta import (
     TimeFrame,
-    TimeFrameArg
+    TimeFrameArg,
+    cumulators
 )

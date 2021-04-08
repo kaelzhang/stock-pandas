@@ -62,6 +62,15 @@ def add(array: ndarray) -> float:
     return array.sum()
 
 
+cumulators: Cumulators = {
+    'open': first,
+    'high': high,
+    'low': low,
+    'close': last,
+    'volume': add
+}
+
+
 def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
     message = 'the target to be `cum_append()`ed must have a DatetimeIndex'
 
@@ -115,13 +124,7 @@ class _Cumulator:
     _date_col: Optional[str] = None
     _time_frame: Optional[TimeFrame] = None
     _unclosed: Optional[DataFrame] = None
-    _cumulators: Dict[str, Cumulator] = {
-        'open': first,
-        'high': high,
-        'low': low,
-        'close': last,
-        'volume': add
-    }
+    _cumulators: Cumulators = cumulators.copy()
 
     def update(
         self,
@@ -173,6 +176,7 @@ class _Cumulator:
         if time_frame is None:
             if is_meta_frame:
                 self._merge_time_frame(source_cumulator)
+                self._merge_unclosed(source_cumulator, df, source)
         else:
             self._time_frame = ensure_time_frame(time_frame)
 
@@ -198,7 +202,20 @@ class _Cumulator:
             return
 
         self._cumulators = source_cumulator._cumulators.copy()
-        self._unclosed = source_cumulator._unclosed
+
+    def _merge_unclosed(
+        self,
+        source_cumulator: '_Cumulator',
+        df: 'MetaDataFrame',
+        source: 'MetaDataFrame'
+    ):
+        unclosed = source_cumulator._unclosed
+
+        if unclosed is None or not len(df) or not len(source):
+            return
+
+        if df.iloc[-1].name == source.iloc[-1].name:
+            self._unclosed = unclosed
 
     def apply_date_col(self, other):
         if self._date_col is not None:
@@ -248,6 +265,7 @@ class _Cumulator:
 
             if last_timestamp is None:
                 last_timestamp = timestamp
+                last = timestamp
                 continue
 
             if (

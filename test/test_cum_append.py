@@ -80,16 +80,29 @@ def test_cum_append_from_empty(tencent):
         stock = stock_new
 
 
-def test_cumulate(tencent):
+def test_cum_append_many_from_empty(tencent):
+    stock = StockDataFrame(
+        date_col=TIME_KEY,
+        time_frame='5m'
+    ).cum_append(tencent.iloc[:LENGTH])
+
     expect_cumulated(
         tencent,
-        StockDataFrame(
-            tencent,
-            date_col=TIME_KEY,
-            time_frame='5m'
-        ).cumulate(),
+        stock,
         LENGTH
     )
+
+
+def test_cumulate(tencent):
+    stock = StockDataFrame(
+        tencent,
+        date_col=TIME_KEY,
+        time_frame='5m'
+    ).cumulate()
+
+    expect_cumulated(tencent, stock, LENGTH)
+
+    assert stock.equals(stock.cumulate())
 
 
 def test_cum_append_error():

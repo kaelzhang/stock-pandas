@@ -1,4 +1,8 @@
-from .cumulator import MetaDataFrame
+from .cumulator import (
+    MetaDataFrame,
+    cumulators
+)
+
 from .utils import ColumnInfo
 
 from .time_frame import (
