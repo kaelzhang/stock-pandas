@@ -20,7 +20,8 @@
 [style]: #style
 [repeat]: #repeat
 [change]: #change
-[cumulation]: #cumulation
+[cumulation]: #cumulation-and-datetimeindex
+[datetimeindex]: https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html
 
 
 # [stock-pandas](https://github.com/kaelzhang/stock-pandas)
@@ -249,7 +250,7 @@ StockDataFrame(one_minute_kline_data_frame, time_frame='5m').cumulate()
 # And you will get a 5-minute kline data
 ```
 
-see [Cumulation and DatetimeIndex][]
+see [Cumulation and DatetimeIndex][cumulation] for details
 
 ### stock.cum_append(other: DataFrame) -> StockDataFrame
 
@@ -258,6 +259,8 @@ Append `other` to the end of the current data frame `stock` and apply cumulation
 ```py
 StockDataFrame(time_frame='5m').cum_append(one_minute_kline_data_frame)
 ```
+
+see [Cumulation and DatetimeIndex][cumulation] for details
 
 ### directive_stringify(directive_str) -> str
 
@@ -276,20 +279,71 @@ directive_stringify('boll')
 
 Suppose we have a csv file containing kline data of a stock in 1-minute time frame
 
+```py
+csv = pd.read_csv(csv_path)
+
+print(csv)
 ```
-time_key,open,close,high,low,volume
-2019-10-15 00:00:00,329.4,328.8,331.6,327.6,14202519
-2019-10-16 00:00:00,330.0,331.0,332.0,328.0,13953191
-2019-10-17 00:00:00,332.8,331.0,332.8,328.4,10339120
-2019-10-18 00:00:00,332.0,331.0,334.2,330.2,9904468
-2019-10-21 00:00:00,329.6,324.8,330.2,324.8,13947162
-2019-10-22 00:00:00,325.0,327.6,327.8,324.8,10448427
-2019-10-23 00:00:00,324.8,320.0,325.8,319.6,19855257
-2019-10-24 00:00:00,319.0,319.0,320.6,316.6,18472498
-2019-10-25 00:00:00,320.4,316.6,320.4,316.6,15789881
-2019-10-28 00:00:00,316.4,322.0,323.6,316.2,17610356
-2019-10-29 00:00:00,323.0,317.0,323.8,317.0,19927333
+
 ```
+                   date   open   high    low  close    volume
+0   2020-01-01 00:00:00  329.4  331.6  327.6  328.8  14202519
+1   2020-01-01 00:01:00  330.0  332.0  328.0  331.0  13953191
+2   2020-01-01 00:02:00  332.8  332.8  328.4  331.0  10339120
+3   2020-01-01 00:03:00  332.0  334.2  330.2  331.0   9904468
+4   2020-01-01 00:04:00  329.6  330.2  324.8  324.8  13947162
+...
+16  2020-01-01 00:16:00  333.2  334.8  331.2  334.0  12428539
+17  2020-01-01 00:17:00  333.0  333.6  326.8  333.6  15533405
+18  2020-01-01 00:18:00  335.0  335.2  326.2  327.2  16655874
+19  2020-01-01 00:19:00  327.0  327.2  322.0  323.0  15086985
+```
+
+```py
+stock = StockDataFrame(
+    csv,
+    date_col='date',
+    # Which is equivalent to `time_frame=TimeFrame.M5`
+    time_frame='5m'
+)
+
+print(stock)
+```
+
+```
+                          open   high    low  close    volume
+2020-01-01 00:00:00  329.4  331.6  327.6  328.8  14202519
+2020-01-01 00:01:00  330.0  332.0  328.0  331.0  13953191
+2020-01-01 00:02:00  332.8  332.8  328.4  331.0  10339120
+2020-01-01 00:03:00  332.0  334.2  330.2  331.0   9904468
+2020-01-01 00:04:00  329.6  330.2  324.8  324.8  13947162
+...
+2020-01-01 00:16:00  333.2  334.8  331.2  334.0  12428539
+2020-01-01 00:17:00  333.0  333.6  326.8  333.6  15533405
+2020-01-01 00:18:00  335.0  335.2  326.2  327.2  16655874
+2020-01-01 00:19:00  327.0  327.2  322.0  323.0  15086985
+```
+
+You must have figured it out that the data frame now has [`DatetimeIndex`es][datetimeindex].
+
+But it will not become a 15-minute kline data unless we cumulate it, and only cumulate new frames if you use `stock.cum_append(them)` to cumulate `them`.
+
+```py
+stock_15m = stock.cumulate()
+
+print(stock_15m)
+```
+
+Now we get a 15-minute kline
+
+```
+                      open   high    low  close      volume
+2020-01-01 00:00:00  329.4  334.2  324.8  324.8  62346460.0
+2020-01-01 00:05:00  325.0  327.8  316.2  322.0  82176419.0
+2020-01-01 00:10:00  323.0  327.8  314.6  327.6  74409815.0
+2020-01-01 00:15:00  330.0  335.2  322.0  323.0  82452902.0
+```
+
 
 ## Syntax of `directive`
 
