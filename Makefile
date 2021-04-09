@@ -22,8 +22,8 @@ build: stock_pandas
 	make build-ext
 	python setup.py sdist bdist_wheel
 
-build-ext:
-	STOCK_PANDAS_BUILDING=1 STOCK_PANDAS_UPLOADING=1 python setup.py build_ext --inplace
+build-ext: export STOCK_PANDAS_BUILDING=1
+	python setup.py build_ext --inplace
 
 # Used to test build_ext without cython
 build-ext-no-cython:
@@ -32,8 +32,8 @@ build-ext-no-cython:
 build-doc:
 	sphinx-build -b html docs build_docs
 
-upload:
-	STOCK_PANDAS_UPLOADING=1 twine upload --config-file ~/.pypirc -r pypi dist/*
+upload: export STOCK_PANDAS_UPLOADING=1
+	twine upload --config-file ~/.pypirc -r pypi dist/*
 
 publish:
 	make build

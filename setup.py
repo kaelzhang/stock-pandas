@@ -10,7 +10,7 @@ from setuptools import (
 import numpy as np
 
 # beta version
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
@@ -68,7 +68,8 @@ settings = dict(
         'stock_pandas',
         'stock_pandas.commands',
         'stock_pandas.directive',
-        'stock_pandas.math'
+        'stock_pandas.math',
+        'stock_pandas.meta'
     ],
     ext_modules=extensions,
     zip_safe=False,
