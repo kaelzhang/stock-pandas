@@ -30,8 +30,6 @@ def test_drop(stock):
 
     stock = stock.append(get_stock_update())
 
-    print(stock)
-
     assert get_last(stock['ma:2']) == 8.5
     assert get_last(stock['ma:2,high']) == 17.5
 

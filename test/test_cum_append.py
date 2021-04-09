@@ -148,7 +148,18 @@ def test_cum_append_error():
         )
 
 
-def test_cum_append_feat_indicator(tencent):
+def test_source_parameter(tencent):
+    stock = StockDataFrame(tencent)
+    stock['ma:2']
+
+    stock = StockDataFrame(source=stock)
+
+    assert 'ma:2,close' not in stock._stock_columns_info_map
+
+
+def test_cum_append_feat_indicator():
+    tencent = get_1m_tencent()
+
     stock = StockDataFrame(
         tencent.iloc[:19],
         date_col=TIME_KEY,
@@ -165,3 +176,18 @@ def test_cum_append_feat_indicator(tencent):
     new_ma = stock['ma:2'][-1]
 
     assert ma != new_ma
+
+    stock = StockDataFrame(
+        stock,
+        time_frame='15m'
+    )
+
+    assert stock._stock_columns_info_map['ma:2,close'].size == len(stock)
+
+    stock = stock.cum_append(tencent.iloc[20:21])
+    assert stock._stock_columns_info_map['ma:2,close'].size == len(stock) - 1
+
+    stock = stock.cumulate()
+
+    # Time frame changed, so info map should not be inherited
+    assert 'ma:2,close' not in stock._stock_columns_info_map

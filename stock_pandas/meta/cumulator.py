@@ -110,10 +110,9 @@ def ensure_type(
 ) -> 'MetaDataFrame':
     if isinstance(df, MetaDataFrame):
         df._cumulator.update(df, source)
+        copy_stock_metas(source, df)
     else:
         df = source._constructor(df, source=source)
-
-    copy_stock_metas(source, df)
 
     return df
 
@@ -482,7 +481,7 @@ class MetaDataFrame(DataFrame):
         is_meta_frame = isinstance(source, MetaDataFrame)
 
         if is_meta_frame:
-            copy_stock_metas(source, self)
+            copy_stock_metas(source, self, data is not None)
         else:
             init_stock_metas(self)
 

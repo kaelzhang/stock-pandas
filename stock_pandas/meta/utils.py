@@ -111,23 +111,28 @@ def init_stock_metas(target) -> None:
 
 
 def copy_stock_metas(
-    source,
-    target
+    meta_source,
+    target,
+    copy_columns_info=True,
 ) -> None:
-    """Simply copy metadata from source to target
+    """
+    Simply copy metadata from source to target
     """
 
     set_attr(
         target,
         KEY_ALIAS_MAP,
-        copy(getattr(source, KEY_ALIAS_MAP))
+        copy(getattr(meta_source, KEY_ALIAS_MAP))
     )
 
-    set_attr(
-        target,
-        KEY_COLUMNS_INFO_MAP,
-        deepcopy(getattr(source, KEY_COLUMNS_INFO_MAP))
-    )
+    if copy_columns_info:
+        set_attr(
+            target,
+            KEY_COLUMNS_INFO_MAP,
+            deepcopy(getattr(meta_source, KEY_COLUMNS_INFO_MAP))
+        )
+    else:
+        set_attr(target, KEY_COLUMNS_INFO_MAP, {})
 
 
 def copy_clean_stock_metas(
