@@ -1,6 +1,5 @@
 from .dataframe import StockDataFrame
 from .directive import (
-    DirectiveCache,
     directive_stringify
 )
 
@@ -17,5 +16,6 @@ from .commands import (
 from .meta import (
     TimeFrame,
     TimeFrameArg,
+    Cumulator,
     cumulators
 )
