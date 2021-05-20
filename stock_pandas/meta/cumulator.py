@@ -344,6 +344,31 @@ class _Cumulator:
 
         unclosed = self._unclosed
 
+        has_duplicates = False
+        last = None
+        retain = []
+        index = unclosed.index
+
+        for timestamp in index:
+            if last is None:
+                last = timestamp
+                continue
+
+            if timestamp == last:
+                # Which means there is a record of the same timestamp,
+                # we do not cumulate them but update it.
+                has_duplicates = True
+                retain.append(False)
+            else:
+                retain.append(True)
+
+            last = timestamp
+
+        retain.append(True)
+
+        if has_duplicates:
+            unclosed = unclosed[Series(retain, index=index)]
+
         if clean:
             self._unclosed = None
 

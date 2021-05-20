@@ -112,6 +112,30 @@ def test_cum_append_many_from_empty(tencent):
     )
 
 
+def test_cum_append_with_duplicates_from_empty(tencent):
+    to_append = tencent.iloc[:1]
+
+    for i in range(LENGTH):
+        if i == 0:
+            continue
+
+        append = tencent.iloc[i:i + 1]
+
+        for _ in range(i):
+            to_append = to_append.append(append)
+
+    stock = StockDataFrame(
+        date_col=TIME_KEY,
+        time_frame='5m'
+    ).cum_append(to_append)
+
+    expect_cumulated(
+        tencent,
+        stock,
+        LENGTH
+    )
+
+
 def test_cumulate(tencent):
     stock = StockDataFrame(
         tencent,
