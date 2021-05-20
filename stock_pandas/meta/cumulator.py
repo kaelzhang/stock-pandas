@@ -487,6 +487,7 @@ class MetaDataFrame(DataFrame):
             to_datetime_kwargs (dict): the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
             time_frame (str, TimeFrame): defines the time frame of the stock
             source (:obj:`StockDataFrame`, optional): the source to copy meta data from if the source is a StockDataFrame. Defaults to `data`
+            cumulators (:obj:`Cumulators`, optional): a dict of `Cumulator`s for each column name. A `Cumulator` is a function that accepts an `np.ndarray` as the only parameter and returns a float.
             *args: other pandas.DataFrame arguments
             **kwargs: other pandas.DataFrame keyworded arguments
         """
