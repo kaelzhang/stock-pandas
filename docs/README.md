@@ -130,6 +130,23 @@ stock['ma:2']
 
 Which prints the 2-period simple moving average on column `"close"`.
 
+#### Parameters
+
+- **date_col** `Optional[str] = None` If set, then the column named `date_col` will convert and set as [`DateTimeIndex`](datetimeindex) of the data frame
+- **to_datetime_kwargs** `dict = {}` the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
+- **time_frame** `str | TimeFrame | None = None` time frame of the stock. For now, only the following time frames are supported:
+    - `'1m'`
+    - `'3m'`
+    - `'5m'`
+    - `'15m'`
+    - `'30m'`
+    - `'1h'`
+    - `'2h'`
+    - `'4h'`
+    - `'6h'`
+    - `'8h'`
+    - `'12h'`
+
 ### stock.exec(directive: str, create_column: bool=False) -> np.ndarray
 
 Executes the given directive and returns a numpy ndarray according to the directive.
@@ -302,13 +319,18 @@ print(csv)
 1   2020-01-01 00:01:00  330.0  332.0  328.0  331.0  13953191
 2   2020-01-01 00:02:00  332.8  332.8  328.4  331.0  10339120
 3   2020-01-01 00:03:00  332.0  334.2  330.2  331.0   9904468
-4   2020-01-01 00:04:00  329.6  330.2  324.8  324.8  13947162
+4   2020-01-01 00:04:00  329.6  330.2  324.9  324.9  13947162
+5   2020-01-01 00:04:00  329.6  330.2  324.8  324.8  13947163    <- There is an update of
+                                                                    2020-01-01 00:04:00
 ...
 16  2020-01-01 00:16:00  333.2  334.8  331.2  334.0  12428539
 17  2020-01-01 00:17:00  333.0  333.6  326.8  333.6  15533405
 18  2020-01-01 00:18:00  335.0  335.2  326.2  327.2  16655874
 19  2020-01-01 00:19:00  327.0  327.2  322.0  323.0  15086985
 ```
+
+> Noted that duplicate records of a same timestamp will not be cumulated. The records except the latest one will be disgarded.
+
 
 ```py
 stock = StockDataFrame(
@@ -327,6 +349,7 @@ print(stock)
 2020-01-01 00:01:00  330.0  332.0  328.0  331.0  13953191
 2020-01-01 00:02:00  332.8  332.8  328.4  331.0  10339120
 2020-01-01 00:03:00  332.0  334.2  330.2  331.0   9904468
+2020-01-01 00:04:00  329.6  330.2  324.9  324.9  13947162
 2020-01-01 00:04:00  329.6  330.2  324.8  324.8  13947162
 ...
 2020-01-01 00:16:00  333.2  334.8  331.2  334.0  12428539
@@ -349,14 +372,13 @@ Now we get a 15-minute kline
 
 ```
                       open   high    low  close      volume
-2020-01-01 00:00:00  329.4  334.2  324.8  324.8  62346460.0
+2020-01-01 00:00:00  329.4  334.2  324.8  324.8  62346461.0
 2020-01-01 00:05:00  325.0  327.8  316.2  322.0  82176419.0
 2020-01-01 00:10:00  323.0  327.8  314.6  327.6  74409815.0
 2020-01-01 00:15:00  330.0  335.2  322.0  323.0  82452902.0
 ```
 
 For more details and about how to get full control of everything, check the online Google Colab notebook here.
-
 
 ## Syntax of `directive`
 
