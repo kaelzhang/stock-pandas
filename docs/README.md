@@ -329,7 +329,7 @@ print(csv)
 19  2020-01-01 00:19:00  327.0  327.2  322.0  323.0  15086985
 ```
 
-> Noted that duplicate records of a same timestamp will not be cumulated. The records except the latest one will be disgarded.
+> Noted that duplicated records of a same timestamp will not be cumulated. The records except the latest one will be disgarded.
 
 
 ```py
