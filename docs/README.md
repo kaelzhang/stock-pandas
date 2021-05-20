@@ -221,6 +221,17 @@ stock.directive_stringify('kdj.j')
 # "kdj.j:9,3,3,50.0"
 ```
 
+And also
+
+```py
+from stock_pandas import
+
+directive_stringify('kdj.j')
+# "kdj.j:9,3,3,50.0"
+```
+
+Actually, `directive_stringify` does not rely on StockDataFrame instances.
+
 ### stock.rolling_calc(size, on, apply, forward, fill) -> np.ndarray
 
 > Since 0.27.0

@@ -313,23 +313,23 @@ class _Cumulator:
     def _cumulate(
         self,
         to_cumulate: Optional[DataFrame]
-    ) -> Optional[DataFrame]:
+    ) -> None:
         """
         Concat the givin data frame to self._unclosed
         """
 
-        to_concat = [
-            item
-            for item in [self._unclosed, to_cumulate]
-            if item is not None
-        ]
+        unclosed = self._unclosed
 
-        # Logically, the length of to_concat must > 0
+        # Logically, at least one of unclosed and to_cumulate is not None.
 
-        self._unclosed = (
-            concat(to_concat) if len(to_concat) == 2
-            else to_concat[0]
-        )
+        if to_cumulate is None:
+            return
+
+        if unclosed is None:
+            self._unclosed = to_cumulate
+            return
+
+        self._unclosed = concat([unclosed, to_cumulate])
 
     def _pre_append(
         self,
@@ -553,7 +553,7 @@ class MetaDataFrame(DataFrame):
         other: DataFrame
     ) -> 'MetaDataFrame':
         """
-        Appends row(s) of other to the end of caller and applies cumulation to these rows, and returning a new object
+        Appends row(s) of other to the end of caller, applies cumulation to these rows, and returns a new object
 
         Args:
             other (DataFrame): the new data frame to append
