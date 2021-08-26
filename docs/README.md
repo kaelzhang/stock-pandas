@@ -34,7 +34,7 @@
   - Over-bought / over-sold indicators, such as [**KDJ**][kdj], [**RSI**][rsi]
   - Other indicators, such as [**LLV**][llv], [**HHV**][hhv]
   - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
-- To [cumulate][cumulation] kline data based on a given time frame.
+- To [cumulate][cumulation] kline data based on a given time frame, so that it could easily handle real-time data updates.
 
 `stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6** and Pandas >= **1.0.0**(for now)
 

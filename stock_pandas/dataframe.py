@@ -8,8 +8,9 @@ from typing import (
     Optional
 )
 
-from pandas import Series
-from pandas.core.generic import NDFrame
+from pandas import (
+    Series
+)
 
 from numpy import (
     ndarray,
@@ -328,7 +329,7 @@ class StockDataFrame(MetaDataFrame):
         see: https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/frame.py#L3114
         """
 
-        NDFrame._set_item(self, name, value)
+        self._set_item(name, value)
 
     def _fulfill_series(self, column_name: str) -> ndarray:
         column_info = self._stock_columns_info_map.get(column_name)
