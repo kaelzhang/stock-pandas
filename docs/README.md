@@ -890,7 +890,7 @@ conda create -n stock-pandas python=3.11
 conda activate stock-pandas
 
 # Install requirements
-pip install -r requirement.txt -r test-requirement.txt
+make install
 
 # Build python ext (C++)
 make build-ext
