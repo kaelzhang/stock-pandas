@@ -879,3 +879,22 @@ dict(
     dif=None
 )
 ```
+
+## Development
+
+First, install conda (recommended), and generate a conda environment for this project
+
+```sh
+conda create -n stock-pandas python=3.11
+
+conda activate stock-pandas
+
+# Install requirements
+pip install -r requirement.txt -r test-requirement.txt
+
+# Build python ext (C++)
+make build-ext
+
+# Run unit tests
+make test
+```
