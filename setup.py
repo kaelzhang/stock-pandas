@@ -9,7 +9,7 @@ from setuptools import (
 
 import numpy as np
 
-from stock_pandas._version import __version__
+__version__ = '1.1.5'
 
 
 BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
