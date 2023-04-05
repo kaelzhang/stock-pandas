@@ -1,12 +1,13 @@
 import math
 
 import pytest
-from pandas import DataFrame
-
+from pandas import (
+    DataFrame,
+    concat
+)
 
 from stock_pandas import (
     StockDataFrame,
-
 )
 
 from .common import (
@@ -122,7 +123,7 @@ def test_cum_append_with_duplicates_from_empty(tencent):
         append = tencent.iloc[i:i + 1]
 
         for _ in range(i):
-            to_append = to_append.append(append)
+            to_append = concat([to_append, append])
 
     stock = StockDataFrame(
         date_col=TIME_KEY,

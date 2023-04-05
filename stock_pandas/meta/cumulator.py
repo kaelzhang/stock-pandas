@@ -89,13 +89,13 @@ def cum_append(
         Tuple[DataFrame, StockDataFrame]: this method does not ensure that the return type is MetaDataFrame due to the limitation of DataFrame.append
     """
 
-    duplicates = df[other[0].name:]
+    name = other[0].name
     other = DataFrame(other)
 
     if (df.columns.get_indexer(other.columns) >= 0).all():
         other = other.reindex(columns=df.columns)
 
-    length = len(duplicates)
+    length = len(df[name:]) if len(df) else 0
     if length:
         # Do not drop duplicates, because for now
         # StockDataFrame will loose column info if drop rows
