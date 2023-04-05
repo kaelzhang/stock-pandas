@@ -425,6 +425,9 @@ class MetaDataFrame(DataFrame):
 
         super().__finalize__(other, method, *args, **kwargs)
 
+        # Although `DataFrame.append()` is deprecated since pandas 1.4.0
+        #   and removed in pandas 2.0.0,
+        #   we still retain this check for backward compatibility
         if method != 'append' and method != 'concat':
             # append:
             # DataFrame.append is implemented with pandas.concat which
@@ -570,7 +573,15 @@ class MetaDataFrame(DataFrame):
         """
 
         other = self._cumulator.apply_date_col(other)
-        appended = super().append(other, *args, **kwargs)
+
+        others = [
+            DataFrame([item]) if not isinstance(item, DataFrame) else item
+            for item in (
+                other if isinstance(other, list) else [other]
+            )
+        ]
+
+        appended = concat([self, *others], *args, **kwargs)
 
         return ensure_type(appended, self)
 

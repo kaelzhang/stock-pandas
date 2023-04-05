@@ -1,7 +1,9 @@
 import pytest
+
 from pandas import (
     DataFrame,
-    Timestamp
+    Timestamp,
+    concat
 )
 
 from stock_pandas import (
@@ -58,7 +60,7 @@ def test_append_without_date_col(tencent: DataFrame):
     new = tencent.iloc[10]
 
     stock = DataFrame(head)
-    stock = stock.append(new)
+    stock = concat([stock, DataFrame([new])])
 
     assert stock.iloc[-1][TIME_KEY] == new[TIME_KEY]
 
