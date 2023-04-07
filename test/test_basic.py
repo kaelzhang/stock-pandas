@@ -52,6 +52,15 @@ def test_get_column(stock):
     stock.get_column('close')
 
 
+def test_copy(stock):
+    stock['ma:2']
+
+    def ma_size(stock):
+        return stock._stock_columns_info_map.get('ma:2,close').size
+
+    assert ma_size(stock) == ma_size(stock.copy())
+
+
 def test_astype(stock):
     stock = stock.astype({
         'open': 'float',
