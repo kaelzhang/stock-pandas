@@ -11,11 +11,9 @@ from stock_pandas import (
 )
 
 from .common import (
-    get_tencent
+    get_tencent,
+    TIME_KEY
 )
-
-
-TIME_KEY = 'time_key'
 
 
 @pytest.fixture

@@ -238,6 +238,18 @@ class StockDataFrame(MetaDataFrame):
             not forward
         )
 
+    def fulfill(self):
+        """
+        Fulfill all the stock columns in the dataframe
+
+        Returns:
+            self
+        """
+        for column in self._stock_columns_info_map.keys():
+            self._fulfill_series(column)
+
+        return self
+
     # --------------------------------------------------------------------
 
     def _map_keys(self, keys) -> List:

@@ -305,6 +305,17 @@ StockDataFrame(time_frame='5m').cum_append(one_minute_kline_data_frame)
 
 see [Cumulation and DatetimeIndex][cumulation] for details
 
+
+### stock.fulfill() -> self
+
+> Since 1.2.0
+
+Fulfill all stock indicator columns. By default, adding new rows to a `StockDataFrame` will not update stock indicators of the new row.
+
+Stock indicators will only be updated when accessing the stock indicator column or calling `stock.fulfill()`
+
+Check the [test cases](https://github.com/kaelzhang/stock-pandas/blob/master/test/test_fulfill.py) for details
+
 ### directive_stringify(directive_str) -> str
 
 > since 0.30.0
