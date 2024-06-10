@@ -1,0 +1,7 @@
+[lint]
+ignore = ["E501"]
+
+[lint.per-file-ignores]
+"**/__init__.py" = ["F401"]
+# "**/trend_following.py" = ["W503"]
+# "**/meta.py" = ["W503"]

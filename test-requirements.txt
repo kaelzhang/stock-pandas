@@ -1,7 +1,6 @@
 codecov
 coverage
-flake8
-autopep8
+ruff
 pytest
 pytest-cov
 setuptools

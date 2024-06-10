@@ -31,7 +31,7 @@ def ensure_time_frame(value: Union[str, TimeFrame]) -> Optional['TimeFrame']:
 
     timeFrame = None
 
-    if type(value) is str:
+    if isinstance(value, str):
         timeFrame = timeFrames.get(value)
 
     if timeFrame is None:

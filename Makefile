@@ -9,10 +9,10 @@ test:
 	pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
-	flake8 $(files)
+	ruff check $(files)
 
 fix:
-	autopep8 --in-place -r $(files)
+	ruff check --fix $(files)
 
 install:
 	pip install -U -r requirements.txt -r test-requirements.txt -r docs/requirements.txt
