@@ -911,7 +911,7 @@ dict(
 First, install conda (recommended), and generate a conda environment for this project
 
 ```sh
-conda create -n stock-pandas python=3.11
+conda create -n stock-pandas python=3.12
 
 conda activate stock-pandas
 

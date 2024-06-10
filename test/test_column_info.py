@@ -17,14 +17,14 @@ def test_cum_append_feat_indicator():
         time_frame='5m'
     ).cumulate()
 
-    ma = stock['ma:2'][-1]
+    ma = stock['ma:2'].iloc[-1]
 
     assert ma == stock.iloc[-2:]['close'].sum() / 2
 
     stock = stock.cum_append(tencent.iloc[19:20])
     assert stock._stock_columns_info_map['ma:2,close'].size == len(stock) - 1
 
-    new_ma = stock['ma:2'][-1]
+    new_ma = stock['ma:2'].iloc[-1]
 
     assert ma != new_ma
 

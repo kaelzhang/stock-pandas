@@ -21,7 +21,7 @@ def test_append(stock):
     """
 
     current = stock[:'2020-02-04']  # type:ignore
-    kdj_j = current['kdj.j'][-1]
+    kdj_j = current['kdj.j'].iloc[-1]
     counter = -1
 
     max_len = len(stock)
@@ -33,15 +33,15 @@ def test_append(stock):
 
         all_kdj_j = current['kdj.j']
 
-        assert all_kdj_j[counter] == kdj_j
+        assert all_kdj_j.iloc[counter] == kdj_j
 
         assert type(current) is StockDataFrame
 
-        if all_kdj_j[-1] < 0:
+        if all_kdj_j.iloc[-1] < 0:
             # Test operator
-            assert current['kdj.j<=0'][-1]
-            assert current['kdj.j <0'][-1]
-            assert not current['kdj.j == 0'][-1]
+            assert current['kdj.j<=0'].iloc[-1]
+            assert current['kdj.j <0'].iloc[-1]
+            assert not current['kdj.j == 0'].iloc[-1]
 
             break
 
@@ -80,7 +80,7 @@ def test_indexing(stock):
 
 
 def test_column(stock):
-    assert stock['column:close'][-1] == stock['close'][-1]
+    assert stock['column:close'].iloc[-1] == stock['close'].iloc[-1]
 
 
 def test_boll(stock):
@@ -118,11 +118,11 @@ def test_kdj(stock):
 def test_change(stock):
     change = stock['change:(column:close)']
 
-    assert to_fixed(change[-1]) == '-0.0313'
-    assert to_fixed(change[-2]) == '-0.0256'
+    assert to_fixed(change.iloc[-1]) == '-0.0313'
+    assert to_fixed(change.iloc[-2]) == '-0.0256'
 
-    assert np.isnan(change[0])
+    assert np.isnan(change.iloc[0])
 
     boll_change3 = stock['change:boll,3']
 
-    assert to_fixed(boll_change3[-1]) == '-0.0030'
+    assert to_fixed(boll_change3.iloc[-1]) == '-0.0030'

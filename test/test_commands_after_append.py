@@ -19,10 +19,10 @@ def test_append(stock):
     stock = stock0
 
     index = -1
-    j = stock['kdj.j'][index]
+    j = stock['kdj.j'].iloc[index]
 
     for s in [stock1, stock2, stock3, stock4]:
         index -= 1
 
         stock = stock.append(s)
-        assert stock['kdj.j'][index] == j
+        assert stock['kdj.j'].iloc[index] == j
