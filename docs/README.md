@@ -80,7 +80,7 @@ pip install numpy
 pip install stock-pandas
 ```
 
-Be careful, you still need to install `numpy` explicitly even if `numpy` and `stock-pandas` both are contained in `requirement.txt`
+Be careful, you still need to install `numpy` **explicitly** even if `numpy` and `stock-pandas` both are contained in `requirement.txt`
 
 ```txt
 numpy
