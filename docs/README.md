@@ -75,7 +75,7 @@ The default `python:3.8` image already contains g++, so we do not install g++ ad
 
 ```sh
 # Installing `stock-pandas` requires `numpy` to be installed first
-pip install numpy
+pip install "numpy<2.0.0"
 
 pip install stock-pandas
 ```
@@ -83,7 +83,7 @@ pip install stock-pandas
 Be careful, you still need to install `numpy` **explicitly** even if `numpy` and `stock-pandas` both are contained in `requirement.txt`
 
 ```txt
-numpy
+numpy < 2.0.0
 stock-pandas
 other-dependencies
 ...

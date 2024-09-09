@@ -39,7 +39,7 @@ def ewma(
 
     cdef:
         Py_ssize_t N = len(vals)
-        ndarray[float64_t] output = np.empty(N, dtype=float)
+        ndarray[float64_t] output = np.empty(N, dtype=np.float64)
         float64_t alpha, old_wt_factor, new_wt, weighted_avg, old_wt, cur
         Py_ssize_t i, nobs
         bint is_observation
