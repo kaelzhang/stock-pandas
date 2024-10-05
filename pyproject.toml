@@ -4,8 +4,7 @@
 requires = [
     "Cython~=3.0.5",
     "numpy>=2.0.0rc1",
-    "setuptools",
-    "wheel"
+    "setuptools"
 ]
 
 build-backend = "setuptools.build_meta"
@@ -50,7 +49,10 @@ dev = [
   "ruff",
   "pytest",
   "pytest-cov",
-  "twine"
+  "twine",
+  "Cython~=3.0.5",
+  "numpy>=2.0.0rc1",
+  "setuptools"
 ]
 
 [tool.setuptools.dynamic]
