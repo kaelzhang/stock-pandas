@@ -19,3 +19,5 @@ from .meta import (
     Cumulator,
     cumulators
 )
+
+__version__ = '1.2.2'

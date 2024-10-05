@@ -15,7 +15,8 @@ fix:
 	ruff check --fix $(files)
 
 install:
-	pip install -U -r requirements.txt -r test-requirements.txt -r docs/requirements.txt
+	pip install -U .[dev]
+	pip install -U -r docs/requirements.txt
 
 report:
 	codecov

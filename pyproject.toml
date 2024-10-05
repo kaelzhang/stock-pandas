@@ -1,0 +1,59 @@
+[build-system]
+# Minimum requirements for the build system to execute.
+# See https://github.com/scipy/scipy/pull/12940 for the AIX issue.
+requires = [
+    "Cython~=3.0.5",
+    "numpy<2.0.0",
+    "setuptools",
+    "wheel"
+]
+
+build-backend = "setuptools.build_meta"
+
+[project]
+name = 'stock-pandas'
+dynamic = ['version']
+description='The wrapper of `pandas.DataFrame` with stock statistics and indicators support.'
+readme = 'docs/README.md'
+authors = [
+  { name = 'Kael Zhang', email='i+pypi@kael.me' }
+]
+license = {file = 'LICENSE'}
+requires-python = '>=3.6'
+dependencies = [
+  "numpy >= 1.16.5",
+  "pandas >= 1.0.0"
+]
+classifiers=[
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Natural Language :: English',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Financial and Insurance Industry',
+    'Operating System :: OS Independent',
+    'Development Status :: 4 - Beta',
+    'Topic :: Utilities',
+    'License :: OSI Approved :: Apache Software License'
+]
+
+[project.urls]
+"Homepage" = "https://github.com/kaelzhang/stock-pandas"
+
+[project.optional-dependencies]
+dev = [
+  "codecov",
+  "coverage",
+  "ruff",
+  "pytest",
+  "pytest-cov",
+  "twine"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "stock_pandas.__version__"}

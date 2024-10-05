@@ -9,25 +9,8 @@ from setuptools import (
 
 import numpy as np
 
-__version__ = '1.2.2'
-
-
 BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
 UPLOADING = os.environ.get('STOCK_PANDAS_UPLOADING')
-
-
-def read(*fname) -> str:
-    if not UPLOADING:
-        # DO not read README.md when installing
-        return '<README.md>'
-
-    return open(os.path.join(os.path.dirname(__file__), *fname)).read()
-
-
-def read_requirements(filename):
-    with open(filename) as f:
-        return f.read().splitlines()
-
 
 ext_kwargs = dict(
     # Ignore warning caused by cpython for using deprecated apis
@@ -61,47 +44,14 @@ else:
     ]
 
 
-settings = dict(
-    name='stock-pandas',
-    packages=[
-        'stock_pandas',
-        'stock_pandas.commands',
-        'stock_pandas.directive',
-        'stock_pandas.math',
-        'stock_pandas.meta'
-    ],
-    ext_modules=extensions,
-    zip_safe=False,
-    version=__version__,
-    author='Kael Zhang',
-    author_email='i+pypi@kael.me',
-    description='The wrapper of `pandas.DataFrame` with stock statistics and indicators support.',  # noqa:E501
-    install_requires=[
-        'numpy >= 1.16.5',
-        'pandas >= 1.0.0'
-    ],
-    license='MIT',
-    keywords='pandas pandas-dataframe stock stat indicators macd',
-    url='https://github.com/kaelzhang/stock-pandas',
-    long_description=read('docs', 'README.md'),
-    long_description_content_type='text/markdown',
-    python_requires='>=3.6',
-    classifiers=[
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Natural Language :: English',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Financial and Insurance Industry',
-        'Operating System :: OS Independent',
-        'Development Status :: 4 - Beta',
-        'Topic :: Utilities',
-        'License :: OSI Approved :: Apache Software License',
-    ],
-)
-
-
 if __name__ == '__main__':
-    setup(**settings)
+    setup(
+        ext_modules=extensions,
+        packages=[
+            'stock_pandas',
+            'stock_pandas.commands',
+            'stock_pandas.directive',
+            'stock_pandas.math',
+            'stock_pandas.meta'
+        ]
+    )

@@ -10,7 +10,7 @@ cimport numpy as cnp
 cnp.import_array()
 
 cdef:
-    float64_t NaN = <float64_t>np.NaN
+    float64_t NaN = <float64_t>np.nan
 
 # ----------------------------------------------------------------------
 # Exponentially weighted moving average
