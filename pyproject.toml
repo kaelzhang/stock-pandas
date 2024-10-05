@@ -3,7 +3,7 @@
 # See https://github.com/scipy/scipy/pull/12940 for the AIX issue.
 requires = [
     "Cython~=3.0.5",
-    "numpy<2.0.0",
+    "numpy>=2.0.0rc1",
     "setuptools",
     "wheel"
 ]
@@ -21,7 +21,7 @@ authors = [
 license = {file = 'LICENSE'}
 requires-python = '>=3.6'
 dependencies = [
-  "numpy >= 1.16.5",
+  "numpy",
   "pandas >= 1.0.0"
 ]
 classifiers=[
