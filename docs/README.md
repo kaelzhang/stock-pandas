@@ -36,7 +36,7 @@
   - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
 - To [cumulate][cumulation] kline data based on a given time frame, so that it could easily handle real-time data updates.
 
-`stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.6** and Pandas >= **1.0.0**(for now)
+`stock-pandas` makes automatical trading much easier. `stock-pandas` requires Python >= **3.9** and Pandas >= **1.0.0**(for now)
 
 With the help of `stock-pandas` and mplfinance, we could easily draw something like:
 
@@ -64,12 +64,12 @@ xcode-select --install
 If you use docker with `Dockerfile` and use python image,
 
 ```Dockerfile
-FROM python:3.8
+FROM python:3.9
 
 ...
 ```
 
-The default `python:3.8` image already contains g++, so we do not install g++ additionally.
+The default `python:3.9` image already contains g++, so we do not install g++ additionally.
 
 #### Install `stock-pandas`
 
