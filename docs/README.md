@@ -813,6 +813,18 @@ Raises if
 - something is wrong about the command arguments
 - etc.
 
+## About Pandas Copy-on-Write (CoW) Mode
+
+Since `1.3.0`, `stock-pandas` starts to support pandas [copy-on-write mode](https://pandas.pydata.org/pandas-docs/stable/user_guide/copy_on_write.html#copy-on-write-cow)
+
+You could enable pandas copy-on-write mode by using `pd.options.mode.copy_on_write = True`
+
+or using the environment variable:
+
+```sh
+export STOCK_PANDS_COW=1
+```
+
 ****
 
 ## Advanced Sections
