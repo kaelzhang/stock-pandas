@@ -822,7 +822,7 @@ You could enable pandas copy-on-write mode by using `pd.options.mode.copy_on_wri
 or using the environment variable:
 
 ```sh
-export STOCK_PANDS_COW=1
+export STOCK_PANDAS_COW=1
 ```
 
 ****
