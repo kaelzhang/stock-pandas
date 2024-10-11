@@ -1,3 +1,5 @@
+import os
+
 from typing import (
     Any,
     Callable,
@@ -8,6 +10,7 @@ from typing import (
     Optional
 )
 
+import pandas as pd
 from pandas import (
     Series
 )
@@ -32,6 +35,12 @@ from .meta import (
     ColumnInfo,
     MetaDataFrame
 )
+
+# #27
+if os.environ.get('STOCK_PANDAS_COW', '').lower() in ('1', 'on', 'true'):
+    # Enable pandas Copy-on-Write mode
+    # https://pandas.pydata.org/pandas-docs/stable/user_guide/copy_on_write.html#copy-on-write-chained-assignment
+    pd.options.mode.copy_on_write = True
 
 
 class StockDataFrame(MetaDataFrame):
@@ -326,22 +335,9 @@ class StockDataFrame(MetaDataFrame):
                 period
             )
 
-            self._set_new_item(name, array)
+            self.loc[:, name] = array
 
         return name, array
-
-    def _set_new_item(
-        self,
-        name: str,
-        value: ndarray
-    ) -> None:
-        """Set a new column and avoid SettingWithCopyWarning by using
-        pandas internal APIs
-
-        see: https://github.com/pandas-dev/pandas/blob/v1.1.0/pandas/core/frame.py#L3114
-        """
-
-        self._set_item(name, value)
 
     def _fulfill_series(self, column_name: str) -> ndarray:
         column_info = self._stock_columns_info_map.get(column_name)
@@ -369,9 +365,15 @@ class StockDataFrame(MetaDataFrame):
         if neg_delta == calc_delta:
             array = partial
         else:
+            # #27
+            # With `pd.options.mode.copy_on_write = True`,
+            # Series.to_numpy() will returns the
+            #   read-only underlying numpy array of the Series
+            # so we need to copy it before modifying
+            array = array.copy()
             array[fulfill_slice] = partial[fulfill_slice]
 
-        self._set_new_item(column_name, array)
+        self.loc[:, column_name] = array
 
         column_info.size = size
 

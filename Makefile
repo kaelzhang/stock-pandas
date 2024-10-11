@@ -6,7 +6,7 @@ export STOCK_PANDAS_BUILDING = 1
 export STOCK_PANDAS_UPLOADING = 1
 
 test:
-	pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
+	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
 	ruff check $(files)
