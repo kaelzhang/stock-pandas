@@ -63,6 +63,8 @@ def create_normal_token(text, line, col) -> Optional[Token]:
 
 
 class Tokenizer:
+    _saved_token: Optional[Token]
+
     def __init__(self, input: str) -> None:
         # We should not strip input here, or pos will be wrong
         self._input = input

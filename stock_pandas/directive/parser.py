@@ -52,13 +52,11 @@ class Node:
 
 class Parser:
     _input: str
-    _token: Optional[Token]
-    _tokens: Optional[Tokenizer]
+    _token: Token
+    _tokens: Tokenizer
 
     def __init__(self, directive_str: str) -> None:
         self._input = directive_str
-        self._tokens = None
-        self._token = None
 
     def parse(self) -> Node:
         self._tokens = Tokenizer(self._input)

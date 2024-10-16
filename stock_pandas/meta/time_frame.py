@@ -4,6 +4,7 @@ from typing import (
     Optional,
     Union
 )
+
 from functools import partial
 
 from pandas import (
@@ -12,6 +13,18 @@ from pandas import (
 
 
 class TimeFrame:
+    M1: 'TimeFrame'
+    M3: 'TimeFrame'
+    M5: 'TimeFrame'
+    M15: 'TimeFrame'
+    M30: 'TimeFrame'
+    H1: 'TimeFrame'
+    H2: 'TimeFrame'
+    H4: 'TimeFrame'
+    H6: 'TimeFrame'
+    H8: 'TimeFrame'
+    H12: 'TimeFrame'
+
     def unify(
         self,
         date: Timestamp

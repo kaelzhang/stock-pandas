@@ -9,7 +9,10 @@ test:
 	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
-	ruff check $(files)
+	@echo "Running ruff..."
+	@ruff check $(files)
+	@echo "Running mypy..."
+	@mypy $(files)
 
 fix:
 	ruff check --fix $(files)

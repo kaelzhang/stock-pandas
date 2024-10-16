@@ -42,7 +42,7 @@ classifiers=[
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/kaelzhang/stock-pandas"
+Homepage = "https://github.com/kaelzhang/stock-pandas"
 
 [project.optional-dependencies]
 dev = [
@@ -54,8 +54,21 @@ dev = [
   "twine",
   "Cython~=3.0.5",
   "numpy>=2.0.0rc1",
-  "setuptools"
+  "setuptools",
+  "mypy"
 ]
 
 [tool.setuptools.dynamic]
 version = {attr = "stock_pandas.__version__"}
+
+[tool.setuptools.package-data]
+stock_pandas = [
+  "py.typed"
+]
+
+[tool.mypy]
+warn_return_any = true
+ignore_missing_imports = true
+no_implicit_optional = true
+strict_optional = true
+disable_error_code = ['return-value']
