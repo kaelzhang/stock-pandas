@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = 'stock-pandas'
 dynamic = ['version']
-description='The wrapper of `pandas.DataFrame` with stock statistics and indicators support.'
+description='The production-ready subclass of `pandas.DataFrame` to support stock statistics and indicators.'
 readme = 'docs/README.md'
 authors = [
   { name = 'Kael Zhang', email='i+pypi@kael.me' }

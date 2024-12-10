@@ -1,6 +1,7 @@
 [![](https://github.com/kaelzhang/stock-pandas/actions/workflows/python.yml/badge.svg)](https://github.com/kaelzhang/stock-pandas/actions/workflows/python.yml)
 [![](https://codecov.io/gh/kaelzhang/stock-pandas/branch/master/graph/badge.svg)](https://codecov.io/gh/kaelzhang/stock-pandas)
 [![](https://img.shields.io/pypi/v/stock-pandas.svg)](https://pypi.org/project/stock-pandas/)
+[![Conda version](https://img.shields.io/conda/vn/conda-forge/stock-pandas)](https://anaconda.org/conda-forge/stock-pandas)
 [![](https://img.shields.io/pypi/l/stock-pandas.svg)](https://github.com/kaelzhang/stock-pandas)
 
 
@@ -75,6 +76,12 @@ The default `python:3.9` image already contains g++, so we do not install g++ ad
 
 ```sh
 pip install stock-pandas
+```
+
+A [conda-forge recipe](https://github.com/conda-forge/stock-pandas-feedstock) is also available, so you can also use
+
+```sh
+conda install -c conda-forge stock-pandas
 ```
 
 ## Usage
