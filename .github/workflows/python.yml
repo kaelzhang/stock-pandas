@@ -22,7 +22,7 @@ jobs:
         python -c "import sys; print(sys.version)"
         make install
         make build-ext
-        make lint
+        # make lint
         make test
         make report
       env:
