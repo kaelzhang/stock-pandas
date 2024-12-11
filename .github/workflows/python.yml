@@ -23,6 +23,7 @@ jobs:
         export STOCK_PANDAS_BUILDING=1
         make install
         make build
+        pip install dist/*.whl
         # make lint
         make test
         make report
