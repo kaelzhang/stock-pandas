@@ -2,15 +2,13 @@ files = stock_pandas test *.py
 test_files = *
 # test_files = cum_append
 
-export
-
 test:
 	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 lint:
-	@echo "Running ruff..."
+	@echo "\033[1m>> Running ruff... <<\033[0m"
 	@ruff check $(files)
-	@echo "Running mypy..."
+	@echo "\033[1m>> Running mypy... <<\033[0m"
 	@mypy $(files)
 
 fix:
@@ -23,13 +21,18 @@ install:
 report:
 	codecov
 
+.PHONY: build
+
 build: stock_pandas
 	rm -rf dist build
 	make build-ext
-	python -m build --sdist --wheel
+
+	@echo "\033[1m>> Building package... <<\033[0m"
+	@python -m build --sdist --wheel
 
 build-ext:
-	STOCK_PANDAS_BUILDING=1 python setup.py build_ext --inplace
+	@echo "\033[1m>> Building extension... <<\033[0m"
+	@STOCK_PANDAS_BUILDING=1 python setup.py build_ext --inplace
 
 build-doc:
 	sphinx-build -b html docs build_docs
