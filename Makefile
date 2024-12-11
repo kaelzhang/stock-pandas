@@ -31,8 +31,8 @@ build: stock_pandas
 
 clean:
 	rm -rf dist build
-	rm stock_pandas/math/*.so
-	rm stock_pandas/math/*.cpp
+	rm -f stock_pandas/math/*.so
+	rm -f stock_pandas/math/*.cpp
 
 build-pkg:
 	@echo "\033[1m>> Building package... <<\033[0m"
