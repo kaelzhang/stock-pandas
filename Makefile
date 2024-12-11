@@ -34,7 +34,7 @@ build-pkg:
 
 build-ext:
 	@echo "\033[1m>> Building extension... <<\033[0m"
-	@STOCK_PANDAS_BUILDING=1 python setup.py build_ext --inplace
+	@STOCK_PANDAS_BUILDING_EXT=1 python setup.py build_ext --inplace
 
 build-doc:
 	sphinx-build -b html docs build_docs

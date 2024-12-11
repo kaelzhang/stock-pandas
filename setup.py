@@ -9,7 +9,7 @@ from setuptools import (
 
 import numpy as np
 
-BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
+BUILDING_EXT = os.environ.get('STOCK_PANDAS_BUILDING_EXT')
 
 ext_kwargs = dict(
     # Ignore warning caused by cpython for using deprecated apis
@@ -19,7 +19,7 @@ ext_kwargs = dict(
 
 # Distribution ref
 # https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules
-if BUILDING:
+if BUILDING_EXT:
     from Cython.Build import cythonize
     extensions = cythonize(
         Extension(
@@ -33,6 +33,8 @@ if BUILDING:
             'language_level': 3
         }
     )
+
+# When packaging the package, use the pre-compiled c++ file
 else:
     extensions = [
         Extension(
@@ -42,13 +44,15 @@ else:
         )
     ]
 
-setup(
-    ext_modules=extensions,
-    packages=[
-        'stock_pandas',
-        'stock_pandas.commands',
-        'stock_pandas.directive',
-        'stock_pandas.math',
-        'stock_pandas.meta'
-    ]
-)
+# Only run setup when building the package
+if __name__ == '__main__':
+    setup(
+        ext_modules=extensions,
+        packages=[
+            'stock_pandas',
+            'stock_pandas.commands',
+            'stock_pandas.directive',
+            'stock_pandas.math',
+            'stock_pandas.meta'
+        ]
+    )
