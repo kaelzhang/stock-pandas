@@ -26,7 +26,9 @@ report:
 build: stock_pandas
 	rm -rf dist build
 	make build-ext
+	make build-pkg
 
+build-pkg:
 	@echo "\033[1m>> Building package... <<\033[0m"
 	@python -m build --sdist --wheel
 

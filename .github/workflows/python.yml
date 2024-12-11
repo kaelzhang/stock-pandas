@@ -20,12 +20,15 @@ jobs:
     - name: pip install and test
       run: |
         python -c "import sys; print(sys.version)"
-        # export STOCK_PANDAS_BUILDING=1
         make install
-        make build
-        # pip install dist/*.whl
-        # make lint
+        make build-ext
         make test
         make report
+      env:
+        CI: true
+    - name: test pip install
+      run: |
+        make build
+        pip install dist/*.whl
       env:
         CI: true
