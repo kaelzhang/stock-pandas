@@ -21,7 +21,7 @@ jobs:
       run: |
         python -c "import sys; print(sys.version)"
         make install
-        make build-ext
+        make build
         # make lint
         make test
         make report
