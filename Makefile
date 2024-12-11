@@ -2,7 +2,7 @@ files = stock_pandas test *.py
 test_files = *
 # test_files = cum_append
 
-export STOCK_PANDAS_BUILDING = 1
+export
 
 test:
 	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
@@ -25,6 +25,7 @@ report:
 
 build: stock_pandas
 	rm -rf dist build
+	STOCK_PANDAS_BUILDING=1 python -m build
 	python -m build --sdist --wheel
 
 build-doc:
