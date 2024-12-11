@@ -20,7 +20,9 @@ jobs:
     - name: pip install and test
       run: |
         python -c "import sys; print(sys.version)"
+        echo ">> Installing dependencies ..."
         make install
+        echo ">> Building extension ..."
         make build-ext
         make test
         make report
