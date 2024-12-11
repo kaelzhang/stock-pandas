@@ -2,6 +2,8 @@ files = stock_pandas test *.py
 test_files = *
 # test_files = cum_append
 
+export STOCK_PANDAS_BUILDING_EXT = 1
+
 test:
 	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
@@ -24,9 +26,14 @@ report:
 .PHONY: build
 
 build: stock_pandas
-	rm -rf dist build
+	make clean
 	make build-ext
 	make build-pkg
+
+clean:
+	rm -rf dist build
+	rm stock_pandas/math/*.so
+	rm stock_pandas/math/*.cpp
 
 build-pkg:
 	@echo "\033[1m>> Building package... <<\033[0m"
@@ -34,7 +41,7 @@ build-pkg:
 
 build-ext:
 	@echo "\033[1m>> Building extension... <<\033[0m"
-	@STOCK_PANDAS_BUILDING_EXT=1 python setup.py build_ext --inplace
+	python setup.py build_ext --inplace
 
 build-doc:
 	sphinx-build -b html docs build_docs
