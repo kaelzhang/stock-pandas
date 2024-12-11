@@ -25,8 +25,8 @@ report:
 	codecov
 
 build: stock_pandas
-	rm -rf dist
-	python -m build
+	rm -rf dist build
+	python -m build --sdist
 
 build-doc:
 	sphinx-build -b html docs build_docs
