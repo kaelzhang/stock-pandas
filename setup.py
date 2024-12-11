@@ -10,7 +10,6 @@ from setuptools import (
 import numpy as np
 
 BUILDING = os.environ.get('STOCK_PANDAS_BUILDING')
-UPLOADING = os.environ.get('STOCK_PANDAS_UPLOADING')
 
 ext_kwargs = dict(
     # Ignore warning caused by cpython for using deprecated apis
@@ -43,15 +42,13 @@ else:
         )
     ]
 
-
-if __name__ == '__main__':
-    setup(
-        ext_modules=extensions,
-        packages=[
-            'stock_pandas',
-            'stock_pandas.commands',
-            'stock_pandas.directive',
-            'stock_pandas.math',
-            'stock_pandas.meta'
-        ]
-    )
+setup(
+    ext_modules=extensions,
+    packages=[
+        'stock_pandas',
+        'stock_pandas.commands',
+        'stock_pandas.directive',
+        'stock_pandas.math',
+        'stock_pandas.meta'
+    ]
+)
