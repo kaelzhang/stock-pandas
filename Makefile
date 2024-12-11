@@ -25,8 +25,11 @@ report:
 
 build: stock_pandas
 	rm -rf dist build
-	STOCK_PANDAS_BUILDING=1 python -m build
+	make build-ext
 	python -m build --sdist --wheel
+
+build-ext:
+	STOCK_PANDAS_BUILDING=1 python setup.py build_ext --inplace
 
 build-doc:
 	sphinx-build -b html docs build_docs
