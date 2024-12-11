@@ -38,7 +38,7 @@ classifiers=[
     'Operating System :: OS Independent',
     'Development Status :: 4 - Beta',
     'Topic :: Utilities',
-    'License :: OSI Approved :: Apache Software License'
+    'License :: OSI Approved :: MIT License'
 ]
 
 [project.urls]
@@ -55,7 +55,8 @@ dev = [
   "Cython~=3.0.5",
   "numpy>=2.0.0rc1",
   "setuptools",
-  "mypy"
+  "mypy",
+  "build"
 ]
 
 [tool.setuptools.dynamic]
