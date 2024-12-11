@@ -18,7 +18,6 @@ fix:
 
 install:
 	pip install -U .[dev]
-	pip install -U -r docs/requirements.txt
 
 report:
 	codecov
