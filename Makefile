@@ -25,7 +25,7 @@ report:
 
 build: stock_pandas
 	rm -rf dist build
-	python -m build --sdist
+	python -m build --sdist --wheel
 
 build-doc:
 	sphinx-build -b html docs build_docs
