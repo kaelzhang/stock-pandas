@@ -655,6 +655,35 @@ hhv:<period>,<column>
 
 Gets the highest of high prices in N periods. The arguments of `hhv` is the same as `llv`
 
+### `donchian`, Donchian Channels
+
+```
+donchian:<period>,<column_upper>,<column_lower>
+donchian.upper:<period>,<column_upper>
+donchian.lower:<period>,<column_lower>
+```
+
+Gets the Donchian channels
+
+- **period** `int`
+- **column_upper?** `str='high'` The column to calculate highest high values, defaults to `'high'`
+- **column_lower?** `str='low'` The column to calculate lowest low values, defaults to `'low'`
+
+```py
+# Donchian middle channel
+stock['donchian']
+stock['donchian.middle']
+
+# Donchian upper channel, a shortcut for stock['donchian.upper']
+stock['donchian.u']
+stock['donchian.upper']
+
+# Donchian lower channel, which is equivalent to stock['donchian.l']
+stock['donchian.lower']
+stock['donchian.l']
+```
+
+
 ## Built-in Commands for Statistics
 
 ### `column`

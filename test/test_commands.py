@@ -89,6 +89,14 @@ def test_boll(stock):
     assert stock['column:close > boll']['2020-02-05']
 
 
+def test_donchian(stock):
+    assert stock['donchian.upper:20'].equals(stock['hhv:20'])
+    assert stock['donchian.lower:20'].equals(stock['llv:20'])
+    assert stock['donchian:20'].equals(
+        (stock['hhv:20'] + stock['llv:20']) / 2
+    )
+
+
 def test_macd(stock):
     assert stock['macd / macd.dea']['2020-02-10']
     assert stock['macd.histogram / 0']['2020-02-10']

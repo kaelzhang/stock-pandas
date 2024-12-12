@@ -36,15 +36,20 @@ def llv(df, s, period, column) -> ReturnType:
         min
     ), period
 
+arg_column_low = ('low', column_enums)
+llv_args = [
+    arg_period,
+    arg_column_low
+]
+
+arg_column_high = ('high', column_enums)
+hhv_args = [
+    arg_period,
+    arg_column_high
+]
 
 COMMANDS['llv'] = (
-    CommandPreset(
-        llv,
-        [
-            arg_period,
-            ('low', column_enums)
-        ]
-    ),
+    CommandPreset(llv, llv_args),
     None,
     None
 )
@@ -62,15 +67,43 @@ def hhv(df, s, period, column) -> ReturnType:
 
 
 COMMANDS['hhv'] = (
-    CommandPreset(
-        hhv,
-        [
-            arg_period,
-            ('high', column_enums)
-        ]
-    ),
+    CommandPreset(hhv, hhv_args),
     None,
     None
+)
+
+
+# Donchian Channel
+# ref: https://en.wikipedia.org/wiki/Donchian_channel
+
+def donchian(df, s, period, hhv_column, llv_column) -> ReturnType:
+    """Gets Donchian Channel
+    """
+
+    hhv = df.exec(f'hhv:{period},{hhv_column}')[s]
+    llv = df.exec(f'llv:{period},{llv_column}')[s]
+
+    return (hhv + llv) / 2, period
+
+
+COMMANDS['donchian'] = (  # type: ignore
+    CommandPreset(
+        donchian,
+        [
+            arg_period,
+            arg_column_high,
+            arg_column_low
+        ]
+    ),
+    dict(
+        upper=CommandPreset(hhv, hhv_args),
+        lower=CommandPreset(llv, llv_args)
+    ),
+    dict(
+        u='upper',
+        l='lower',
+        middle=None
+    )
 )
 
 
