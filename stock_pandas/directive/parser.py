@@ -35,6 +35,8 @@ from .operators import OPERATORS
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
 NotNode = Union[str, float, None]
+CommandNodeArgs = List['Node']
+NodeData = Tuple[Union['Node', NotNode, CommandNodeArgs], ...]
 
 
 class MetaNode:
@@ -45,7 +47,7 @@ class MetaNode:
     __slots__ = ('label', 'data', 'loc')
 
     label: int
-    data: Tuple[Union['MetaNode', NotNode], ...]
+    data: NodeData
     loc: Loc
 
     def __init__(self, t, data, loc):
@@ -53,8 +55,10 @@ class MetaNode:
         self.data = data
         self.loc = loc
 
+
 class Node(MetaNode):
     ...
+
 
 class RootNode(MetaNode):
     @classmethod

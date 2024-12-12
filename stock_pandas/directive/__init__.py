@@ -1,5 +1,5 @@
 from .parser import Parser
-from .factory import create_by_node
+from .factory import create_runnable_by_node
 from .types import Directive
 from .cache import DirectiveCache
 
@@ -19,7 +19,7 @@ def parse(
 
     ast = Parser(directive_str).parse()
 
-    directive, _ = create_by_node(ast, directive_str, cache)
+    directive, _ = create_runnable_by_node(ast, directive_str, cache)
 
     return cache.set(directive_str, directive)
 

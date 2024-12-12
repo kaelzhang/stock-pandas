@@ -2,8 +2,10 @@ from typing import (
     Tuple,
     Union,
     List,
+    Dict,
+    Callable,
     Optional,
-    overload
+    overload,
 )
 
 from .types import (
@@ -19,6 +21,7 @@ from .parser import (
     RootNode,
     Node,
     NotNode,
+    CommandNodeArgs,
     Loc
 )
 
@@ -205,7 +208,25 @@ def create_argument(_, arg) -> Argument:
     return Argument(arg)
 
 
-FACTORY = {
+# The type of Scalar is the same as NotNode,
+# however, they have different meanings
+Scalar = NotNode
+
+FactoryReturnType = Union[
+    Directive,
+    Command,
+    Argument,
+    Operator,
+    Scalar
+]
+
+CreateFactoryReturnType = Tuple[FactoryReturnType, Loc]
+
+CommandArgs = List[CreateFactoryReturnType]
+
+Factory = Callable[..., FactoryReturnType]
+
+FACTORY_DICT: Dict[int, Factory] = {
     TYPE_DIRECTIVE: create_directive,
     TYPE_COMMAND: create_command,
     TYPE_OPERATOR: create_operator,
@@ -214,48 +235,10 @@ FACTORY = {
 }
 
 
-FactoryReturnType = Tuple[
-    Union[
-        Directive,
-        Command,
-        Argument,
-        Operator
-    ],
-    Loc
-]
-
-NodeData = List[Union[Node, NotNode]]
-
-
+# RootNode, which is always of TYPE_DIRECTIVE,
+#   always generates a Directive
 @overload
-def create_by_node(
-    node: NodeData,
-    input: str,
-    cache: DirectiveCache
-) -> List[Union[FactoryReturnType, NotNode]]:
-    ...  # pragma: no cover
-
-
-@overload
-def create_by_node(
-    node: NotNode,
-    input: str,
-    cache: DirectiveCache
-) -> NotNode:
-    ...  # pragma: no cover
-
-
-@overload
-def create_by_node(
-    node: Node,
-    input: str,
-    cache: DirectiveCache
-) -> FactoryReturnType:
-    ...  # pragma: no cover
-
-
-@overload
-def create_by_node(
+def create_runnable_by_node(
     node: RootNode,
     input: str,
     cache: DirectiveCache
@@ -263,20 +246,57 @@ def create_by_node(
     ...  # pragma: no cover
 
 
-def create_by_node(
-    node: Union[Node, RootNode, NodeData, NotNode],
+@overload
+def create_runnable_by_node(
+    node: Node,
     input: str,
     cache: DirectiveCache
-) -> Union[FactoryReturnType, NotNode]:
+) -> CreateFactoryReturnType:
+    ...  # pragma: no cover
+
+
+@overload
+def create_runnable_by_node(
+    node: CommandNodeArgs,
+    input: str,
+    cache: DirectiveCache
+) -> CommandArgs:
+    ...  # pragma: no cover
+
+
+@overload
+def create_runnable_by_node(
+    node: NotNode,
+    input: str,
+    cache: DirectiveCache
+) -> Scalar:
+    ...  # pragma: no cover
+
+
+def create_runnable_by_node(
+    node: Union[RootNode, Node, CommandNodeArgs, NotNode],
+    input: str,
+    cache: DirectiveCache
+) -> Union[
+    CreateFactoryReturnType,
+    CommandArgs,
+    Scalar
+]:
+    """
+    Generate the runnable object from the node
+    """
+
     if isinstance(node, list):
+        # Handle command args
         return [
-            create_by_node(arg, input, cache) for arg in node  # type: ignore
+            create_runnable_by_node(arg, input, cache)
+            for arg in node
         ]
 
     if not isinstance(node, MetaNode):
-        return node  # type: ignore
+        return node
 
-    factory = FACTORY.get(node.label)
+    factory = FACTORY_DICT[node.label]
     loc = node.loc
 
     context = Context(
@@ -286,7 +306,8 @@ def create_by_node(
     )
 
     args = [
-        create_by_node(arg, input, cache) for arg in node.data  # type: ignore
+        create_runnable_by_node(arg, input, cache)
+        for arg in node.data
     ]
 
     # For node, we return the instance and loc
