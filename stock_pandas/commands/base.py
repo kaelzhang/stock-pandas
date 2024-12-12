@@ -3,8 +3,8 @@ from typing import (
     Optional,
     Callable,
     List,
-    Dict,
-    Any
+    Union,
+    Dict
 )
 
 from numpy import ndarray
@@ -16,10 +16,14 @@ from stock_pandas.common import (
 
 ReturnType = Tuple[ndarray, int]
 CommandFormula = Callable[..., ReturnType]
+CommandArg = Union[str, int, float]
 CommandArgs = List[
-    Tuple[
-        Optional[Any],
-        Optional[Callable]
+    Union[
+        Tuple[
+            Optional[CommandArg],
+            Optional[Callable[..., CommandArg]]
+        ],
+        CommandArg
     ]
 ]
 

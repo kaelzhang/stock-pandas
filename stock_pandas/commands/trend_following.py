@@ -155,7 +155,7 @@ COMMANDS['macd'] = (  # type: ignore
 # bbi
 # ----------------------------------------------------
 
-def bbi(df, s, a, b, c, d) -> ReturnType:
+def bbi(df, _, a, b, c, d) -> ReturnType:
     """Calculates BBI (Bull and Bear Index) which is the average of
     ma:3, ma:6, ma:12, ma:24 by default
     """
