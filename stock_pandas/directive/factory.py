@@ -71,8 +71,10 @@ def create_directive(
     operator,
     expression
 ):
-    directive = Directive(command[0]) if operator is None else Directive(
-        command[0], operator[0], expression[0]
+    directive = (
+        Directive(command[0], None, None)
+        if operator is None
+        else Directive(command[0], operator[0], expression[0])
     )
 
     context.cache.set(str(directive), directive)
@@ -273,15 +275,7 @@ def create_runnable_by_node(
     ...  # pragma: no cover
 
 
-def create_runnable_by_node(
-    node: Union[RootNode, Node, CommandNodeArgs, NotNode],
-    input: str,
-    cache: DirectiveCache
-) -> Union[
-    CreateFactoryReturnType,
-    CommandArgs,
-    Scalar
-]:
+def create_runnable_by_node(node, input, cache):
     """
     Generate the runnable object from the node
     """

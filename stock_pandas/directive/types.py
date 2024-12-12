@@ -1,7 +1,9 @@
 from typing import (
     Optional,
     Tuple,
-    Callable
+    Union,
+    Callable,
+    overload
 )
 
 from numpy import ndarray
@@ -12,6 +14,8 @@ from stock_pandas.common import (
 )
 
 
+ArgExpression = Union['Command', float]
+
 class Directive:
     __slots__ = (
         'command',
@@ -19,19 +23,40 @@ class Directive:
         'expression'
     )
 
+    @overload
     def __init__(
         self,
         command: 'Command',
-        operator: Optional['Operator'] = None,
-        expression: Optional['Command'] = None
+        operator: None,
+        expression: None
+    ) -> None:
+        ...  # pragma: no cover
+
+    @overload
+    def __init__(
+        self,
+        command: 'Command',
+        operator: 'Operator',
+        expression: ArgExpression
+    ) -> None:
+        ...  # pragma: no cover
+
+    def __init__(
+        self,
+        command,
+        operator,
+        expression
     ) -> None:
         self.command = command
         self.operator = operator
         self.expression = expression
 
     def __str__(self) -> str:
-        return f'{self.command}{self.operator}{self.expression}' \
-            if self.operator else str(self.command)
+        return (
+            f'{self.command}{self.operator}{self.expression}'
+            if self.operator
+            else str(self.command)
+        )
 
     def run(self, df, s: slice) -> Tuple[ndarray, int]:
         left, period_left = self.command.run(df, s)
@@ -41,8 +66,11 @@ class Directive:
 
         expr = self.expression
 
-        right, period_right = expr.run(df, s) if isinstance(expr, Command) \
+        right, period_right = (
+            expr.run(df, s)
+            if isinstance(expr, Command)
             else (expr, 0)
+        )
 
         operated = self.operator.formula(left, right)
 
