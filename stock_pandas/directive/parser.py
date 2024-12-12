@@ -37,17 +37,33 @@ REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 NotNode = Union[str, float, None]
 
 
-class Node:
+class MetaNode:
+    """
+    The meta node which is used to distinguish the type of Node and RootNode
+    """
+
     __slots__ = ('label', 'data', 'loc')
 
     label: int
-    data: Tuple[Union['Node', NotNode], ...]
+    data: Tuple[Union['MetaNode', NotNode], ...]
     loc: Loc
 
     def __init__(self, t, data, loc):
         self.label = t
         self.data = data
         self.loc = loc
+
+class Node(MetaNode):
+    ...
+
+class RootNode(MetaNode):
+    @classmethod
+    def from_node(cls, node: MetaNode) -> 'RootNode':
+        return cls(
+            node.label,
+            node.data,
+            node.loc
+        )
 
 
 class Parser:
@@ -58,7 +74,7 @@ class Parser:
     def __init__(self, directive_str: str) -> None:
         self._input = directive_str
 
-    def parse(self) -> Node:
+    def parse(self) -> RootNode:
         self._tokens = Tokenizer(self._input)
 
         self._next_token()
@@ -75,7 +91,7 @@ class Parser:
 
         self._expect_eof()
 
-        return directive
+        return RootNode.from_node(directive)
 
     # An _expect_<type> method
     # - should NOT next_token at the begining

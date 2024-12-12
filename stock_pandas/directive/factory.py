@@ -15,10 +15,14 @@ from .types import (
 
 from .operators import OPERATORS
 from .parser import (
+    MetaNode,
+    RootNode,
     Node,
     NotNode,
     Loc
 )
+
+from .cache import DirectiveCache
 
 from stock_pandas.commands import (
     COMMANDS,
@@ -51,7 +55,7 @@ class Context:
         self,
         input: str,
         loc: Loc,
-        cache
+        cache: DirectiveCache
     ):
         self.input = input
         self.loc = loc
@@ -220,12 +224,14 @@ FactoryReturnType = Tuple[
     Loc
 ]
 
+NodeData = List[Union[Node, NotNode]]
+
 
 @overload
 def create_by_node(
-    node: List[Union[Node, NotNode]],
+    node: NodeData,
     input: str,
-    cache
+    cache: DirectiveCache
 ) -> List[Union[FactoryReturnType, NotNode]]:
     ...  # pragma: no cover
 
@@ -234,22 +240,40 @@ def create_by_node(
 def create_by_node(
     node: NotNode,
     input: str,
-    cache
+    cache: DirectiveCache
 ) -> NotNode:
     ...  # pragma: no cover
 
 
+@overload
 def create_by_node(
     node: Node,
     input: str,
-    cache
+    cache: DirectiveCache
 ) -> FactoryReturnType:
+    ...  # pragma: no cover
+
+
+@overload
+def create_by_node(
+    node: RootNode,
+    input: str,
+    cache: DirectiveCache
+) -> Tuple[Directive, Loc]:
+    ...  # pragma: no cover
+
+
+def create_by_node(
+    node: Union[Node, RootNode, NodeData, NotNode],
+    input: str,
+    cache: DirectiveCache
+) -> Union[FactoryReturnType, NotNode]:
     if isinstance(node, list):
         return [
             create_by_node(arg, input, cache) for arg in node  # type: ignore
         ]
 
-    if not isinstance(node, Node):
+    if not isinstance(node, MetaNode):
         return node  # type: ignore
 
     factory = FACTORY.get(node.label)
