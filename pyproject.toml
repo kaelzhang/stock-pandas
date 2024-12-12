@@ -73,4 +73,4 @@ warn_return_any = true
 ignore_missing_imports = true
 no_implicit_optional = true
 strict_optional = true
-disable_error_code = ['return-value']
+disable_error_code = ['return-value', 'no-any-return']

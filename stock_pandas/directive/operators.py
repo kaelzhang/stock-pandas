@@ -15,7 +15,7 @@ def cross_up(
     right: ndarray
 ) -> ndarray:
     cross, less = compare_cross(left, right)
-    return cross & less
+    return cross & less  # type: ignore
 
 
 def cross_down(
@@ -23,7 +23,7 @@ def cross_down(
     right: ndarray
 ) -> ndarray:
     cross, less = compare_cross(left, right)
-    return cross & ~ less
+    return cross & ~ less  # type: ignore
 
 
 def less_than(
@@ -44,7 +44,7 @@ def equal(
     left: ndarray,
     right: ndarray
 ) -> ndarray:
-    return left == right
+    return left == right  # type: ignore
 
 
 def larger_than_or_equal(

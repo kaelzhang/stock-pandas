@@ -3,6 +3,7 @@ from datetime import (
     datetime,
     timedelta
 )
+from typing import Union
 import numpy as np
 
 from pandas import (
@@ -25,7 +26,10 @@ COLUMNS = ['open', 'high', 'low', 'close', 'volume']
 csv = (Path(__file__).parent.parent / 'example' / 'tencent.csv').resolve()
 
 
-def get_tencent(date_col: bool = True, stock: bool = True):
+def get_tencent(
+    date_col: bool = True,
+    stock: bool = True
+) -> Union[StockDataFrame, DataFrame]:
     if not stock:
         return read_csv(csv)
 

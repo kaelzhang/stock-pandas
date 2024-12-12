@@ -1,5 +1,6 @@
 import pytest
 from numpy import isnan
+from pandas import DataFrame
 
 from stock_pandas import (
     StockDataFrame
@@ -15,7 +16,8 @@ def tencent() -> StockDataFrame:
     return get_tencent(stock=True)
 
 
-def test_fulfill(tencent: StockDataFrame):
+def test_fulfill(tencent: DataFrame):
+    tencent = StockDataFrame(tencent)
     stock = tencent.iloc[:40]
 
     stock['ma:20']

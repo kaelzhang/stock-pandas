@@ -563,7 +563,7 @@ class MetaDataFrame(DataFrame):
             StockDataFrame
         """
 
-        return self._constructor(source=self).cum_append(self)
+        return self._constructor(source=self).cum_append(self)  # type: ignore
 
     def append(self, other, *args, **kwargs) -> 'MetaDataFrame':
         """

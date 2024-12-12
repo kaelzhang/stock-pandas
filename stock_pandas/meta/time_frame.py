@@ -75,7 +75,7 @@ def define(suffix: str, name: str, unify_: TimeFrameUnifier) -> TimeFrame:
 
 
 def unify_minute(n: int, date: Timestamp) -> int:
-    return (
+    return int(
         (date.minute // n) * 10 ** MAGNITUDE_MINUTE
         + date.hour * 10 ** MAGNITUDE_HOUR
         + date.day * 10 ** MAGNITUDE_DATE
@@ -92,7 +92,7 @@ TimeFrame.M30 = define('M30', '30m', partial(unify_minute, 30))
 
 
 def unify_hour(n: int, date: Timestamp) -> int:
-    return (
+    return int(
         (date.hour // n) * 10 ** MAGNITUDE_HOUR
         + date.day * 10 ** MAGNITUDE_DATE
         + date.month * 10 ** MAGNITUDE_MONTH
