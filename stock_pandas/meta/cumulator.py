@@ -92,8 +92,8 @@ def cum_append(
     name = other[0].name
     other = DataFrame(other)
 
-    if (df.columns.get_indexer(other.columns) >= 0).all():
-        other = other.reindex(columns=df.columns)
+    if (df.columns.get_indexer(other.columns) >= 0).all():  # type: ignore
+        other = other.reindex(columns=df.columns)  # type: ignore
 
     length = len(df[name:]) if len(df) else 0
     if length:
@@ -129,7 +129,7 @@ class _Cumulator:
         self,
         df: 'MetaDataFrame',
         source,
-        source_cumulator: '_Cumulator' = None,
+        source_cumulator: Optional['_Cumulator'] = None,
         date_col: Optional[str] = None,
         to_datetime_kwargs: dict = {},
         time_frame: TimeFrameArg = None,

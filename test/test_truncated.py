@@ -97,7 +97,7 @@ def test_invalid_slicing(stock: StockDataFrame):
         # However, it might never happen,
         # but there is a assertion in super()._slice
         # we have to test about this case
-        stock._slice({})
+        stock._slice({})  # type: ignore
 
     assert stock._stock_indexer_slice is None
 

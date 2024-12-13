@@ -340,7 +340,10 @@ class StockDataFrame(MetaDataFrame):
         return name, array
 
     def _fulfill_series(self, column_name: str) -> ndarray:
-        column_info = self._stock_columns_info_map.get(column_name)
+        # Since `column_name` always exists logically,
+        #   we could safely get by dict[key]
+        column_info = self._stock_columns_info_map[column_name]
+
         size = len(self)
 
         array = self.get_column(column_name).to_numpy()
