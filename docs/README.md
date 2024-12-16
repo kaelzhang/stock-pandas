@@ -245,7 +245,7 @@ stock.directive_stringify('kdj.j')
 And also
 
 ```py
-from stock_pandas import
+from stock_pandas import directive_stringify
 
 directive_stringify('kdj.j')
 # "kdj.j:9,3,3,50.0"
