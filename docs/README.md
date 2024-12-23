@@ -41,7 +41,7 @@
 
 With the help of `stock-pandas` and mplfinance, we could easily draw something like:
 
-![](boll.png)
+![](https://github.com/kaelzhang/stock-pandas/blob/master/docs/boll.png)
 
 The code example is available at [here](https://github.com/kaelzhang/stock-pandas-examples/blob/master/example/bollinger_bands.ipynb).
 
