@@ -152,17 +152,13 @@ class StockDataFrame(MetaDataFrame):
         original_create_column = self._stock_create_column
 
         if explicit_create_column:
-            self._stock_create_column = create_column
-        else:
-            # cases
-            # 1. called by users
-            # 2. or called by command formulas
-            create_column = self._stock_create_column
+            # We've already checked that create_column is a bool in this case
+            self._stock_create_column = bool(create_column)
 
         series = self._calc(directive_str)
 
         if explicit_create_column:
-            # Set back to default value, since we complete calculatiing
+            # Set back to default value, since we complete calculating
             self._stock_create_column = original_create_column
 
         return series

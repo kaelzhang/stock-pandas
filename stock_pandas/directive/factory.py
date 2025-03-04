@@ -201,13 +201,24 @@ def create_operator(_, operator: str) -> Operator:
     return Operator(operator, OPERATORS.get(operator))  # type: ignore
 
 
-def create_argument(_, arg) -> Argument:
-    arg = arg[0]
+def create_argument(_, arg: Tuple[Union[Directive, str, int, float], Loc]) -> Argument:
+    """Create an Argument object from the given value.
 
-    if isinstance(arg, Directive):
-        return Argument(str(arg), True)
+    Args:
+        _: Context object (unused)
+        arg: Tuple containing the argument value and its location
 
-    return Argument(arg)
+    Returns:
+        An Argument object
+    """
+    # Extract the value from the tuple, ignoring the location
+    value = arg[0]
+
+    if isinstance(value, Directive):
+        return Argument(str(value), True)
+
+    # Handle primitive types directly without unpacking
+    return Argument(value)
 
 
 # The type of Scalar is the same as NotNode,

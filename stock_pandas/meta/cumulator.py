@@ -1,4 +1,5 @@
 from typing import (
+    Any,
     Callable,
     Dict,
     List,
@@ -19,7 +20,6 @@ from stock_pandas.common import set_attr
 
 from .utils import (
     ColumnInfo,
-
     init_stock_metas,
     copy_stock_metas,
     copy_clean_stock_metas
@@ -121,20 +121,24 @@ class _Cumulator:
     _to_append: ToAppend
 
     _date_col: Optional[str] = None
+    _to_datetime_kwargs: Dict[str, Any] = {}
     _time_frame: Optional[TimeFrame] = None
     _unclosed: Optional[DataFrame] = None
     _cumulators: Cumulators = cumulators.copy()
 
+    def __init__(self) -> None:
+        self._to_append = []
+
     def update(
         self,
         df: 'MetaDataFrame',
-        source,
+        source: Any,
         source_cumulator: Optional['_Cumulator'] = None,
         date_col: Optional[str] = None,
-        to_datetime_kwargs: dict = {},
-        time_frame: TimeFrameArg = None,
+        to_datetime_kwargs: Dict[str, Any] = {},
+        time_frame: Optional[TimeFrameArg] = None,
         cumulators: Optional[Cumulators] = None
-    ):
+    ) -> None:
         # TODO:
         # Split the logic about is_meta_frame
 
@@ -147,7 +151,7 @@ class _Cumulator:
             self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
 
-            if is_meta_frame:
+            if is_meta_frame and source_cumulator is not None:
                 if source_cumulator._date_col is None:
                     # Which means the source stock data frame has no date column, so we have to apply it
                     apply_date_to_df(
@@ -166,27 +170,27 @@ class _Cumulator:
                     check=True
                 )
         else:
-            if is_meta_frame:
+            if is_meta_frame and source_cumulator is not None:
                 # We should copy the source's cumulator settings
                 self._merge_date_col(source_cumulator)
             else:
                 self._date_col = None
 
         if time_frame is None:
-            if is_meta_frame:
+            if is_meta_frame and source_cumulator is not None:
                 self._merge_time_frame(source_cumulator)
                 self._merge_unclosed(source_cumulator, df, source)
         else:
             self._time_frame = ensure_time_frame(time_frame)
 
         if cumulators is None:
-            if is_meta_frame:
+            if is_meta_frame and source_cumulator is not None:
                 self._cumulators = source_cumulator._cumulators
         else:
             # StockDataFrame(stockdataframe, cumulators=cumulators)
             self._cumulators = cumulators
 
-    def _merge_date_col(self, source_cumulator: '_Cumulator'):
+    def _merge_date_col(self, source_cumulator: '_Cumulator') -> None:
         self._date_col = source_cumulator._date_col
 
         if source_cumulator._date_col is None:
@@ -194,7 +198,7 @@ class _Cumulator:
 
         self._to_datetime_kwargs = source_cumulator._to_datetime_kwargs
 
-    def _merge_time_frame(self, source_cumulator: '_Cumulator'):
+    def _merge_time_frame(self, source_cumulator: '_Cumulator') -> None:
         self._time_frame = source_cumulator._time_frame
 
         if source_cumulator._time_frame is None:
@@ -207,7 +211,7 @@ class _Cumulator:
         source_cumulator: '_Cumulator',
         df: 'MetaDataFrame',
         source: 'MetaDataFrame'
-    ):
+    ) -> None:
         unclosed = source_cumulator._unclosed
 
         if unclosed is None or not len(df) or not len(source):
@@ -216,7 +220,7 @@ class _Cumulator:
         if df.iloc[-1].name == source.iloc[-1].name:
             self._unclosed = unclosed
 
-    def apply_date_col(self, other):
+    def apply_date_col(self, other: Any) -> Any:
         if self._date_col is not None:
             other = apply_date(
                 self._date_col,
@@ -233,7 +237,7 @@ class _Cumulator:
         # TODO:
         # support other types
         other: DataFrame
-    ) -> Tuple[DataFrame, DataFrame, 'MetaDataFrame']:
+    ) -> Tuple[DataFrame, Optional[DataFrame], 'MetaDataFrame']:
         # It is allowed to have a None date_col,
         # but `other` must have a DatetimeIndex
         if self._time_frame is None:
@@ -246,10 +250,9 @@ class _Cumulator:
 
         other = self._convert_to_date_df(other)
 
-        last_timestamp = (
-            None if self._unclosed is None
-            else self._unclosed.iloc[-1].name
-        )
+        last_timestamp: Optional[Timestamp] = None
+        if self._unclosed is not None:
+            last_timestamp = self._unclosed.iloc[-1].name
 
         start = None
         last = None
@@ -268,6 +271,7 @@ class _Cumulator:
                 continue
 
             if (
+                self._time_frame is not None and
                 self._time_frame.unify(last_timestamp)
                 != self._time_frame.unify(timestamp)
             ):
@@ -283,9 +287,10 @@ class _Cumulator:
 
             last = timestamp
 
-        self._cumulate(other[start:])
-        # Append the rows even the latest time frame is not closed
-        self._pre_append()
+        if start is not None:
+            self._cumulate(other[start:])
+            # Append the rows even the latest time frame is not closed
+            self._pre_append()
 
         new, source = cum_append(to, self._to_append)
         self._to_append.clear()
@@ -334,13 +339,15 @@ class _Cumulator:
     def _pre_append(
         self,
         clean: bool = False
-    ):
+    ) -> None:
         """
         Cumulate self._unclosed and append to self._to_append
 
         Args:
             clean (:obj:`bool`, optional): True then clean self._unclosed
         """
+        if self._unclosed is None:
+            return
 
         unclosed = self._unclosed
 
@@ -410,11 +417,12 @@ class MetaDataFrame(DataFrame):
 
     def __finalize__(
         self,
-        other,
+        other: Any,
         method: Optional[str] = None,
         # For now (pandas 1.2.3), args and kwargs are useless,
         # however, let's keep them for forward compatibility
-        *args, **kwargs
+        *args: Any,
+        **kwargs: Any
     ) -> 'MetaDataFrame':
         """
         Propagate metadata from other to self.
@@ -471,15 +479,15 @@ class MetaDataFrame(DataFrame):
 
     def __init__(
         self,
-        data=None,
+        data: Any = None,
         # from_constructor: Optional[bool] = bool,
         date_col: Optional[str] = None,
-        to_datetime_kwargs: dict = {},
-        time_frame: TimeFrameArg = None,
+        to_datetime_kwargs: Dict[str, Any] = {},
+        time_frame: Optional[TimeFrameArg] = None,
         cumulators: Optional[Cumulators] = None,
         source: Optional['MetaDataFrame'] = None,
-        *args,
-        **kwargs
+        *args: Any,
+        **kwargs: Any
     ) -> None:
         """
         Creates a stock data frame
@@ -565,7 +573,7 @@ class MetaDataFrame(DataFrame):
 
         return self._constructor(source=self).cum_append(self)  # type: ignore
 
-    def append(self, other, *args, **kwargs) -> 'MetaDataFrame':
+    def append(self, other: Any, *args: Any, **kwargs: Any) -> 'MetaDataFrame':
         """
         Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
 
