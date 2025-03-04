@@ -16,7 +16,6 @@ from pandas import (
 )
 
 from numpy import (
-    ndarray,
     nan
 )
 
@@ -29,7 +28,10 @@ from .directive import (
     directive_cache
 )
 
-from .common import rolling_calc
+from .common import (
+    rolling_calc,
+    NDArrayAny
+)
 
 from .meta import (
     ColumnInfo,
@@ -69,7 +71,10 @@ class StockDataFrame(MetaDataFrame):
 
     # --------------------------------------------------------------------
 
-    def __getitem__(self, key) -> Union[Series, 'StockDataFrame']:
+    def __getitem__(
+        self,
+        key: Union[str, List[str]]
+    ) -> Union[Series, 'StockDataFrame']:
         if isinstance(key, str):
             key = self._map_single_key(key)
 
@@ -124,7 +129,7 @@ class StockDataFrame(MetaDataFrame):
         self,
         directive_str: str,
         create_column: Optional[bool] = None
-    ) -> ndarray:
+    ) -> NDArrayAny:
         """
         Executes the given directive and returns a numpy ndarray according to the directive.
 
@@ -211,10 +216,10 @@ class StockDataFrame(MetaDataFrame):
         self,
         size: int,
         on: str,
-        apply: Callable[[ndarray], Any],
+        apply: Callable[[NDArrayAny], Any],
         forward: bool = False,
         fill=nan
-    ) -> ndarray:
+    ) -> NDArrayAny:
         """Apply a 1-D function along the given column `on`
 
         Args:
@@ -261,13 +266,16 @@ class StockDataFrame(MetaDataFrame):
 
     # --------------------------------------------------------------------
 
-    def _map_keys(self, keys) -> List:
+    def _map_keys(
+        self,
+        keys: List[str]
+    ) -> List[str]:
         return [
             self._map_single_key(key)
             for key in keys
         ]
 
-    def _map_single_key(self, key):
+    def _map_single_key(self, key) -> str:
         if not isinstance(key, str):
             # It might be an `pandas.DataFrame` indexer type,
             # or an KeyError which we should let pandas raise
@@ -304,7 +312,7 @@ class StockDataFrame(MetaDataFrame):
         self,
         directive: Directive,
         create_column: bool
-    ) -> Tuple[str, ndarray]:
+    ) -> Tuple[str, NDArrayAny]:
         """Gets the series column corresponds the `directive` or
         calculate by using the `directive`
 
@@ -339,7 +347,7 @@ class StockDataFrame(MetaDataFrame):
 
         return name, array
 
-    def _fulfill_series(self, column_name: str) -> ndarray:
+    def _fulfill_series(self, column_name: str) -> NDArrayAny:
         # Since `column_name` always exists logically,
         #   we could safely get by dict[key]
         column_info = self._stock_columns_info_map[column_name]
@@ -386,7 +394,7 @@ class StockDataFrame(MetaDataFrame):
         return column_name in self.columns and \
             column_name not in self._stock_columns_info_map
 
-    def _calc(self, directive_str: str) -> ndarray:
+    def _calc(self, directive_str: str) -> NDArrayAny:
         directive = self._parse_directive(directive_str)
 
         _, series = self._get_or_calc_series(

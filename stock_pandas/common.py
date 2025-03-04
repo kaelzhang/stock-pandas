@@ -4,10 +4,17 @@ from typing import (
     Optional,
     Tuple,
     TypeVar,
-    Type
+    Type,
+    Any
+)
+
+from numpy.typing import (
+    NDArray
 )
 
 import numpy as np
+
+NDArrayAny = NDArray[Any]
 
 
 def set_attr(target, key, value) -> None:
@@ -78,9 +85,9 @@ def to_direction(value: str) -> int:
 
 
 def compare_cross(
-    left: np.ndarray,
-    right: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray]:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> Tuple[NDArrayAny, NDArrayAny]:
     less = right < left
 
     # matrix or vector of all False value
@@ -103,11 +110,11 @@ def join_args(args: list) -> str:
 
 
 def rolling_window(
-    array: np.ndarray,
+    array: NDArrayAny,
     period: int,
     # A byte stride for float is 8
     byte_stride: int = 8
-) -> np.ndarray:
+) -> NDArrayAny:
     """Gets an `period`-period rolling window for 1d array
     """
 
@@ -119,10 +126,10 @@ def rolling_window(
 
 
 def shift_and_fill(
-    array: np.ndarray,
+    array: NDArrayAny,
     period: int,
     fill=np.nan
-) -> np.ndarray:
+) -> NDArrayAny:
     """Adds items to the left of an array to meet the min periods
     """
 
@@ -130,7 +137,7 @@ def shift_and_fill(
 
 
 def rolling_calc(
-    array: np.ndarray,
+    array: NDArrayAny,
     period: int,
     func: Callable,
     fill=np.nan,
@@ -138,7 +145,7 @@ def rolling_calc(
     # The stride of window is always `1` for stock-pandas?
     byte_stride: int = 8,
     shift: bool = True
-) -> np.ndarray:
+) -> NDArrayAny:
     """Creates a `period`-period rolling window and apply
     `func` to the items
 
