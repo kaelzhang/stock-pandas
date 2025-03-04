@@ -15,6 +15,7 @@ from stock_pandas.common import (
 
 
 ArgExpression = Union['Command', float]
+ArgValue = Union[str, int, float, 'Directive']
 
 class Directive:
     __slots__ = (
@@ -124,7 +125,17 @@ class Argument:
         'is_directive'
     )
 
-    def __init__(self, value: str, is_directive: bool = False) -> None:
+    def __init__(
+        self,
+        value: ArgValue,
+        is_directive: bool = False
+    ) -> None:
+        """
+        Args:
+            value: The value of the argument.
+            is_directive: Whether the argument is a directive.
+        """
+
         self.value = value
         self.is_directive = is_directive
 

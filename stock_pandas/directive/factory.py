@@ -102,7 +102,14 @@ def create_command(context, name, sub, args) -> Command:
 
     coerced_args = []
 
-    for index, (default, setter) in enumerate(preset.args):
+    for index, arg_def in enumerate(preset.args):
+        if isinstance(arg_def, tuple):
+            default, setter = arg_def
+        else:
+            # Just the default value without setter
+            default = arg_def
+            setter = None
+
         if index < args_length:
             argument, loc = args[index]
             arg = argument.value
@@ -215,6 +222,8 @@ def create_argument(_, arg: Tuple[Union[Directive, str, int, float], Loc]) -> Ar
     value = arg[0]
 
     if isinstance(value, Directive):
+        # TODO: whether should not stringify the directive
+        # !Important!
         return Argument(str(value), True)
 
     # Handle primitive types directly without unpacking
