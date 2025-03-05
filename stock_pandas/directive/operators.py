@@ -1,63 +1,65 @@
-from numpy import ndarray
-from stock_pandas.common import compare_cross
+from stock_pandas.common import (
+    compare_cross,
+    NDArrayAny
+)
 
 
 def cross(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     cross, _ = compare_cross(left, right)
     return cross
 
 
 def cross_up(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     cross, less = compare_cross(left, right)
     return cross & less  # type: ignore
 
 
 def cross_down(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     cross, less = compare_cross(left, right)
     return cross & ~ less  # type: ignore
 
 
 def less_than(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     return left < right
 
 
 def less_than_or_equal(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     return left <= right
 
 
 def equal(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     return left == right  # type: ignore
 
 
 def larger_than_or_equal(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     return left >= right
 
 
 def larger_than(
-    left: ndarray,
-    right: ndarray
-) -> ndarray:
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
     return left > right
 
 

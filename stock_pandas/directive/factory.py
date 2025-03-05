@@ -222,8 +222,8 @@ def create_argument(_, arg: Tuple[Union[Directive, str, int, float], Loc]) -> Ar
     value = arg[0]
 
     if isinstance(value, Directive):
-        # TODO: whether should not stringify the directive
-        # !Important!
+        # Then the directly will be executed by
+        # `df.exec(directive_str)` of the parent command
         return Argument(str(value), True)
 
     # Handle primitive types directly without unpacking
