@@ -156,7 +156,7 @@ class Parser:
             name, sub = text, None
         else:
             start, end = m.span()
-            name, sub = text[:start], text[end:]
+            name, sub = text[:start], text[end:] # type: ignore
 
             sub = Node(
                 TYPE_SCALAR,

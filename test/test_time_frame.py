@@ -3,7 +3,6 @@ import numpy as np
 
 from stock_pandas import (
     StockDataFrame,
-    TimeFrame,
     cumulators
 )
 
@@ -16,13 +15,6 @@ from .common import (
 def test_time_frame_error():
     with pytest.raises(ValueError, match='invalid'):
         StockDataFrame(time_frame='1')
-
-    with pytest.raises(NotImplementedError):
-        StockDataFrame(
-            get_1m_tencent(),
-            date_col=TIME_KEY,
-            time_frame=TimeFrame()
-        ).cumulate()
 
 
 def test_redefine_time_frame():

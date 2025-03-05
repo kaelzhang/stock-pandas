@@ -12,6 +12,8 @@ from pandas import (
 )
 
 
+TimeFrameUnifier = Callable[[Timestamp], int]
+
 class TimeFrame:
     M1: 'TimeFrame'
     M3: 'TimeFrame'
@@ -25,15 +27,13 @@ class TimeFrame:
     H8: 'TimeFrame'
     H12: 'TimeFrame'
 
-    def unify(
-        self,
-        date: Timestamp
-    ) -> int:
-        raise NotImplementedError
+    _unify: TimeFrameUnifier
+
+    def unify(self, date: Timestamp) -> int:
+        return self._unify(date)
 
 
 TimeFrameArg = Union[str, TimeFrame, None]
-TimeFrameUnifier = Callable[[Timestamp], int]
 
 timeFrames: Dict[str, TimeFrame] = {}
 
@@ -60,15 +60,14 @@ MAGNITUDE_MONTH = 5
 MAGNITUDE_YEAR = 7
 
 
-def define(suffix: str, name: str, unify_: TimeFrameUnifier) -> TimeFrame:
+def define(suffix: str, name: str, unify: TimeFrameUnifier) -> TimeFrame:
     class NewClass(TimeFrame):
-        unify = unify_
+        _unify = unify
 
     NewClass.__name__ = f'TimeFrame{suffix}'
 
     timeFrame = NewClass()
 
-    # ensure_time_frame('1m')
     timeFrames[name] = timeFrame
 
     return timeFrame
