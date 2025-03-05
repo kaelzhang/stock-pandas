@@ -22,6 +22,9 @@ def set_attr(target, key, value) -> None:
 
 
 T = TypeVar('T', int, float)
+ReturnInt = Callable[..., int]
+ReturnFloat = Callable[..., float]
+ReturnStr = Callable[..., str]
 
 
 def to_number(
@@ -44,10 +47,10 @@ def to_number(
     return value
 
 
-period_to_int = partial(to_number, int, 'int', 'period', 1)
-repeat_to_int = partial(to_number, int, 'int', 'repeat', 0)
+period_to_int: ReturnInt = partial(to_number, int, 'int', 'period', 1)
+repeat_to_int: ReturnInt = partial(to_number, int, 'int', 'repeat', 0)
 
-times_to_float = partial(to_number, float, 'float', 'times', 0.)
+times_to_float: ReturnFloat = partial(to_number, float, 'float', 'times', 0.)
 
 
 def create_enum(choices: list, name: str, value: str) -> str:
@@ -61,12 +64,12 @@ def create_enum(choices: list, name: str, value: str) -> str:
     )
 
 
-style_enums = partial(create_enum, [
+style_enums: ReturnStr = partial(create_enum, [
     'bullish',
     'bearish'
 ], 'style')
 
-column_enums = partial(create_enum, [
+column_enums: ReturnStr = partial(create_enum, [
     'open',
     'high',
     'low',

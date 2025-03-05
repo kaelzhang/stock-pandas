@@ -5,6 +5,7 @@
 from .base import (
     COMMANDS,
     CommandPreset,
+    CommandArgs,
     ReturnType,
 
     arg_period
@@ -44,7 +45,7 @@ def ma(df, s, period, column) -> ReturnType:
     ), period
 
 
-ma_args = [
+ma_args: CommandArgs = [
     # parameter setting for `period`
     arg_period,
     # setting for `column`
@@ -118,14 +119,14 @@ def macd_histogram(
     return MACD_HISTOGRAM_TIMES * (macd - macd_s), fast_period
 
 
-macd_args = [
+macd_args: CommandArgs = [
     # Fast period
     (12, period_to_int),
     # Slow period
     (26, period_to_int)
 ]
 
-macd_args_all = [
+macd_args_all: CommandArgs = [
     *macd_args,
     (9, period_to_int)
 ]

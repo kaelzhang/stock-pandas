@@ -7,6 +7,7 @@ import numpy as np
 from .base import (
     COMMANDS,
     CommandPreset,
+    CommandArgs,
     ReturnType,
 
     arg_period
@@ -37,13 +38,13 @@ def llv(df, s, period, column) -> ReturnType:
     ), period
 
 arg_column_low = ('low', column_enums)
-llv_args = [
+llv_args: CommandArgs = [
     arg_period,
     arg_column_low
 ]
 
 arg_column_high = ('high', column_enums)
-hhv_args = [
+hhv_args: CommandArgs = [
     arg_period,
     arg_column_high
 ]
@@ -233,13 +234,13 @@ kdj_common_args = [
 ]
 arg_init = (50., init_to_float)
 
-args_k = [
+args_k: CommandArgs = [
     *kdj_common_args,
     arg_init
 ]
 
 # The default args for KDJ is 9, 3, 3, 50.
-args_dj = [
+args_dj: CommandArgs = [
     *kdj_common_args,
     arg_period_k,
     arg_init
