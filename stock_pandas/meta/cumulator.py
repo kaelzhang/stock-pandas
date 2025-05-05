@@ -139,19 +139,22 @@ class _Cumulator:
         time_frame: Optional[TimeFrameArg] = None,
         cumulators: Optional[Cumulators] = None
     ) -> None:
-        # TODO:
-        # Split the logic about is_meta_frame
+        """
+        Update the cumulator settings of the current data frame or copy from `source`
+        """
 
         is_meta_frame = isinstance(source, MetaDataFrame)
 
         if is_meta_frame and source_cumulator is None:
             source_cumulator = source._cumulator
 
+        has_source_cumulator = is_meta_frame and source_cumulator is not None
+
         if date_col is not None:
             self._date_col = date_col
             self._to_datetime_kwargs = to_datetime_kwargs
 
-            if is_meta_frame and source_cumulator is not None:
+            if has_source_cumulator:
                 if source_cumulator._date_col is None:
                     # Which means the source stock data frame has no date column, so we have to apply it
                     apply_date_to_df(
@@ -170,27 +173,27 @@ class _Cumulator:
                     check=True
                 )
         else:
-            if is_meta_frame and source_cumulator is not None:
+            if has_source_cumulator:
                 # We should copy the source's cumulator settings
-                self._merge_date_col(source_cumulator)
+                self._copy_date_col(source_cumulator)
             else:
                 self._date_col = None
 
         if time_frame is None:
-            if is_meta_frame and source_cumulator is not None:
-                self._merge_time_frame(source_cumulator)
-                self._merge_unclosed(source_cumulator, df, source)
+            if has_source_cumulator:
+                self._copy_time_frame(source_cumulator)
+                self._copy_unclosed(source_cumulator, df, source)
         else:
             self._time_frame = ensure_time_frame(time_frame)
 
         if cumulators is None:
-            if is_meta_frame and source_cumulator is not None:
+            if has_source_cumulator:
                 self._cumulators = source_cumulator._cumulators
         else:
             # StockDataFrame(stockdataframe, cumulators=cumulators)
             self._cumulators = cumulators
 
-    def _merge_date_col(self, source_cumulator: '_Cumulator') -> None:
+    def _copy_date_col(self, source_cumulator: '_Cumulator') -> None:
         self._date_col = source_cumulator._date_col
 
         if source_cumulator._date_col is None:
@@ -198,7 +201,7 @@ class _Cumulator:
 
         self._to_datetime_kwargs = source_cumulator._to_datetime_kwargs
 
-    def _merge_time_frame(self, source_cumulator: '_Cumulator') -> None:
+    def _copy_time_frame(self, source_cumulator: '_Cumulator') -> None:
         self._time_frame = source_cumulator._time_frame
 
         if source_cumulator._time_frame is None:
@@ -206,7 +209,7 @@ class _Cumulator:
 
         self._cumulators = source_cumulator._cumulators.copy()
 
-    def _merge_unclosed(
+    def _copy_unclosed(
         self,
         source_cumulator: '_Cumulator',
         df: 'MetaDataFrame',
@@ -297,8 +300,6 @@ class _Cumulator:
 
         unclosed = self._unclosed
 
-        # TODO:
-        # Do not ruin self._unclosed
         self._unclosed = current_unclosed
 
         return new, unclosed, source
