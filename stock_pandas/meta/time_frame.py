@@ -30,6 +30,15 @@ class TimeFrame:
     _unify: TimeFrameUnifier
 
     def unify(self, date: Timestamp) -> int:
+        """
+        Unify a timestamp to an integer
+
+        Args:
+            date (Timestamp): the timestamp to be unified
+
+        Returns:
+            int
+        """
         return self._unify(date)
 
 
@@ -53,11 +62,11 @@ def ensure_time_frame(value: Union[str, TimeFrame]) -> Optional['TimeFrame']:
     return timeFrame
 
 
-MAGNITUDE_MINUTE = 0
-MAGNITUDE_HOUR = 1
-MAGNITUDE_DATE = 3
-MAGNITUDE_MONTH = 5
-MAGNITUDE_YEAR = 7
+MAGNITUDE_MINUTE = 1
+MAGNITUDE_HOUR   = 100
+MAGNITUDE_DATE   = 10000
+MAGNITUDE_MONTH  = 1000000
+MAGNITUDE_YEAR   = 100000000
 
 
 def define(suffix: str, name: str, unify: TimeFrameUnifier) -> TimeFrame:
@@ -74,12 +83,13 @@ def define(suffix: str, name: str, unify: TimeFrameUnifier) -> TimeFrame:
 
 
 def unify_minute(n: int, date: Timestamp) -> int:
+    # 202501311235
     return int(
-        (date.minute // n) * 10 ** MAGNITUDE_MINUTE
-        + date.hour * 10 ** MAGNITUDE_HOUR
-        + date.day * 10 ** MAGNITUDE_DATE
-        + date.month * 10 ** MAGNITUDE_MONTH
-        + date.year * 10 ** MAGNITUDE_YEAR
+        (date.minute // n) * MAGNITUDE_MINUTE
+        + date.hour * MAGNITUDE_HOUR
+        + date.day * MAGNITUDE_DATE
+        + date.month * MAGNITUDE_MONTH
+        + date.year * MAGNITUDE_YEAR
     )
 
 
@@ -92,10 +102,10 @@ TimeFrame.M30 = define('M30', '30m', partial(unify_minute, 30))
 
 def unify_hour(n: int, date: Timestamp) -> int:
     return int(
-        (date.hour // n) * 10 ** MAGNITUDE_HOUR
-        + date.day * 10 ** MAGNITUDE_DATE
-        + date.month * 10 ** MAGNITUDE_MONTH
-        + date.year * 10 ** MAGNITUDE_YEAR
+        (date.hour // n) * MAGNITUDE_HOUR
+        + date.day * MAGNITUDE_DATE
+        + date.month * MAGNITUDE_MONTH
+        + date.year * MAGNITUDE_YEAR
     )
 
 
