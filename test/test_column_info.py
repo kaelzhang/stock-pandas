@@ -1,5 +1,6 @@
 from stock_pandas import (
-    StockDataFrame
+    StockDataFrame,
+    TimeFrame
 )
 
 from .common import (
@@ -30,7 +31,7 @@ def test_cum_append_feat_indicator():
 
     stock = StockDataFrame(
         stock,
-        time_frame='15m'
+        time_frame=TimeFrame.M15
     )
 
     assert stock._stock_columns_info_map['ma:2,close'].size == len(stock)
