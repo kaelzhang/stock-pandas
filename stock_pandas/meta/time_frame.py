@@ -26,6 +26,11 @@ class TimeFrame:
     H6: 'TimeFrame'
     H8: 'TimeFrame'
     H12: 'TimeFrame'
+    D1: 'TimeFrame'
+    D3: 'TimeFrame'
+    W1: 'TimeFrame'
+    M1: 'TimeFrame'
+    Y1: 'TimeFrame'
 
     _unify: TimeFrameUnifier
 
@@ -117,9 +122,33 @@ TimeFrame.H8 = define('H8', '8h', partial(unify_hour, 8))
 TimeFrame.H12 = define('H12', '12h', partial(unify_hour, 12))
 
 
-# TODO:
-# DAY = '1d'
-# DAY3 = '3d'
+def unify_date(n: int, date: Timestamp) -> int:
+    return int(
+        (date.day // n) * MAGNITUDE_DATE
+        + date.month * MAGNITUDE_MONTH
+        + date.year * MAGNITUDE_YEAR
+    )
 
-# WEEK = '1w'
-# MONTH = '1M'
+
+TimeFrame.D1 = define('D1', '1d', partial(unify_date, 1))
+TimeFrame.D3 = define('D3', '3d', partial(unify_date, 3))
+TimeFrame.W1 = define('W1', '1w', partial(unify_date, 7))
+
+
+def unify_month(n: int, date: Timestamp) -> int:
+    return int(
+        (date.month // n) * MAGNITUDE_MONTH
+        + date.year * MAGNITUDE_YEAR
+    )
+
+
+TimeFrame.M1 = define('M1', '1M', partial(unify_month, 1))
+
+
+def unify_year(n: int, date: Timestamp) -> int:
+    return int(
+        (date.year // n) * MAGNITUDE_YEAR
+    )
+
+
+TimeFrame.Y1 = define('Y1', '1y', partial(unify_year, 1))
