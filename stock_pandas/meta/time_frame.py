@@ -1,6 +1,7 @@
 from typing import (
     Callable,
     Dict,
+    List,
     Optional,
     Union
 )
@@ -29,7 +30,7 @@ class TimeFrame:
     D1: 'TimeFrame'
     D3: 'TimeFrame'
     W1: 'TimeFrame'
-    M1: 'TimeFrame'
+    Month1: 'TimeFrame'
     Y1: 'TimeFrame'
 
     _unify: TimeFrameUnifier
@@ -74,7 +75,11 @@ MAGNITUDE_MONTH  = 1000000
 MAGNITUDE_YEAR   = 100000000
 
 
-def define(suffix: str, name: str, unify: TimeFrameUnifier) -> TimeFrame:
+def define(
+    suffix: str,
+    name: Union[str, List[str]],
+    unify: TimeFrameUnifier
+) -> TimeFrame:
     class NewClass(TimeFrame):
         _unify = unify
 
@@ -82,7 +87,10 @@ def define(suffix: str, name: str, unify: TimeFrameUnifier) -> TimeFrame:
 
     timeFrame = NewClass()
 
-    timeFrames[name] = timeFrame
+    names = name if isinstance(name, list) else [name]
+
+    for name in names:
+        timeFrames[name] = timeFrame
 
     return timeFrame
 
@@ -130,8 +138,8 @@ def unify_date(n: int, date: Timestamp) -> int:
     )
 
 
-TimeFrame.D1 = define('D1', '1d', partial(unify_date, 1))
-TimeFrame.D3 = define('D3', '3d', partial(unify_date, 3))
+TimeFrame.D1 = define('D1', ['1d', '1D'], partial(unify_date, 1))
+TimeFrame.D3 = define('D3', ['3d', '3D'], partial(unify_date, 3))
 TimeFrame.W1 = define('W1', '1w', partial(unify_date, 7))
 
 
@@ -142,7 +150,7 @@ def unify_month(n: int, date: Timestamp) -> int:
     )
 
 
-TimeFrame.M1 = define('M1', '1M', partial(unify_month, 1))
+TimeFrame.M1 = define('Month1', '1M', partial(unify_month, 1))
 
 
 def unify_year(n: int, date: Timestamp) -> int:
