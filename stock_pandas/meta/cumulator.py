@@ -254,7 +254,7 @@ class _Cumulator:
         if not len(other):
             raise ValueError('the data frame to be appended is empty')
 
-        # current_unclosed = self._unclosed
+        current_unclosed = self._unclosed
 
         other = self._convert_to_date_df(other)
 
@@ -318,7 +318,9 @@ class _Cumulator:
 
         unclosed = self._unclosed
 
-        # self._unclosed = current_unclosed
+        # .cum_append() will create a new data frame,
+        # so we need to restore `self._unclosed`
+        self._unclosed = current_unclosed
 
         return new, unclosed, source
 

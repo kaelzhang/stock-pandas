@@ -274,7 +274,7 @@ stock['hhv:5,open'].to_numpy()
 
 ### stock.cumulate() -> StockDataFrame
 
-Cumulate the current data frame `stock` based on its time frame setting
+Cumulate the current data frame `stock` based on its time frame setting, and returns a new `StockDataFrame`
 
 ```py
 StockDataFrame(one_minute_kline_data_frame, time_frame='5m').cumulate()
@@ -286,7 +286,9 @@ see [Cumulation and DatetimeIndex][cumulation] for details
 
 ### stock.cum_append(other: DataFrame) -> StockDataFrame
 
-Append `other` to the end of the current data frame `stock` and apply cumulation on them. And the following slice of code is equivalent to the above one:
+Append `other` to the end of the current data frame `stock`, apply cumulation on them, and return a new `StockDataFrame`
+
+And the following slice of code is equivalent to the above one:
 
 ```py
 StockDataFrame(time_frame='5m').cum_append(one_minute_kline_data_frame)
