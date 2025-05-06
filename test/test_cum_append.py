@@ -61,17 +61,31 @@ def expect_cumulated(
         expect_cumulated_result(series, source)
 
 
-def test_hour(tencent):
-    tencent = tencent.iloc[:50]
+def test_time_frames(tencent):
+    time_frames = [
+        ('3m', -2),
+        ('5m', -5),
+        ('1h', None),
+        ('1d', None),
+        ('1M', None),
+        ('1y', None)
+    ]
 
-    expect_cumulated_result(
-        StockDataFrame(
-            tencent,
+    for time_frame, test_start in time_frames:
+        stock = tencent.copy()
+
+        cumulated = StockDataFrame(
+            stock,
             date_col=TIME_KEY,
-            time_frame='1h'
-        ).cumulate().iloc[-1],
-        tencent
-    )
+            time_frame=time_frame
+        ).cumulate()
+
+        to_compare = stock if test_start is None else stock.iloc[test_start:]
+
+        expect_cumulated_result(
+            cumulated.iloc[-1],
+            to_compare
+        )
 
 
 def test_cum_append_from_empty(tencent):

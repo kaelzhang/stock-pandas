@@ -241,6 +241,11 @@ class _Cumulator:
         # support other types
         other: DataFrame
     ) -> Tuple[DataFrame, Optional[DataFrame], 'MetaDataFrame']:
+        """
+        Returns:
+            Tuple[DataFrame, Optional[DataFrame], MetaDataFrame]: the new cumulated and concated data frame, the unclosed rows (data frame), and the source
+        """
+
         # It is allowed to have a None date_col,
         # but `other` must have a DatetimeIndex
         if self._time_frame is None:
@@ -249,15 +254,20 @@ class _Cumulator:
         if not len(other):
             raise ValueError('the data frame to be appended is empty')
 
-        current_unclosed = self._unclosed
+        # current_unclosed = self._unclosed
 
         other = self._convert_to_date_df(other)
 
+        # The last timestamp processed in the current dataframe
         last_timestamp: Optional[Timestamp] = None
         if self._unclosed is not None:
             last_timestamp = self._unclosed.iloc[-1].name
 
+        # Next round, we will append items from timestamp `start`,
+        # `start` is the beginning timestamp of the new time period
         start = None
+
+        # The previous timestamp tested with the dataframe to append
         last = None
         self._to_append = []
 
@@ -278,11 +288,18 @@ class _Cumulator:
                 self._time_frame.unify(last_timestamp)
                 != self._time_frame.unify(timestamp)
             ):
-                self._cumulate(
+                # Which means it enters a new time period,
+                # we should cumulate previous unclosed items before this one
+
+                if last is not None:
                     # For a data frame of TimestampIndex,
                     # indexing are performed in a close range
-                    None if last is None else other[start:last]
-                )
+                    self._cumulate(other[start:last])
+                # else
+                #     it means the first item is from a new time period
+
+                # The data records must be closed at index `last`,
+                # so we will clean `unclosed`
                 self._pre_append(True)
 
                 start = timestamp
@@ -290,6 +307,7 @@ class _Cumulator:
 
             last = timestamp
 
+        # Append remaining rows of `other`
         if start is not None:
             self._cumulate(other[start:])
             # Append the rows even the latest time frame is not closed
@@ -300,7 +318,7 @@ class _Cumulator:
 
         unclosed = self._unclosed
 
-        self._unclosed = current_unclosed
+        # self._unclosed = current_unclosed
 
         return new, unclosed, source
 
@@ -318,18 +336,14 @@ class _Cumulator:
 
     def _cumulate(
         self,
-        to_cumulate: Optional[DataFrame]
+        to_cumulate: DataFrame
     ) -> None:
         """
         Concat the givin data frame to self._unclosed
         """
 
-        unclosed = self._unclosed
-
         # Logically, at least one of unclosed and to_cumulate is not None.
-
-        if to_cumulate is None:
-            return
+        unclosed = self._unclosed
 
         if unclosed is None:
             self._unclosed = to_cumulate
@@ -347,8 +361,8 @@ class _Cumulator:
         Args:
             clean (:obj:`bool`, optional): True then clean self._unclosed
         """
-        if self._unclosed is None:
-            return
+        # if self._unclosed is None:
+        #     return
 
         unclosed = self._unclosed
 
