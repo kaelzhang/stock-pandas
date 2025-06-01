@@ -20,7 +20,7 @@ readme = 'docs/README.md'
 authors = [
   { name = 'Kael Zhang', email='i+pypi@kael.me' }
 ]
-license = {file = 'LICENSE'}
+license-files = ['LICENSE']
 requires-python = '>=3.9'
 dependencies = [
   "numpy",
@@ -38,8 +38,7 @@ classifiers=[
     'Intended Audience :: Financial and Insurance Industry',
     'Operating System :: OS Independent',
     'Development Status :: 4 - Beta',
-    'Topic :: Utilities',
-    'License :: OSI Approved :: MIT License'
+    'Topic :: Utilities'
 ]
 
 [project.urls]
