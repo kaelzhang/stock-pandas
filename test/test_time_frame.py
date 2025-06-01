@@ -1,8 +1,11 @@
 import pytest
 import numpy as np
 
+from typing import Union
+
 from stock_pandas import (
     StockDataFrame,
+    TimeFrame,
     cumulators
 )
 
@@ -17,11 +20,11 @@ def test_time_frame_error():
         StockDataFrame(time_frame='1')
 
 
-def test_redefine_time_frame():
+def _test_redefine_time_frame(time_frame: Union[str, TimeFrame]):
     stock = StockDataFrame(
         get_1m_tencent().iloc[:20],
         date_col=TIME_KEY,
-        time_frame='5m'
+        time_frame=time_frame
     )
 
     new_stock = StockDataFrame(
@@ -43,3 +46,7 @@ def test_redefine_time_frame():
         stock['close'].to_numpy(),
         new_stock['close'].to_numpy()
     )
+
+def test_redefine_time_frame():
+    _test_redefine_time_frame('5m')
+    _test_redefine_time_frame(TimeFrame.m5)

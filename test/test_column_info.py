@@ -31,7 +31,7 @@ def test_cum_append_feat_indicator():
 
     stock = StockDataFrame(
         stock,
-        time_frame=TimeFrame.M15
+        time_frame=TimeFrame.m15
     )
 
     assert stock._stock_columns_info_map['ma:2,close'].size == len(stock)
