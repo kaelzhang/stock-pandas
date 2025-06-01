@@ -15,6 +15,13 @@ from .common import (
 )
 
 
+def test_time_frame_str():
+    assert str(TimeFrame.m1) == '1m'
+    assert str(TimeFrame.D1) == '1d'
+    assert str(TimeFrame.M1) == '1M'
+    assert f'{TimeFrame.m5}' == '5m'
+
+
 def test_time_frame_error():
     with pytest.raises(ValueError, match='invalid'):
         StockDataFrame(time_frame='1')

@@ -34,6 +34,10 @@ class TimeFrame:
     Y1: 'TimeFrame'
 
     _unify: TimeFrameUnifier
+    _str: str
+
+    def __str__(self) -> str:
+        return self._str
 
     def unify(self, date: Timestamp) -> int:
         """
@@ -80,14 +84,16 @@ def define(
     name: Union[str, List[str]],
     unify: TimeFrameUnifier
 ) -> TimeFrame:
+    names = name if isinstance(name, list) else [name]
+    primary_name = names[0]
+
     class NewClass(TimeFrame):
         _unify = unify
+        _str = primary_name
 
     NewClass.__name__ = f'TimeFrame{suffix}'
 
     timeFrame = NewClass()
-
-    names = name if isinstance(name, list) else [name]
 
     for name in names:
         timeFrames[name] = timeFrame
