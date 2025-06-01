@@ -54,7 +54,7 @@ dev = [
   "twine",
   "Cython~=3.0.5",
   "numpy>=2.0.0rc1",
-  "setuptools",
+  "setuptools>=77.0.0",
   "mypy",
   "build"
 ]
