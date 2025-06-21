@@ -88,7 +88,7 @@ def define(
     primary_name = names[0]
 
     class NewClass(TimeFrame):
-        _unify = unify
+        _unify = staticmethod(unify)
         _str = primary_name
 
     NewClass.__name__ = f'TimeFrame{suffix}'
