@@ -14,6 +14,7 @@
 [kdj]: #kdjc-another-variety-of-stochastic-oscillator
 [rsi]: #rsi-relative-strength-index
 [bbi]: #bbi-bull-and-bear-index
+[atr]: #atr-the-average-true-range
 [llv]: #llv-lowest-of-low-values
 [hhv]: #hhv-highest-of-high-values
 [column]: #column
