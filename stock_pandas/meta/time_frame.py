@@ -21,16 +21,20 @@ class TimeFrame:
     m5: 'TimeFrame'
     m15: 'TimeFrame'
     m30: 'TimeFrame'
+
     H1: 'TimeFrame'
     H2: 'TimeFrame'
     H4: 'TimeFrame'
     H6: 'TimeFrame'
     H8: 'TimeFrame'
     H12: 'TimeFrame'
+
     D1: 'TimeFrame'
     D3: 'TimeFrame'
+
     W1: 'TimeFrame'
     M1: 'TimeFrame'
+
     Y1: 'TimeFrame'
 
     _unify: TimeFrameUnifier
