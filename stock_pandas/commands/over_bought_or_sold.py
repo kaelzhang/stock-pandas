@@ -276,7 +276,7 @@ COMMANDS['kdj'] = (
 # rsi
 # ----------------------------------------------------
 
-def rsi(df, s, period) -> ReturnType:
+def rsi(df, _, period) -> ReturnType:
     """Calculates N-period RSI (Relative Strength Index)
 
     https://en.wikipedia.org/wiki/Relative_strength_index

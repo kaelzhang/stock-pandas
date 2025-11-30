@@ -134,3 +134,7 @@ def test_change(stock):
     boll_change3 = stock['change:boll,3']
 
     assert to_fixed(boll_change3.iloc[-1]) == '-0.0030'
+
+
+def test_atr(stock):
+    assert 9.8 < stock['atr:14']['2020-03-06'] < 9.9

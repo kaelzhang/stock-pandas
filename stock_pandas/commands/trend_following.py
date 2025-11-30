@@ -2,6 +2,8 @@
 # Trend-following momentum indicators
 # ----------------------------------------------------
 
+from pandas import concat
+
 from .base import (
     COMMANDS,
     CommandPreset,
@@ -178,6 +180,37 @@ COMMANDS['bbi'] = (
             (24, period_to_int)
         ]
     ),
+    None,
+    None
+)
+
+
+# atr
+# Ref: https://www.investopedia.com/terms/a/atr.asp
+# ----------------------------------------------------
+
+def atr(df, s: slice, period: int) -> ReturnType:
+    """Calculates TR (True Range)
+    """
+
+    prev_close = df.get_column('close')[s].shift(1)
+    high = df.get_column('high')[s]
+    low = df.get_column('low')[s]
+
+    # True range
+    tr = concat([
+        (high - low).abs(),
+        (high - prev_close).abs(),
+        (low - prev_close).abs(),
+    ], axis=1).max(axis=1).to_numpy()
+
+    return calc_ma(tr, period), period + 1
+
+
+COMMANDS['atr'] = (
+    CommandPreset(atr, [
+        (14, period_to_int)
+    ]),
     None,
     None
 )

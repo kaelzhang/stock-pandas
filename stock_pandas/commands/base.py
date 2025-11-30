@@ -1,10 +1,13 @@
+from __future__ import annotations
 from typing import (
     Tuple,
     Optional,
     Callable,
     List,
     Union,
-    Dict
+    Dict,
+    Protocol,
+    TYPE_CHECKING
 )
 
 from numpy import ndarray
@@ -13,9 +16,11 @@ from stock_pandas.common import (
     period_to_int
 )
 
+if TYPE_CHECKING:
+    from stock_pandas.dataframe import StockDataFrame # pragma: no cover
+
 
 ReturnType = Tuple[ndarray, int]
-CommandFormula = Callable[..., ReturnType]
 CommandArg = Union[str, int, float]
 CommandArgs = List[
     Union[
@@ -26,6 +31,15 @@ CommandArgs = List[
         CommandArg
     ]
 ]
+
+class CommandFormula(Protocol):
+    def __call__(
+        self,
+        df: 'StockDataFrame',
+        s: slice,
+        *args: CommandArg
+    ) -> ReturnType:
+        ... # pragma: no cover
 
 
 class CommandPreset:

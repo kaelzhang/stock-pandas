@@ -30,7 +30,7 @@
 **stock-pandas** inherits and extends `pandas.DataFrame` to support:
 - Stock Statistics
 - Stock Indicators, including:
-  - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi]
+  - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi], [**ATR**][atr]
   - Dynamic support and resistance indicators, such as [**BOLL**][boll]
   - Over-bought / over-sold indicators, such as [**KDJ**][kdj], [**RSI**][rsi]
   - Other indicators, such as [**LLV**][llv], [**HHV**][hhv]
@@ -629,6 +629,16 @@ Calculates indicator BBI (Bull and Bear Index) which is the average of `ma:3`, `
 - **b?** `int=6`
 - **c?** `int=12`
 - **d?** `int=24`
+
+### `atr`, the Average True Range
+
+```
+atr:<period>
+```
+
+Calculate the ATR (Average True Range)
+
+- **period** `int = 14` The period to calculate the moving average of the true ranges, defaults to `14`
 
 ### `llv`, Lowest of Low Values
 
