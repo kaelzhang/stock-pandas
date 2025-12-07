@@ -498,6 +498,9 @@ Advanced usage
 ```py
 # The 5-period moving average for the upper bollinger band
 stock['ma:5,(boll.upper:21,2)']
+
+# The change rate of the series above ↑
+stock['change:(ma:5,(boll.upper:21,2))']
 ```
 
 ### `ema`, Exponential Moving Average

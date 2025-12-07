@@ -106,6 +106,8 @@ def test_ma(stock):
 
     assert mama2.iloc[-1] == (ma2[-1] + ma2[-2]) / 2
 
+    stock['change:(ma:5,(boll.upper:21,2))']
+
 
 COMMANDS = [
     'ma:{}',
