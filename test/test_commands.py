@@ -88,6 +88,10 @@ def test_boll(stock):
     assert stock['column:open > boll.u']['2020-01-14']
     assert stock['column:close > boll']['2020-02-05']
 
+    boll = stock['boll.upper']
+    maboll = stock['ma:2,boll.upper']
+    assert maboll.iloc[-1] == (boll.iloc[-1] + boll.iloc[-2]) / 2
+
 
 def test_donchian(stock):
     assert stock['donchian.upper:20'].equals(stock['hhv:20'])
