@@ -10,6 +10,7 @@ class DirectiveError(Exception):
     line: int
     column: int
     message: str
+    name: str = 'DirectiveSyntaxError'
 
     def __str__(self) -> str:
         # The column of Python SyntaxError is buggy
@@ -26,7 +27,7 @@ class DirectiveError(Exception):
         return f'''File "<string>", line {self.line}, column {self.column}
 {formatted}
    {WHITESPACE * (self.column - 1)}^
-DirectiveSyntaxError: {self.message}'''
+{self.name}: {self.message}'''
 
 
 class DirectiveSyntaxError(DirectiveError):
@@ -44,6 +45,8 @@ def unexpected_token(directive, token) -> DirectiveSyntaxError:
 
 
 class DirectiveValueError(DirectiveError):
+    name: str = 'DirectiveValueError'
+
     def __init__(self, directive, message, loc) -> None:
         self.directive = directive
         self.message = message

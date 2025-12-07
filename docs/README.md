@@ -474,7 +474,7 @@ Actually, all parameters of a command are of string type, so the `int` here mean
 ### `ma`, simple Moving Averages
 
 ```
-ma:<period>,<column>
+ma:<period>,<on>
 ```
 
 Gets the `period`-period simple moving average on column named `column`.
@@ -484,7 +484,7 @@ Gets the `period`-period simple moving average on column named `column`.
 So `stock-pandas` will use `ma` for simple moving average and `smma` for smoothed moving average.
 
 - **period** `int` (required)
-- **column?** `enum<'open'|'high'|'low'|'close'>='close'` Which column should the calculation based on. Defaults to `'close'`
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
 
 ```py
 # which is equivalent to `stock['ma:5,close']`

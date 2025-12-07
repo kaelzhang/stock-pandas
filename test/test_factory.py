@@ -83,7 +83,7 @@ def test_column_with_two_command_real_case():
 
 def test_value_error():
     CASES = [
-        ('a1', 'unknown command'),
+        ('a1', ['unknown command', 'DirectiveValueError']),
         ('foo', 'unknown command'),
         ('kdj', 'sub command should be specified'),
         ('ma:2 > foo', 'unknown command'),
@@ -100,5 +100,8 @@ def test_value_error():
     ]
 
     for directive_str, err_msg in CASES:
-        with pytest.raises(DirectiveValueError, match=err_msg):
-            parse(directive_str)
+        err_msgs = err_msg if isinstance(err_msg, list) else [err_msg]
+
+        for err_msg in err_msgs:
+            with pytest.raises(DirectiveValueError, match=err_msg):
+                parse(directive_str)

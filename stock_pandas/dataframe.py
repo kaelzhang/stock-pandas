@@ -120,10 +120,14 @@ class StockDataFrame(MetaDataFrame):
             # Map alias, if the key is an alias
             name = self._stock_aliases_map[name]
 
+        return self._get_column(name, origin_name)
+
+    def _get_column(self, name: str, error_name: str = None) -> Series:
         try:
             return self._get_item_cache(name)
         except KeyError:
-            raise KeyError(f'column "{origin_name}" not found')
+            error_name = error_name or name
+            raise KeyError(f'column "{error_name}" not found')
 
     def exec(
         self,
@@ -143,8 +147,14 @@ class StockDataFrame(MetaDataFrame):
             ndarray
         """
 
-        if self._is_normal_column(directive_str):
-            return self[directive_str].to_numpy()
+        potential_column = (
+            self._stock_aliases_map[directive_str]
+            if directive_str in self._stock_aliases_map
+            else directive_str
+        )
+
+        if self._is_normal_column(potential_column):
+            return self._get_column(potential_column).to_numpy()
 
         # We should call self.exec() without `create_column`
         # inside command formulas

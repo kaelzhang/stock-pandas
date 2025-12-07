@@ -5,7 +5,8 @@ import pandas as pd
 
 from stock_pandas import (
     StockDataFrame,
-    directive_stringify
+    directive_stringify,
+    DirectiveValueError
 )
 
 from .common import (
@@ -41,8 +42,8 @@ def test_get_column(stock):
         stock.get_column('close')
 
     with pytest.raises(
-        KeyError,
-        match='column "close" not found'
+        DirectiveValueError,
+        match='unknown command "close"'
     ):
         stock['ma:20']
 

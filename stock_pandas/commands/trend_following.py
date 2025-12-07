@@ -27,14 +27,14 @@ from stock_pandas.math.ma import (
 # ----------------------------------------------------
 
 
-def ma(df, s, period, column) -> ReturnType:
+def ma(df, s: slice, period: int, on: str) -> ReturnType:
     """Gets simple moving average
 
     Args:
         df (StockDataFrame): the stock data frame itself
         s (slice): the slice object
         period (int): size of the moving period
-        column (str): column name to calculate
+        on (str): the target that is based on to calculate
 
     Returns:
         Tuple[np.ndarray, int]: the numpy ndarray object,
@@ -42,7 +42,7 @@ def ma(df, s, period, column) -> ReturnType:
     """
 
     return calc_ma(
-        df.get_column(column)[s].to_numpy(),
+        df.exec(on)[s],
         period
     ), period
 
