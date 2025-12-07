@@ -15,7 +15,7 @@ from .base import (
 
 from stock_pandas.common import (
     period_to_int,
-    column_enums
+    # column_enums
 )
 
 from stock_pandas.math.ma import (
@@ -56,7 +56,7 @@ ma_args: CommandArgs = [
         'close',
         # If the command use the default value,
         # then it will skip validating
-        column_enums
+        None
     )
 ]
 
