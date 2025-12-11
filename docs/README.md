@@ -285,7 +285,7 @@ StockDataFrame(one_minute_kline_data_frame, time_frame='5m').cumulate()
 
 see [Cumulation and DatetimeIndex][cumulation] for details
 
-### stock.cum_append(other: DataFrame) -> StockDataFrame
+### stock.cum_append(other) -> StockDataFrame
 
 Append `other` to the end of the current data frame `stock`, apply cumulation on them, and return a new `StockDataFrame`
 

@@ -19,7 +19,8 @@ from .meta.time_frame import (
 from .meta.cumulator import (
     Cumulator,
     Cumulators,
-    cumulators
+    cumulators,
+    SubjectsToAppend
 )
 
-__version__ = '3.1.1'
+__version__ = '3.2.0'

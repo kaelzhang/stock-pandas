@@ -4,7 +4,8 @@ from typing import (
     Dict,
     List,
     Optional,
-    Tuple
+    Tuple,
+    Union
 )
 
 from numpy import ndarray
@@ -40,6 +41,9 @@ from .time_frame import (
 Cumulator = Callable[[ndarray], float]
 Cumulators = Dict[str, Cumulator]
 ToAppend = List[Series]
+
+SubjectToAppend = Union[DataFrame, Series, dict]
+SubjectsToAppend = Union[SubjectToAppend, List[SubjectToAppend]]
 
 
 def first(array: ndarray) -> float:
@@ -237,8 +241,6 @@ class _Cumulator:
     def cum_append(
         self,
         to: 'MetaDataFrame',
-        # TODO:
-        # support other types
         other: DataFrame
     ) -> Tuple[DataFrame, Optional[DataFrame], 'MetaDataFrame']:
         """
@@ -255,8 +257,6 @@ class _Cumulator:
             raise ValueError('the data frame to be appended is empty')
 
         current_unclosed = self._unclosed
-
-        other = self._convert_to_date_df(other)
 
         # The last timestamp processed in the current dataframe
         last_timestamp: Optional[Timestamp] = None
@@ -324,17 +324,19 @@ class _Cumulator:
 
         return new, unclosed, source
 
-    def _convert_to_date_df(
-        self,
-        other: DataFrame
-    ) -> DataFrame:
-        date_col = self._date_col
+    # def _convert_to_date_df(
+    #     self,
+    #     other: DataFrame
+    # ) -> DataFrame:
+    #     date_col = self._date_col
 
-        if date_col is not None and date_col in other.columns:
-            other = other.copy()
-            apply_date_to_df(other, date_col, self._to_datetime_kwargs)
+    #     print('columns:', other.columns, 'date_col:', date_col)
 
-        return other
+    #     if date_col is not None and date_col in other.columns:
+    #         other = other.copy()
+    #         apply_date_to_df(other, date_col, self._to_datetime_kwargs)
+
+    #     return other
 
     def _cumulate(
         self,
@@ -590,21 +592,18 @@ class MetaDataFrame(DataFrame):
 
         return self._constructor(source=self).cum_append(self)  # type: ignore
 
-    def append(self, other: Any, *args: Any, **kwargs: Any) -> 'MetaDataFrame':
+    def append(
+        self,
+        other: SubjectsToAppend,
+        *args: Any, **kwargs: Any
+    ) -> 'MetaDataFrame':
         """
         Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
 
         The args of this method is the same as `pandas.DataFrame.append`
         """
 
-        other = self._cumulator.apply_date_col(other)
-
-        others = [
-            DataFrame([item]) if not isinstance(item, DataFrame) else item
-            for item in (
-                other if isinstance(other, list) else [other]
-            )
-        ]
+        others = self._standardize_other(other)
 
         appended = concat([self, *others], *args, **kwargs)
 
@@ -612,20 +611,35 @@ class MetaDataFrame(DataFrame):
 
     def cum_append(
         self,
-        other: DataFrame
+        other: SubjectsToAppend
     ) -> 'MetaDataFrame':
         """
         Appends row(s) of other to the end of caller, applies cumulation to these rows, and returns a new object
 
         Args:
-            other (DataFrame): the new data frame to append
+            other (DataFrame, Series, dict, or list): the new data to append. Can be a DataFrame, Series, dict-like object, or a list of these types.
         """
 
+        others = self._standardize_other(other)
+
+        # Concatenate all others into a single DataFrame
+        others = concat(others) if len(others) > 1 else others[0]
+
         concatenated, unclosed, source = self._cumulator.cum_append(
-            self, other
+            self, others
         )
 
         df = ensure_type(concatenated, source)
         df._cumulator._unclosed = unclosed
 
         return df
+
+    def _standardize_other(self, other: Any) -> List[DataFrame]:
+        other = self._cumulator.apply_date_col(other)
+
+        return [
+            DataFrame([item]) if not isinstance(item, DataFrame) else item
+            for item in (
+                other if isinstance(other, list) else [other]
+            )
+        ]

@@ -204,3 +204,85 @@ def test_source_parameter(tencent):
     stock = StockDataFrame(source=stock)
 
     assert 'ma:2,close' not in stock._stock_columns_info_map
+
+
+def test_cum_append_series(tencent):
+    """Test cum_append with Series input"""
+    stock = StockDataFrame(
+        date_col=TIME_KEY,
+        time_frame='5m'
+    )
+
+    # Append single Series
+    for i in range(LENGTH):
+        stock = stock.cum_append(tencent.iloc[i])
+        assert isinstance(stock, StockDataFrame)
+
+    expect_cumulated(tencent, stock, LENGTH)
+
+
+def test_cum_append_dict(tencent):
+    """Test cum_append with dict input"""
+    stock = StockDataFrame(
+        date_col=TIME_KEY,
+        time_frame='5m'
+    )
+
+    # Append single dict
+    for i in range(LENGTH):
+        stock = stock.cum_append(tencent.iloc[i].to_dict())
+        assert isinstance(stock, StockDataFrame)
+
+    expect_cumulated(tencent, stock, LENGTH)
+
+
+def test_cum_append_list_of_series(tencent):
+    """Test cum_append with list of Series"""
+    stock = StockDataFrame(
+        date_col=TIME_KEY,
+        time_frame='5m'
+    )
+
+    # Append list of Series
+    series_list = [tencent.iloc[i] for i in range(LENGTH)]
+    stock = stock.cum_append(series_list)
+
+    assert isinstance(stock, StockDataFrame)
+    expect_cumulated(tencent, stock, LENGTH)
+
+
+def test_cum_append_list_of_dicts(tencent):
+    """Test cum_append with list of dicts"""
+    stock = StockDataFrame(
+        date_col=TIME_KEY,
+        time_frame='5m'
+    )
+
+    # Append list of dicts
+    dict_list = [tencent.iloc[i].to_dict() for i in range(LENGTH)]
+    stock = stock.cum_append(dict_list)
+
+    assert isinstance(stock, StockDataFrame)
+    expect_cumulated(tencent, stock, LENGTH)
+
+
+def test_cum_append_mixed_list(tencent):
+    """Test cum_append with mixed list of Series, dicts, and DataFrames"""
+    stock = StockDataFrame(
+        date_col=TIME_KEY,
+        time_frame='5m'
+    )
+
+    # Create a mixed list
+    mixed_list = [
+        tencent.iloc[0],  # Series
+        tencent.iloc[1].to_dict(),  # Dict
+        tencent.iloc[2:4],  # DataFrame (2 rows: indices 2 and 3)
+        tencent.iloc[4],  # Series
+    ]
+
+    stock = stock.cum_append(mixed_list)
+
+    assert isinstance(stock, StockDataFrame)
+    # Should have cumulated 5 rows (0-4 are in first 5-min period)
+    expect_cumulated(tencent.iloc[:5], stock, 5)
