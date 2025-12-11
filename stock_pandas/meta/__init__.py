@@ -1,6 +1,7 @@
 from .cumulator import (
     MetaDataFrame,
     Cumulator,
+    Cumulators,
     cumulators
 )
 

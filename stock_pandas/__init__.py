@@ -17,7 +17,8 @@ from .meta import (
     TimeFrame,
     TimeFrameArg,
     Cumulator,
+    Cumulators,
     cumulators
 )
 
-__version__ = '3.0.1'
+__version__ = '3.1.0'
