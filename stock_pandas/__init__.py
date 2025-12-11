@@ -1,7 +1,5 @@
 from .dataframe import StockDataFrame
-from .directive import (
-    directive_stringify
-)
+from .directive import directive_stringify
 
 from .exceptions import (
     DirectiveSyntaxError,
@@ -13,12 +11,15 @@ from .commands import (
     CommandPreset
 )
 
-from .meta import (
+from .meta.time_frame import (
     TimeFrame,
-    TimeFrameArg,
+    TimeFrameArg
+)
+
+from .meta.cumulator import (
     Cumulator,
     Cumulators,
     cumulators
 )
 
-__version__ = '3.1.0'
+__version__ = '3.1.1'

@@ -19,8 +19,6 @@ from numpy import (
     nan
 )
 
-from stock_pandas.meta.utils import ensure_return_type
-
 from .directive import (
     parse,
     Directive,
@@ -33,10 +31,15 @@ from .common import (
     NDArrayAny
 )
 
-from .meta import (
-    ColumnInfo,
+from .meta.utils import (
+    ensure_return_type,
+    ColumnInfo
+)
+
+from .meta.cumulator import (
     MetaDataFrame
 )
+
 
 # #27
 if os.environ.get('STOCK_PANDAS_COW', '').lower() in ('1', 'on', 'true'):

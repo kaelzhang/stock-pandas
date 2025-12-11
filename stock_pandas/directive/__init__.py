@@ -4,6 +4,13 @@ from .types import Directive
 from .cache import DirectiveCache
 
 
+__all__ = [
+    'directive_cache',
+    'parse',
+    'directive_stringify'
+]
+
+
 directive_cache = DirectiveCache()
 
 
