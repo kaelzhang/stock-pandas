@@ -93,6 +93,16 @@ def test_boll(stock):
     assert maboll.iloc[-1] == (boll.iloc[-1] + boll.iloc[-2]) / 2
 
 
+def test_bbw(stock):
+    a = stock['bbw'].to_numpy()
+    b = (
+        (stock['boll.upper'] - stock['boll.lower']) / stock['boll']
+    ).to_numpy()
+
+    for i in range(len(a)):
+        assert to_fixed(a[i], 8) == to_fixed(b[i], 8), f'{i}: {a[i]} != {b[i]}'
+
+
 def test_donchian(stock):
     assert stock['donchian.upper:20'].equals(stock['hhv:20'])
     assert stock['donchian.lower:20'].equals(stock['llv:20'])

@@ -94,6 +94,7 @@ def bbw(df, s: slice, period: int, column: str) -> ReturnType:
         period,
         np.std
     )
+
     return np.divide(
         np.multiply(4, mstd),
         ma
