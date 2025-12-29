@@ -9,6 +9,7 @@
 [ema]: #ema-exponential-moving-average
 [macd]: #macd-moving-average-convergence-divergence
 [boll]: #boll-bollinger-bands
+[bbw]: #bbw-bollinger-band-width
 [rsv]: #rsv-raw-stochastic-value
 [kdj]: #kdj-a-variety-of-stochastic-oscillator
 [kdj]: #kdjc-another-variety-of-stochastic-oscillator
@@ -565,6 +566,23 @@ stock['boll.upper']
 stock['boll.lower']
 stock['boll.l']
 ```
+
+### `bbw`, Bollinger Band Width
+
+```
+bbw:<period>,<column>
+```
+
+- **period?** `int=20`
+- **column?** `str='close'`
+
+```py
+# Bollinger band width
+stock['bbw']
+# Which is equivalent to
+stock['bbw:20']
+```
+
 
 ### `rsv`, Raw Stochastic Value
 

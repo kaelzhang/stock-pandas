@@ -81,3 +81,32 @@ COMMANDS['boll'] = (  # type: ignore
         l='lower'   # noqa
     )
 )
+
+
+def bbw(df, s: slice, period: int, column: str) -> ReturnType:
+    """Gets the width of bollinger bands
+    """
+
+    prices = df.get_column(column)[s].to_numpy()
+    ma = df.exec(f'ma:{period},{column}')[s]
+    mstd = rolling_calc(
+        prices,
+        period,
+        np.std
+    )
+    return np.divide(
+        np.multiply(4, mstd),
+        ma
+    ), period
+
+
+bbw_args: CommandArgs = [
+    (20, period_to_int),
+    ('close', column_enums)
+]
+
+COMMANDS['bbw'] = (  # type: ignore
+    CommandPreset(bbw, bbw_args),
+    None,
+    None
+)
