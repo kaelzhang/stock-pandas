@@ -8,7 +8,7 @@ from typing import (
 
 from .tokenizer import (
     Token,
-    Loc,
+    # Loc,
     Tokenizer,
     STR_COLON,
     STR_COMMA,
@@ -16,58 +16,38 @@ from .tokenizer import (
     STR_PARAN_R
 )
 
+from .node import (
+    # MetaNode,
+    # Node,
+    # RootNode,
+    DirectiveNode,
+    CommandNode,
+    ArgumentNode,
+    OperatorNode,
+    ScalarNode
+)
+
 from stock_pandas.exceptions import (
     DirectiveSyntaxError,
     unexpected_token
 )
 
-from stock_pandas.common import (
-    TYPE_DIRECTIVE,
-    TYPE_COMMAND,
-    TYPE_OPERATOR,
-    TYPE_ARGUMENT,
-    TYPE_SCALAR
-)
+# from stock_pandas.common import (
+#     TYPE_DIRECTIVE,
+#     TYPE_COMMAND,
+#     TYPE_OPERATOR,
+#     TYPE_ARGUMENT,
+#     TYPE_SCALAR
+# )
 
-from .operators import OPERATORS
+from .operator import OPERATORS
 
 
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
-NotNode = Union[str, float, None]
-CommandNodeArgs = List['Node']
-NodeData = Tuple[Union['Node', NotNode, CommandNodeArgs], ...]
-
-
-class MetaNode:
-    """
-    The meta node which is used to distinguish the type of Node and RootNode
-    """
-
-    __slots__ = ('label', 'data', 'loc')
-
-    label: int
-    data: NodeData
-    loc: Loc
-
-    def __init__(self, t, data, loc):
-        self.label = t
-        self.data = data
-        self.loc = loc
-
-
-class Node(MetaNode):
-    ...
-
-
-class RootNode(MetaNode):
-    @classmethod
-    def from_node(cls, node: MetaNode) -> 'RootNode':
-        return cls(
-            node.label,
-            node.data,
-            node.loc
-        )
+# NotNode = Union[str, float, None]
+# CommandNodeArgs = List['Node']
+# NodeData = Tuple[Union['Node', NotNode, CommandNodeArgs], ...]
 
 
 class Parser:
@@ -78,7 +58,7 @@ class Parser:
     def __init__(self, directive_str: str) -> None:
         self._input = directive_str
 
-    def parse(self) -> RootNode:
+    def parse(self) -> DirectiveNode:
         self._tokens = Tokenizer(self._input)
 
         self._next_token()
@@ -95,36 +75,48 @@ class Parser:
 
         self._expect_eof()
 
-        return RootNode.from_node(directive)
+        return directive
+
+        # return RootNode.from_node(directive)
 
     # An _expect_<type> method
     # - should NOT next_token at the begining
     # - should next_token at the end
     # - should returns Node or Tuple[Node]
 
-    def _expect_directive(self) -> Node:
+    def _expect_directive(self) -> DirectiveNode:
         loc = self._token.loc
 
         command = self._expect_command()
 
         if self._token.EOF or self._is(STR_PARAN_R):
             # There is no operator
-            return Node(
-                TYPE_DIRECTIVE,
-                (command, None, None),
-                loc
+            # return Node(
+            #     TYPE_DIRECTIVE,
+            #     (command, None, None),
+            #     loc
+            # )
+            return DirectiveNode(
+                command=command,
+                loc=loc
             )
 
         operator = self._expect_operator()
         expression = self._expect_expression()
 
-        return Node(
-            TYPE_DIRECTIVE,
-            (command, operator, expression),
-            loc
+        # return Node(
+        #     TYPE_DIRECTIVE,
+        #     (command, operator, expression),
+        #     loc
+        # )
+        return DirectiveNode(
+            command=command,
+            operator=operator,
+            expression=expression,
+            loc=loc
         )
 
-    def _expect_command(self) -> Node:
+    def _expect_command(self) -> CommandNode:
         loc = self._token.loc
 
         name, sub = self._expect_command_name()
@@ -137,13 +129,20 @@ class Parser:
         else:
             args = []
 
-        return Node(
-            TYPE_COMMAND,
-            (name, sub, args),
-            loc
+        # return Node(
+        #     TYPE_COMMAND,
+        #     (name, sub, args),
+        #     loc
+        # )
+
+        return CommandNode(
+            name=name,
+            sub=sub,
+            args=args,
+            loc=loc
         )
 
-    def _expect_command_name(self) -> Tuple[Node, Optional[Node]]:
+    def _expect_command_name(self) -> Tuple[ScalarNode, Optional[ScalarNode]]:
         self._check_normal()
 
         text = self._token.value
@@ -158,16 +157,25 @@ class Parser:
             start, end = m.span()
             name, sub = text[:start], text[end:] # type: ignore
 
-            sub = Node(
-                TYPE_SCALAR,
-                (sub,),
-                (loc[0], loc[1] + start)
+            # sub = Node(
+            #     TYPE_SCALAR,
+            #     (sub,),
+            #     (loc[0], loc[1] + start)
+            # )
+            sub = ScalarNode(
+                value=sub,
+                loc=(loc[0], loc[1] + start)
             )
 
-        return Node(
-            TYPE_SCALAR,
-            (name,),
-            loc
+        # return Node(
+        #     TYPE_SCALAR,
+        #     (name,),
+        #     loc
+        # ), sub
+
+        return ScalarNode(
+            value=name,
+            loc=loc
         ), sub
 
     def _check_normal(self) -> None:
@@ -184,7 +192,10 @@ class Parser:
                 self._token
             )
 
-    def _expect_arg(self, args) -> List[Node]:
+    def _expect_arg(
+        self,
+        args: List[ArgumentNode]
+    ) -> List[ArgumentNode]:
         self._no_end()
 
         # ( directive )
@@ -192,10 +203,14 @@ class Parser:
             self._next_token()
             loc = self._token.loc
 
-            argument = Node(
-                TYPE_ARGUMENT,
-                (self._expect_directive(),),
-                loc
+            # argument = Node(
+            #     TYPE_ARGUMENT,
+            #     (self._expect_directive(),),
+            #     loc
+            # )
+            argument = ArgumentNode(
+                value=self._expect_directive(),
+                loc=loc
             )
 
             self._expect(STR_PARAN_R)
@@ -203,16 +218,12 @@ class Parser:
 
         # normal arg
         elif not self._token.special:
-            argument = Node(
-                TYPE_ARGUMENT,
-                (
-                    Node(
-                        TYPE_SCALAR,
-                        (self._token.value,),
-                        self._token.loc
-                    ),
+            argument = ArgumentNode(
+                value=ScalarNode(
+                    self._token.value,
+                    self._token.loc
                 ),
-                self._token.loc
+                loc=self._token.loc
             )
             self._next_token()
 
@@ -233,7 +244,7 @@ class Parser:
     def _unexpected(self) -> DirectiveSyntaxError:
         return unexpected_token(self._input, self._token)
 
-    def _expect(self, value) -> None:
+    def _expect(self, value: str) -> None:
         self._no_end()
 
         if not self._is(value):
@@ -242,7 +253,7 @@ class Parser:
     def _next_token(self):
         self._token = next(self._tokens)  # type: ignore
 
-    def _expect_operator(self) -> Node:
+    def _expect_operator(self) -> OperatorNode:
         self._no_end()
 
         token = self._token
@@ -257,13 +268,12 @@ class Parser:
 
         self._next_token()
 
-        return Node(
-            TYPE_OPERATOR,
-            (text,),
-            token.loc
+        return OperatorNode(
+            operator=text,
+            loc=token.loc
         )
 
-    def _expect_expression(self) -> Node:
+    def _expect_expression(self) -> Union[ScalarNode, CommandNode]:
         self._check_normal()
 
         try:
@@ -271,10 +281,9 @@ class Parser:
             num = float(token.value)  # type: ignore
             self._next_token()
 
-            return Node(
-                TYPE_SCALAR,
-                (num,),
-                token.loc
+            return ScalarNode(
+                value=num,
+                loc=token.loc
             )
 
         except ValueError:

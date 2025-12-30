@@ -22,8 +22,7 @@ from numpy import (
 from .directive import (
     parse,
     Directive,
-    DirectiveCache,
-    directive_cache
+    DirectiveCache
 )
 
 from .common import (
@@ -54,11 +53,33 @@ class StockDataFrame(MetaDataFrame):
     Args definitions are the same as `pandas.DataFrame`
     """
 
-    _stock_create_column: bool = False
+    COMMANDS: Dict[str, CommandDefinition] = COMMANDS.copy()
 
     # Directive cache can be shared between instances,
     # so declare as static property
-    _stock_directives_cache: DirectiveCache = directive_cache
+    DIRECTIVES_CACHE: DirectiveCache = DirectiveCache()
+
+    @staticmethod
+    def directive_stringify(cls, directive_str: str) -> str:
+        """
+        Gets the full name of the `directive_str` which is also the actual column name of the data frame
+
+        Args:
+            directive_str (str): directive
+
+        Usage::
+
+            StockDataFrame.directive_stringify('boll')
+            # It gets "boll:20,close"
+
+        Returns:
+            str
+        """
+
+        return str(parse(directive_str, cls.DIRECTIVES_CACHE))
+
+    _stock_create_column: bool = False
+
 
     # Methods that used by pandas and sub classes
     # --------------------------------------------------------------------
@@ -200,27 +221,6 @@ class StockDataFrame(MetaDataFrame):
 
         self._stock_aliases_map[as_name] = src_name
 
-    def directive_stringify(
-        self,
-        directive_str: str
-    ) -> str:
-        """
-        Stringify a `Directive` and get its full name which is the actual column of the dataframe
-
-        Usage::
-
-            stock.directive_stringify('boll')
-            # It gets "boll:20,close"
-
-        Args:
-            directive_str (str): directive
-
-        Returns:
-            str
-        """
-
-        return str(self._parse_directive(directive_str))
-
     def rolling_calc(
         self,
         size: int,
@@ -315,7 +315,11 @@ class StockDataFrame(MetaDataFrame):
         self,
         directive_str: str
     ) -> Directive:
-        return parse(directive_str, self._stock_directives_cache)
+        return parse(
+            directive_str,
+            self.DIRECTIVES_CACHE,
+            self.COMMANDS
+        )
 
     def _get_or_calc_series(
         self,

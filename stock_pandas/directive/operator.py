@@ -65,7 +65,7 @@ def larger_than(
 
 OPERATORS = {
     '><': cross,
-    '/': cross_up,
+    '//': cross_up,
     '\\': cross_down,
     '<': less_than,
     '<=': less_than_or_equal,

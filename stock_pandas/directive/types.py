@@ -14,7 +14,7 @@ from stock_pandas.common import (
 )
 
 
-ArgExpression = Union['Command', float]
+Expression = Union['Command', float]
 ArgValue = Union[str, int, float, 'Directive']
 
 class Directive:
@@ -38,7 +38,7 @@ class Directive:
         self,
         command: 'Command',
         operator: 'Operator',
-        expression: ArgExpression
+        expression: Expression
     ) -> None:
         ...  # pragma: no cover
 
@@ -52,7 +52,7 @@ class Directive:
         self.operator = operator
         self.expression = expression
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return (
             f'{self.command}{self.operator}{self.expression}'
             if self.operator
@@ -108,7 +108,7 @@ class Command:
         self.args = args
         self.formula = formula
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         name = command_full_name(self.name, self.sub)
 
         return f'{name}:{join_args(self.args)}' \
@@ -139,7 +139,7 @@ class Argument:
         self.value = value
         self.is_directive = is_directive
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f'({self.value})' if self.is_directive else str(self.value)
 
 
@@ -157,5 +157,5 @@ class Operator:
         self.name = name
         self.formula = formula
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return self.name

@@ -15,7 +15,7 @@ from .types import (
     Operator
 )
 
-from .operators import OPERATORS
+# from .operators import OPERATORS
 from .parser import (
     MetaNode,
     RootNode,
@@ -39,11 +39,11 @@ from stock_pandas.common import (
     NONE_TUPLE,
     DEFAULT_ARG_VALUE,
 
-    TYPE_DIRECTIVE,
-    TYPE_COMMAND,
-    TYPE_OPERATOR,
-    TYPE_ARGUMENT,
-    TYPE_SCALAR
+    # TYPE_DIRECTIVE,
+    # TYPE_COMMAND,
+    # TYPE_OPERATOR,
+    # TYPE_ARGUMENT,
+    # TYPE_SCALAR
 )
 
 

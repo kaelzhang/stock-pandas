@@ -5,11 +5,13 @@ from typing import (
     Iterator
 )
 
-# operators
-# (
-# )
-# :
-# ,
+# To match:
+# - operators
+# - (
+# - )
+# - :
+# - ,
+# - CRLF
 REGEX_SPECIAL_CHARS = re.compile(r'[\\=<>/]+|[():,\r\n]', re.A)
 
 STR_CARRIAGE_RETURN = '\n'
@@ -32,8 +34,8 @@ class Token:
         self,
         loc: Loc,
         value: Optional[str] = None,
-        special: Optional[bool] = False,
-        EOF: Optional[bool] = False
+        special: bool = False,
+        EOF: bool = False
     ):
         self.value = value
         self.loc = loc

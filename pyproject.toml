@@ -25,7 +25,8 @@ license-files = ['LICENSE']
 requires-python = '>=3.9'
 dependencies = [
   "numpy",
-  "pandas >= 1.0.0"
+  "pandas >= 1.0.0",
+  "TA-Lib"
 ]
 classifiers=[
     'Programming Language :: Python',
