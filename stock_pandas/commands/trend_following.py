@@ -6,16 +6,19 @@ from pandas import concat
 
 from .base import (
     COMMANDS,
+    CommandDefinition,
     CommandPreset,
-    CommandArgs,
-    ReturnType,
-
+    CommandArg,
+    # CommandArgs,
+    ReturnType
+)
+from .args import (
     arg_period
 )
 
+
 from stock_pandas.common import (
     period_to_int,
-    # column_enums
 )
 
 from stock_pandas.math.ma import (
@@ -47,23 +50,20 @@ def ma(df, s: slice, period: int, on: str) -> ReturnType:
     ), period
 
 
-ma_args: CommandArgs = [
+args_ma = [
     # parameter setting for `period`
     arg_period,
     # setting for `column`
-    (
+    CommandArg(
         # The default value of the second parameter
         'close',
         # If the command use the default value,
         # then it will skip validating
-        None
     )
 ]
 
-COMMANDS['ma'] = (
-    CommandPreset(ma, ma_args),
-    None,
-    None
+COMMANDS['ma'] = CommandDefinition(
+    CommandPreset(ma, args_ma)
 )
 
 
@@ -80,10 +80,8 @@ def ema(df, s, period, column) -> ReturnType:
     ), period
 
 
-COMMANDS['ema'] = (
-    CommandPreset(ema, ma_args),
-    None,
-    None
+COMMANDS['ema'] = CommandDefinition(
+    CommandPreset(ema, args_ma)
 )
 
 
@@ -121,26 +119,26 @@ def macd_histogram(
     return MACD_HISTOGRAM_TIMES * (macd - macd_s), fast_period
 
 
-macd_args: CommandArgs = [
+args_macd =[
     # Fast period
-    (12, period_to_int),
+    CommandArg(12, period_to_int),
     # Slow period
-    (26, period_to_int)
+    CommandArg(26, period_to_int)
 ]
 
-macd_args_all: CommandArgs = [
-    *macd_args,
-    (9, period_to_int)
+args_macd_all = [
+    *args_macd,
+    CommandArg(9, period_to_int)
 ]
 
-COMMANDS['macd'] = (  # type: ignore
+COMMANDS['macd'] = CommandDefinition(
     CommandPreset(
         macd,
-        macd_args
+        args_macd
     ),
     dict(
-        signal=CommandPreset(macd_signal, macd_args_all),
-        histogram=CommandPreset(macd_histogram, macd_args_all)
+        signal=CommandPreset(macd_signal, args_macd_all),
+        histogram=CommandPreset(macd_histogram, args_macd_all)
     ),
     dict(
         s='signal',
@@ -170,18 +168,16 @@ def bbi(df, _, a, b, c, d) -> ReturnType:
     ) / 4, max(a, b, c, d)
 
 
-COMMANDS['bbi'] = (
+COMMANDS['bbi'] = CommandDefinition(
     CommandPreset(
         bbi,
         [
-            (3, period_to_int),
-            (6, period_to_int),
-            (12, period_to_int),
-            (24, period_to_int)
+            CommandArg(3, period_to_int),
+            CommandArg(6, period_to_int),
+            CommandArg(12, period_to_int),
+            CommandArg(24, period_to_int)
         ]
-    ),
-    None,
-    None
+    )
 )
 
 
@@ -207,10 +203,8 @@ def atr(df, s: slice, period: int) -> ReturnType:
     return calc_ma(tr, period), period + 1
 
 
-COMMANDS['atr'] = (
+COMMANDS['atr'] = CommandDefinition(
     CommandPreset(atr, [
-        (14, period_to_int)
-    ]),
-    None,
-    None
+        CommandArg(14, period_to_int)
+    ])
 )

@@ -12,37 +12,62 @@ from typing import (
 
 from numpy import ndarray
 
-from stock_pandas.common import (
-    period_to_int
-)
-
 if TYPE_CHECKING:
     from stock_pandas.dataframe import StockDataFrame # pragma: no cover
 
 
 ReturnType = Tuple[ndarray, int]
-CommandArg = Union[str, int, float]
-CommandArgs = List[
-    Union[
-        Tuple[
-            Optional[CommandArg],
-            Optional[Callable[..., CommandArg]]
-        ],
-        CommandArg
-    ]
-]
+CommandArgType = Union[str, int, float]
+
+
+def DEFAULT_ARG_COERCE(x: CommandArgType) -> CommandArgType:
+    return x
+
+
+class CommandArg:
+    """
+    The definition of a command argument
+
+    Args:
+        default (Optional[CommandArgType] = None): The default value for the argument. `None` indicates that it is NOT an optional argument
+        coerce (Optional[Callable[..., CommandArgType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
+    """
+
+    __slots__ = (
+        'default',
+        'coerce'
+    )
+
+    default: Optional[CommandArgType]
+    coerce: Callable[..., CommandArgType]
+
+    def __init__(
+        self,
+        default: Optional[CommandArgType] = None,
+        coerce: Optional[Callable[..., CommandArgType]] = DEFAULT_ARG_COERCE
+    ) -> None:
+        self.default = default
+        self.coerce = coerce
+
+
+CommandArgs = List[CommandArg]
+
 
 class CommandFormula(Protocol):
     def __call__(
         self,
         df: 'StockDataFrame',
         s: slice,
-        *args: CommandArg
+        *args: CommandArgType
     ) -> ReturnType:
         ... # pragma: no cover
 
 
 class CommandPreset:
+    """
+    A command preset defines the formula and arguments for a command
+    """
+
     __slots__ = (
         'formula',
         'args'
@@ -60,35 +85,46 @@ class CommandPreset:
         self.args = args
 
 
-SubCommandsMap = Optional[
-    Dict[
-        str,
-        CommandPreset
-    ]
-]
-AliasesMap = Optional[
-    Dict[
-        str,
-        Optional[str]
-    ]
-]
-
-
-COMMANDS: Dict[
+SubCommandsMap = Dict[
     str,
-    Tuple[
-        Optional[CommandPreset],
-        SubCommandsMap,
-        AliasesMap
-    ]
-] = {}
+    CommandPreset
+]
+
+AliasesMap = Dict[
+    str,
+    Optional[str]
+]
 
 
-arg_period = (
-    # Default value for the first argument,
-    # `None` indicates that it is not an optional argument
-    None,
-    # Validator and setter for the first argument.
-    # The function could throw
-    period_to_int
-)
+class CommandDefinition:
+    """
+    A CommandDefinition is a collection of a command preset, sub commands and aliases
+
+    Args:
+        preset (Optional[CommandPreset]): The command preset. `None` indicates that there are only sub commands, such as "kdj.k".
+        sub_commands (Optional[Dict[str, CommandPreset]]): The sub commands. `None` indicates that there are no sub commands
+        aliases (Optional[Dict[str, Optional[str]]]): The alias command names. `None` indicates that there are no aliases.
+    """
+
+    __slots__ = (
+        'preset',
+        'sub_commands',
+        'aliases'
+    )
+
+    preset: Optional[CommandPreset]
+    sub_commands: Optional[SubCommandsMap]
+    aliases: Optional[AliasesMap]
+
+    def __init__(
+        self,
+        preset: Optional[CommandPreset] = None,
+        sub_commands: Optional[SubCommandsMap] = None,
+        aliases: Optional[AliasesMap] = None
+    ) -> None:
+        self.preset = preset
+        self.sub_commands = sub_commands
+        self.aliases = aliases
+
+
+COMMANDS: Dict[str, CommandDefinition] = {}

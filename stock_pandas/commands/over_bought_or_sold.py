@@ -2,21 +2,25 @@
 # Indicators to show overbought or oversold position
 # ----------------------------------------------------
 from functools import partial
+from stock_pandas.commands.base import ReturnType
 import numpy as np
 
 from .base import (
     COMMANDS,
+    CommandDefinition,
     CommandPreset,
-    CommandArgs,
-    ReturnType,
-
-    arg_period
+    CommandArg
+)
+from .args import (
+    arg_period,
+    arg_column_high,
+    arg_column_low,
 )
 
 from stock_pandas.common import (
     rolling_calc,
     period_to_int,
-    column_enums
+    # column_enums
 )
 
 from stock_pandas.math.ma import (
@@ -37,23 +41,12 @@ def llv(df, s, period, column) -> ReturnType:
         min
     ), period
 
-arg_column_low = ('low', column_enums)
-llv_args: CommandArgs = [
+
+preset_llv = CommandPreset(llv, [
     arg_period,
     arg_column_low
-]
-
-arg_column_high = ('high', column_enums)
-hhv_args: CommandArgs = [
-    arg_period,
-    arg_column_high
-]
-
-COMMANDS['llv'] = (
-    CommandPreset(llv, llv_args),
-    None,
-    None
-)
+])
+COMMANDS['llv'] = CommandDefinition(preset_llv)
 
 
 def hhv(df, s, period, column) -> ReturnType:
@@ -67,11 +60,11 @@ def hhv(df, s, period, column) -> ReturnType:
     ), period
 
 
-COMMANDS['hhv'] = (
-    CommandPreset(hhv, hhv_args),
-    None,
-    None
-)
+preset_hhv = CommandPreset(hhv, [
+    arg_period,
+    arg_column_high
+])
+COMMANDS['hhv'] = CommandDefinition(preset_hhv)
 
 
 # Donchian Channel
@@ -87,7 +80,7 @@ def donchian(df, s, period, hhv_column, llv_column) -> ReturnType:
     return (hhv + llv) / 2, period
 
 
-COMMANDS['donchian'] = (  # type: ignore
+COMMANDS['donchian'] = CommandDefinition(
     CommandPreset(
         donchian,
         [
@@ -97,8 +90,8 @@ COMMANDS['donchian'] = (  # type: ignore
         ]
     ),
     dict(
-        upper=CommandPreset(hhv, hhv_args),
-        lower=CommandPreset(llv, llv_args)
+        upper=preset_hhv,
+        lower=preset_llv
     ),
     dict(
         u='upper',
@@ -125,13 +118,11 @@ def rsv(column_low, column_high, df, s, period) -> ReturnType:
     return v.to_numpy(), period
 
 
-COMMANDS['rsv'] = (
+COMMANDS['rsv'] = CommandDefinition(
     CommandPreset(
-        partial(rsv, 'low', 'high'),
+        partial[ReturnType](rsv, 'low', 'high'),
         [arg_period]
-    ),
-    None,
-    None
+    )
 )
 
 
@@ -227,49 +218,42 @@ def init_to_float(raw_value: str) -> float:
     return value
 
 
-arg_period_k = (3, period_to_int)
-kdj_common_args = [
-    (9, period_to_int),
+arg_period_k = CommandArg(3, period_to_int)
+args_kdj_common = [
+    CommandArg(9, period_to_int),
     arg_period_k
 ]
-arg_init = (50., init_to_float)
+arg_init = CommandArg(50., init_to_float)
 
-args_k: CommandArgs = [
-    *kdj_common_args,
+args_k =[
+    *args_kdj_common,
     arg_init
 ]
 
 # The default args for KDJ is 9, 3, 3, 50.
-args_dj: CommandArgs = [
-    *kdj_common_args,
+args_dj = [
+    *args_kdj_common,
     arg_period_k,
     arg_init
 ]
 
+COMMANDS['kdj'] = CommandDefinition(
+    sub_commands={
+        'k': CommandPreset(
+            partial(kdj_k, 'rsv'),
+            args_k
+        ),
 
-kdj_commands = dict(
-    k=CommandPreset(
-        partial(kdj_k, 'rsv'),
-        args_k
-    ),
+        'd': CommandPreset(
+            partial(kdj_d, 'kdj'),
+            args_dj
+        ),
 
-    d=CommandPreset(
-        partial(kdj_d, 'kdj'),
-        args_dj
-    ),
-
-    j=CommandPreset(
-        partial(kdj_j, 'kdj'),
-        args_dj
-    )
-)
-
-COMMANDS['kdj'] = (
-    None,
-    # We must specify sub command for kdj, such as
-    # 'kdj.k'
-    kdj_commands,
-    None
+        'j': CommandPreset(
+            partial(kdj_j, 'kdj'),
+            args_dj
+        )
+    }
 )
 
 
@@ -295,43 +279,37 @@ def rsi(df, _, period) -> ReturnType:
     return 100 - 100 / (1. + smma_u / smma_d), period
 
 
-COMMANDS['rsi'] = (
+COMMANDS['rsi'] = CommandDefinition(
     CommandPreset(
         rsi,
         [arg_period]
-    ),
-    None,
-    None
+    )
 )
 
 
 # kdjc
 # ----------------------------------------------------
 
-COMMANDS['rsvc'] = (
+COMMANDS['rsvc'] = CommandDefinition(
     CommandPreset(
         partial(rsv, 'close', 'close'),
         [arg_period]
-    ),
-    None,
-    None
+    )
 )
 
-COMMANDS['kdjc'] = (
-    None,
-    dict(
-        k=CommandPreset(
+COMMANDS['kdjc'] = CommandDefinition(
+    sub_commands={
+        'k': CommandPreset(
             partial(kdj_k, 'rsvc'),
-            kdj_commands['k'].args
+            args_k
         ),
-        d=CommandPreset(
+        'd': CommandPreset(
             partial(kdj_d, 'kdjc'),
-            kdj_commands['d'].args
+            args_dj
         ),
-        j=CommandPreset(
+        'j': CommandPreset(
             partial(kdj_j, 'kdjc'),
-            kdj_commands['j'].args
+            args_dj
         )
-    ),
-    None
+    }
 )

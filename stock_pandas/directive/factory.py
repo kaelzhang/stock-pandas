@@ -70,7 +70,7 @@ def create_directive(
     command,
     operator,
     expression
-):
+) -> Directive:
     directive = (
         Directive(command[0], None, None)
         if operator is None

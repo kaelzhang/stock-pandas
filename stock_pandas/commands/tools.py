@@ -8,8 +8,13 @@ import numpy as np
 
 from .base import (
     COMMANDS,
+    CommandDefinition,
     CommandPreset,
+    CommandArg,
     ReturnType
+)
+from .args import (
+    arg_required
 )
 
 from stock_pandas.common import (
@@ -17,7 +22,6 @@ from stock_pandas.common import (
     period_to_int,
     style_enums,
     to_direction,
-
     rolling_calc
 )
 
@@ -31,13 +35,8 @@ def column(df, s, column) -> ReturnType:
 
 # TODO:
 # Posibility to deprecate this command
-COMMANDS['column'] = (
-    CommandPreset(
-        column,
-        [(None, None)]
-    ),
-    None,
-    None
+COMMANDS['column'] = CommandDefinition(
+    CommandPreset(column, [arg_required])
 )
 
 
@@ -68,18 +67,17 @@ def increase(df, s, on: str, repeat: int, direction: int) -> ReturnType:
         False
     ), period
 
+arg_repeat = CommandArg(1, repeat_to_int)
 
-COMMANDS['increase'] = (
+COMMANDS['increase'] = CommandDefinition(
     CommandPreset(
         increase,
         [
-            (None, None),
-            (1, repeat_to_int),
-            (1, to_direction)
+            arg_required,
+            arg_repeat,
+            CommandArg(1, to_direction)
         ]
-    ),
-    None,
-    None
+    )
 )
 
 styles = dict(
@@ -92,13 +90,13 @@ def style(df, s, style: str) -> ReturnType:
     return df[s].apply(styles[style], axis=1).to_numpy(), 1
 
 
-COMMANDS['style'] = (
+COMMANDS['style'] = CommandDefinition(
     CommandPreset(
         style,
-        [(None, style_enums)]
-    ),
-    None,
-    None
+        [
+            CommandArg(coerce=style_enums)
+        ]
+    )
 )
 
 
@@ -117,16 +115,14 @@ def repeat(df, s, on: str, repeat: int) -> ReturnType:
     ), repeat
 
 
-COMMANDS['repeat'] = (
+COMMANDS['repeat'] = CommandDefinition(
     CommandPreset(
         repeat,
         [
-            (None, None),
-            (1, repeat_to_int)
+            arg_required,
+            arg_repeat,
         ]
-    ),
-    None,
-    None
+    )
 )
 
 
@@ -145,14 +141,12 @@ def change(df, s, on: str, period: int) -> ReturnType:
     return target / shifted - 1, period
 
 
-COMMANDS['change'] = (
+COMMANDS['change'] = CommandDefinition(
     CommandPreset(
         change,
         [
-            (None, None),
-            (2, period_to_int)
+            arg_required,
+            CommandArg(2, period_to_int)
         ]
-    ),
-    None,
-    None
+    )
 )

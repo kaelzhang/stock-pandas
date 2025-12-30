@@ -7,16 +7,18 @@ import numpy as np
 
 from .base import (
     COMMANDS,
+    CommandDefinition,
     CommandPreset,
-    CommandArgs,
+    CommandArg,
     ReturnType
+)
+from .args import (
+    arg_column_close
 )
 
 from stock_pandas.common import (
     period_to_int,
     times_to_float,
-    column_enums,
-
     rolling_calc
 )
 
@@ -52,28 +54,27 @@ def boll_band(upper: bool, df, s, period, times, column) -> ReturnType:
         return np.subtract(ma, np.multiply(times, mstd)), period
 
 
-boll_band_args: CommandArgs = [
-    (20, period_to_int),
-    (2., times_to_float),
-    ('close', column_enums)
+arg_boll_period = CommandArg(20, period_to_int)
+args_boll = [
+    arg_boll_period,
+    arg_column_close
+]
+args_boll_band = [
+    arg_boll_period,
+    CommandArg(2., times_to_float),
+    arg_column_close
 ]
 
-COMMANDS['boll'] = (  # type: ignore
-    CommandPreset(
-        boll,
-        [
-            (20, period_to_int),
-            ('close', column_enums)
-        ]
-    ),
+COMMANDS['boll'] = CommandDefinition(
+    CommandPreset(boll, args_boll),
     dict(
         upper=CommandPreset(
             partial(boll_band, True),
-            boll_band_args
+            args_boll_band
         ),
         lower=CommandPreset(
             partial(boll_band, False),
-            boll_band_args
+            args_boll_band
         ),
     ),
     dict(
@@ -101,13 +102,13 @@ def bbw(df, s: slice, period: int, column: str) -> ReturnType:
     ), period
 
 
-bbw_args: CommandArgs = [
-    (20, period_to_int),
-    ('close', column_enums)
-]
-
-COMMANDS['bbw'] = (  # type: ignore
-    CommandPreset(bbw, bbw_args),
-    None,
-    None
+COMMANDS['bbw'] = CommandDefinition(
+    CommandPreset(bbw, args_boll)
 )
+
+
+# def vol(df, s: slice, period: int) -> ReturnType:
+#     """Gets the volatility of the stock
+#     """
+
+#     # return df.get_column('volume')[s].to_numpy(), period

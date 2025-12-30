@@ -33,7 +33,7 @@
 - Stock Statistics
 - Stock Indicators, including:
   - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi], [**ATR**][atr]
-  - Dynamic support and resistance indicators, such as [**BOLL**][boll]
+  - Dynamic support and resistance indicators, such as [**BOLL**][boll], [**BBW**][bbw]
   - Over-bought / over-sold indicators, such as [**KDJ**][kdj], [**RSI**][rsi]
   - Other indicators, such as [**LLV**][llv], [**HHV**][hhv]
   - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
@@ -579,8 +579,11 @@ bbw:<period>,<column>
 ```py
 # Bollinger band width
 stock['bbw']
-# Which is equivalent to
+# i.e.
 stock['bbw:20']
+
+# , which are equivalent to
+(stock['boll.upper'] - stock['boll.lower']) / stock['boll']
 ```
 
 
