@@ -50,9 +50,6 @@ class CommandArg:
         self.coerce = coerce
 
 
-CommandArgs = List[CommandArg]
-
-
 class CommandFormula(Protocol):
     def __call__(
         self,
@@ -66,6 +63,10 @@ class CommandFormula(Protocol):
 class CommandPreset:
     """
     A command preset defines the formula and arguments for a command
+
+    Args:
+        formula (CommandFormula): The formula of the command
+        args (List[CommandArg]): The arguments of the command
     """
 
     __slots__ = (
@@ -74,12 +75,12 @@ class CommandPreset:
     )
 
     formula: CommandFormula
-    args: CommandArgs
+    args: List[CommandArg]
 
     def __init__(
         self,
         formula: CommandFormula,
-        args: CommandArgs
+        args: List[CommandArg]
     ) -> None:
         self.formula = formula
         self.args = args
@@ -122,6 +123,7 @@ class CommandDefinition:
         sub_commands: Optional[SubCommandsMap] = None,
         aliases: Optional[AliasesMap] = None
     ) -> None:
+        # self.name = name
         self.preset = preset
         self.sub_commands = sub_commands
         self.aliases = aliases

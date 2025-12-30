@@ -103,12 +103,8 @@ def create_command(context, name, sub, args) -> Command:
     coerced_args = []
 
     for index, arg_def in enumerate(preset.args):
-        if isinstance(arg_def, tuple):
-            default, setter = arg_def
-        else:
-            # Just the default value without setter
-            default = arg_def
-            setter = None
+        default = arg_def.default
+        setter = arg_def.coerce
 
         if index < args_length:
             argument, loc = args[index]
@@ -168,7 +164,11 @@ def process_command_name(
             name_loc
         )
 
-    main_command_preset, subs_map, sub_aliases_map = COMMANDS[name]
+    command_def = COMMANDS[name]
+
+    main_command_preset = command_def.preset
+    subs_map = command_def.sub_commands
+    sub_aliases_map = command_def.aliases
 
     # applies sub aliases, and get the real sub name
     if sub is not None and sub_aliases_map is not None:

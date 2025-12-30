@@ -4,7 +4,9 @@ import pytest
 
 from stock_pandas import (
     COMMANDS,
-    CommandPreset
+    CommandPreset,
+    CommandDefinition,
+    CommandArg
 )
 from stock_pandas.commands.over_bought_or_sold import kdj_j
 
@@ -13,17 +15,18 @@ from .common import (
 )
 
 
-kdj = COMMANDS['kdj'][1].copy()
+kdj = COMMANDS['kdj'].sub_commands.copy()
 
-COMMANDS['kdj2'] = (
-    None,
-    kdj,
-    None
+COMMANDS['kdj2'] = CommandDefinition(
+    sub_commands=kdj
 )
 
 kdj['j'] = CommandPreset(
     partial(kdj_j, 'kdj2'),
-    [9, 3, 3, 50.]
+    [
+        CommandArg(default)
+        for default in [9, 3, 3, 50.]
+    ]
 )
 
 
