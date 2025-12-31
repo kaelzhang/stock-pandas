@@ -4,19 +4,6 @@
 
 from pandas import concat
 
-from .base import (
-    COMMANDS,
-    CommandDefinition,
-    CommandPreset,
-    CommandArg,
-    # CommandArgs,
-    ReturnType
-)
-from .args import (
-    arg_period
-)
-
-
 from stock_pandas.common import (
     period_to_int,
 )
@@ -25,6 +12,19 @@ from stock_pandas.math.ma import (
     calc_ma,
     calc_ewma
 )
+
+from stock_pandas.directive.command import (
+    CommandDefinition,
+    CommandPreset,
+    CommandArg,
+    ReturnType
+)
+from .base import BUILTIN_COMMANDS
+
+from .args import (
+    arg_period
+)
+
 
 # ma
 # ----------------------------------------------------
@@ -62,7 +62,7 @@ args_ma = [
     )
 ]
 
-COMMANDS['ma'] = CommandDefinition(
+BUILTIN_COMMANDS['ma'] = CommandDefinition(
     CommandPreset(ma, args_ma)
 )
 
@@ -80,7 +80,7 @@ def ema(df, s, period, column) -> ReturnType:
     ), period
 
 
-COMMANDS['ema'] = CommandDefinition(
+BUILTIN_COMMANDS['ema'] = CommandDefinition(
     CommandPreset(ema, args_ma)
 )
 
@@ -131,7 +131,7 @@ args_macd_all = [
     CommandArg(9, period_to_int)
 ]
 
-COMMANDS['macd'] = CommandDefinition(
+BUILTIN_COMMANDS['macd'] = CommandDefinition(
     CommandPreset(
         macd,
         args_macd
@@ -168,7 +168,7 @@ def bbi(df, _, a, b, c, d) -> ReturnType:
     ) / 4, max(a, b, c, d)
 
 
-COMMANDS['bbi'] = CommandDefinition(
+BUILTIN_COMMANDS['bbi'] = CommandDefinition(
     CommandPreset(
         bbi,
         [
@@ -203,7 +203,7 @@ def atr(df, s: slice, period: int) -> ReturnType:
     return calc_ma(tr, period), period + 1
 
 
-COMMANDS['atr'] = CommandDefinition(
+BUILTIN_COMMANDS['atr'] = CommandDefinition(
     CommandPreset(atr, [
         CommandArg(14, period_to_int)
     ])

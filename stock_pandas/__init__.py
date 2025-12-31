@@ -6,8 +6,7 @@ from .exceptions import (
     DirectiveValueError
 )
 
-from .commands import (
-    COMMANDS,
+from .directive.command import (
     CommandPreset,
     ReturnType,
     CommandArgType,

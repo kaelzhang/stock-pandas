@@ -5,27 +5,27 @@ from functools import partial
 from stock_pandas.commands.base import ReturnType
 import numpy as np
 
-from .base import (
-    COMMANDS,
+from stock_pandas.common import (
+    rolling_calc,
+    period_to_int,
+)
+from stock_pandas.math.ma import (
+    calc_smma
+)
+
+from stock_pandas.directive.command import (
     CommandDefinition,
     CommandPreset,
     CommandArg
 )
+from .base import BUILTIN_COMMANDS
+
 from .args import (
     arg_period,
     arg_column_high,
     arg_column_low,
 )
 
-from stock_pandas.common import (
-    rolling_calc,
-    period_to_int,
-    # column_enums
-)
-
-from stock_pandas.math.ma import (
-    calc_smma
-)
 
 
 # llv & hhv
@@ -46,7 +46,7 @@ preset_llv = CommandPreset(llv, [
     arg_period,
     arg_column_low
 ])
-COMMANDS['llv'] = CommandDefinition(preset_llv)
+BUILTIN_COMMANDS['llv'] = CommandDefinition(preset_llv)
 
 
 def hhv(df, s, period, column) -> ReturnType:
@@ -64,7 +64,7 @@ preset_hhv = CommandPreset(hhv, [
     arg_period,
     arg_column_high
 ])
-COMMANDS['hhv'] = CommandDefinition(preset_hhv)
+BUILTIN_COMMANDS['hhv'] = CommandDefinition(preset_hhv)
 
 
 # Donchian Channel
@@ -80,7 +80,7 @@ def donchian(df, s, period, hhv_column, llv_column) -> ReturnType:
     return (hhv + llv) / 2, period
 
 
-COMMANDS['donchian'] = CommandDefinition(
+BUILTIN_COMMANDS['donchian'] = CommandDefinition(
     CommandPreset(
         donchian,
         [
@@ -118,7 +118,7 @@ def rsv(column_low, column_high, df, s, period) -> ReturnType:
     return v.to_numpy(), period
 
 
-COMMANDS['rsv'] = CommandDefinition(
+BUILTIN_COMMANDS['rsv'] = CommandDefinition(
     CommandPreset(
         partial[ReturnType](rsv, 'low', 'high'),
         [arg_period]
@@ -237,7 +237,7 @@ args_dj = [
     arg_init
 ]
 
-COMMANDS['kdj'] = CommandDefinition(
+BUILTIN_COMMANDS['kdj'] = CommandDefinition(
     sub_commands={
         'k': CommandPreset(
             partial(kdj_k, 'rsv'),
@@ -279,7 +279,7 @@ def rsi(df, _, period) -> ReturnType:
     return 100 - 100 / (1. + smma_u / smma_d), period
 
 
-COMMANDS['rsi'] = CommandDefinition(
+BUILTIN_COMMANDS['rsi'] = CommandDefinition(
     CommandPreset(
         rsi,
         [arg_period]
@@ -290,14 +290,14 @@ COMMANDS['rsi'] = CommandDefinition(
 # kdjc
 # ----------------------------------------------------
 
-COMMANDS['rsvc'] = CommandDefinition(
+BUILTIN_COMMANDS['rsvc'] = CommandDefinition(
     CommandPreset(
         partial(rsv, 'close', 'close'),
         [arg_period]
     )
 )
 
-COMMANDS['kdjc'] = CommandDefinition(
+BUILTIN_COMMANDS['kdjc'] = CommandDefinition(
     sub_commands={
         'k': CommandPreset(
             partial(kdj_k, 'rsvc'),

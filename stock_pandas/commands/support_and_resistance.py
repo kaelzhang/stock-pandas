@@ -5,23 +5,23 @@
 from functools import partial
 import numpy as np
 
-from .base import (
-    COMMANDS,
-    CommandDefinition,
-    CommandPreset,
-    CommandArg,
-    ReturnType
-)
-from .args import (
-    arg_column_close
-)
-
 from stock_pandas.common import (
     period_to_int,
     times_to_float,
     rolling_calc
 )
 
+from stock_pandas.directive.command import (
+    CommandDefinition,
+    CommandPreset,
+    CommandArg,
+    ReturnType
+)
+from .base import BUILTIN_COMMANDS
+
+from .args import (
+    arg_column_close
+)
 
 # boll
 # ----------------------------------------------------
@@ -65,7 +65,7 @@ args_boll_band = [
     arg_column_close
 ]
 
-COMMANDS['boll'] = CommandDefinition(
+BUILTIN_COMMANDS['boll'] = CommandDefinition(
     CommandPreset(boll, args_boll),
     dict(
         upper=CommandPreset(
@@ -102,7 +102,7 @@ def bbw(df, s: slice, period: int, column: str) -> ReturnType:
     ), period
 
 
-COMMANDS['bbw'] = CommandDefinition(
+BUILTIN_COMMANDS['bbw'] = CommandDefinition(
     CommandPreset(bbw, args_boll)
 )
 

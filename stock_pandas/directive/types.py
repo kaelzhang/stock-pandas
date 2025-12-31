@@ -4,6 +4,7 @@ from typing import (
     Tuple,
     Union,
     Callable,
+    List,
     TYPE_CHECKING
 )
 from dataclasses import dataclass
@@ -27,7 +28,7 @@ class Directive:
         return (
             f'{self.command}{self.operator}{self.expression}'
             if self.operator and self.expression
-            else str(self.command)
+            else repr(self.command)
         )
 
     def run(
@@ -66,7 +67,7 @@ class Directive:
 @dataclass(frozen=True, slots=True)
 class Command:
     name: str
-    args: list
+    args: List[Argument]
     formula: CommandFormula
 
     def __repr__(self) -> str:

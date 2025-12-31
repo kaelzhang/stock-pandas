@@ -1,12 +1,16 @@
 from .parser import Parser
-from .factory import create_runnable_by_node
 from .types import Directive
 from .cache import DirectiveCache
+from .command import (
+    Context,
+    Commands
+)
 
 
 def parse(
     directive_str: str,
-    cache: DirectiveCache
+    cache: DirectiveCache,
+    commands: Commands
 ) -> Directive:
     directive_str = directive_str.strip()
 
@@ -16,6 +20,13 @@ def parse(
 
     ast = Parser(directive_str).parse()
 
-    directive, _ = create_runnable_by_node(ast, directive_str, cache)
+    directive = ast.create(
+        Context(
+            input=directive_str,
+            loc=ast.loc,
+            cache=cache,
+            commands=commands
+        )
+    )
 
     return cache.set(directive_str, directive)

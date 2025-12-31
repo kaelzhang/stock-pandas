@@ -6,23 +6,24 @@ from functools import partial
 
 import numpy as np
 
-from .base import (
-    COMMANDS,
-    CommandDefinition,
-    CommandPreset,
-    CommandArg,
-    ReturnType
-)
-from .args import (
-    arg_required
-)
-
 from stock_pandas.common import (
     repeat_to_int,
     period_to_int,
     style_enums,
     to_direction,
     rolling_calc
+)
+
+from stock_pandas.directive.command import (
+    CommandDefinition,
+    CommandPreset,
+    CommandArg,
+    ReturnType
+)
+from .base import BUILTIN_COMMANDS
+
+from .args import (
+    arg_required
 )
 
 
@@ -35,7 +36,7 @@ def column(df, s, column) -> ReturnType:
 
 # TODO:
 # Posibility to deprecate this command
-COMMANDS['column'] = CommandDefinition(
+BUILTIN_COMMANDS['column'] = CommandDefinition(
     CommandPreset(column, [arg_required])
 )
 
@@ -69,7 +70,7 @@ def increase(df, s, on: str, repeat: int, direction: int) -> ReturnType:
 
 arg_repeat = CommandArg(1, repeat_to_int)
 
-COMMANDS['increase'] = CommandDefinition(
+BUILTIN_COMMANDS['increase'] = CommandDefinition(
     CommandPreset(
         increase,
         [
@@ -90,7 +91,7 @@ def style(df, s, style: str) -> ReturnType:
     return df[s].apply(styles[style], axis=1).to_numpy(), 1
 
 
-COMMANDS['style'] = CommandDefinition(
+BUILTIN_COMMANDS['style'] = CommandDefinition(
     CommandPreset(
         style,
         [
@@ -115,7 +116,7 @@ def repeat(df, s, on: str, repeat: int) -> ReturnType:
     ), repeat
 
 
-COMMANDS['repeat'] = CommandDefinition(
+BUILTIN_COMMANDS['repeat'] = CommandDefinition(
     CommandPreset(
         repeat,
         [
@@ -141,7 +142,7 @@ def change(df, s, on: str, period: int) -> ReturnType:
     return target / shifted - 1, period
 
 
-COMMANDS['change'] = CommandDefinition(
+BUILTIN_COMMANDS['change'] = CommandDefinition(
     CommandPreset(
         change,
         [

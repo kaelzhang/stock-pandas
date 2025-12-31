@@ -10,17 +10,18 @@ from dataclasses import dataclass
 from stock_pandas.exceptions import DirectiveValueError
 from stock_pandas.common import (
     command_full_name,
+    DEFAULT_ARG_VALUE
 )
 
 from .types import (
     Directive,
     Command,
-    Operator
+    Operator,
+    Argument
 )
 from .operator import OPERATORS
 from .tokenizer import Loc
 from .command import (
-    # CommandPreset,
     Context,
     ScalarNode
 )
@@ -69,9 +70,13 @@ class DirectiveNode:
         context: Context
     ) -> Directive:
         directive = (
-            Directive(self.command)
+            Directive(self.command.create(context))
             if self.operator is None
-            else Directive(self.command, self.operator, self.expression)
+            else Directive(
+                self.command.create(context),
+                self.operator.create(context),
+                self.expression.create(context)
+            )
         )
 
         context.cache.set(str(directive), directive)
@@ -125,22 +130,28 @@ class CommandNode:
             default = arg_def.default
             setter = arg_def.coerce
 
+            is_directive = False
+
             if index < args_length:
-                argument, loc = args[index]
-                arg = argument.value
+                arg_node = args[index]
+                loc = arg_node.loc
+                value = arg_node.value.create(context)
+                is_directive = isinstance(value, Directive)
             else:
                 # If the arg does not exist, use the command loc
                 loc = context.loc
-                arg = DEFAULT_ARG_VALUE
-                argument = Argument(arg)
+                value = DEFAULT_ARG_VALUE
 
-            if arg == DEFAULT_ARG_VALUE:
-                arg = default
+            if value == DEFAULT_ARG_VALUE:
+                value = default
 
             # Setter could be optional
-            elif setter:
+            elif (
+                setter is not None
+                and not is_directive
+            ):
                 try:
-                    arg = setter(arg)
+                    value = setter(value)
                 except ValueError as e:
                     raise DirectiveValueError(
                         context.input,
@@ -148,18 +159,22 @@ class CommandNode:
                         loc
                     )
 
-            if arg is None:
+            if value is None:
                 raise DirectiveValueError(
                     context.input,
                     f'args[{index}] is required for command "{command_name}"',
                     loc
                 )
 
-            argument.value = arg
+            coerced_args.append(
+                Argument(value, is_directive)
+            )
 
-            coerced_args.append(argument)
-
-        return Command(name, sub, coerced_args, preset.formula)
+        return Command(
+            command_full_name(main_name, sub_name),
+            coerced_args,
+            preset.formula
+        )
 
 
 @dataclass

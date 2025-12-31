@@ -1,10 +1,5 @@
 from .base import (
-    COMMANDS,
-    CommandPreset,
-    ReturnType,
-    CommandArgType,
-    CommandArg,
-    CommandDefinition,
+    BUILTIN_COMMANDS
 )
 
 
@@ -17,10 +12,5 @@ from . import (
 
 
 __all__ = [
-    'COMMANDS',
-    'CommandPreset',
-    'ReturnType',
-    'CommandArgType',
-    'CommandArg',
-    'CommandDefinition',
+    'BUILTIN_COMMANDS'
 ]

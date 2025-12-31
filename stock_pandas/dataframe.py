@@ -19,11 +19,11 @@ from numpy import (
     nan
 )
 
-from .directive import (
-    parse,
-    Directive,
-    DirectiveCache
-)
+from .directive.parse import parse
+from .directive.cache import DirectiveCache
+from .directive.types import Directive
+from .directive.command import Commands
+from .commands import BUILTIN_COMMANDS
 
 from .common import (
     rolling_calc,
@@ -53,7 +53,7 @@ class StockDataFrame(MetaDataFrame):
     Args definitions are the same as `pandas.DataFrame`
     """
 
-    COMMANDS: Dict[str, CommandDefinition] = COMMANDS.copy()
+    COMMANDS: Commands = BUILTIN_COMMANDS.copy()
 
     # Directive cache can be shared between instances,
     # so declare as static property
@@ -76,7 +76,7 @@ class StockDataFrame(MetaDataFrame):
             str
         """
 
-        return str(parse(directive_str, cls.DIRECTIVES_CACHE))
+        return str(parse(directive_str, cls.DIRECTIVES_CACHE, cls.COMMANDS))
 
     _stock_create_column: bool = False
 
