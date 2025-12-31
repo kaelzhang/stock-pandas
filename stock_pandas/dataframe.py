@@ -22,7 +22,10 @@ from numpy import (
 from .directive.parse import parse
 from .directive.cache import DirectiveCache
 from .directive.types import Directive
-from .directive.command import Commands
+from .directive.command import (
+    Commands,
+    CommandDefinition
+)
 from .commands import BUILTIN_COMMANDS
 
 from .common import (
@@ -59,8 +62,11 @@ class StockDataFrame(MetaDataFrame):
     # so declare as static property
     DIRECTIVES_CACHE: DirectiveCache = DirectiveCache()
 
+    # Class methods, which should not be used as self.xxx()
+    # --------------------------------------------------------------------
+
     @staticmethod
-    def directive_stringify(cls, directive_str: str) -> str:
+    def directive_stringify(cls, directive_str: str, /) -> str:
         """
         Gets the full name of the `directive_str` which is also the actual column name of the data frame
 
@@ -78,8 +84,20 @@ class StockDataFrame(MetaDataFrame):
 
         return str(parse(directive_str, cls.DIRECTIVES_CACHE, cls.COMMANDS))
 
-    _stock_create_column: bool = False
+    @classmethod
+    def define_command(
+        cls,
+        name: str,
+        definition: CommandDefinition, /
+    ) -> None:
+        """
+        Defines a new command
 
+        Args:
+            name (str): the name of the command
+            definition (CommandDefinition): the definition of the command
+        """
+        cls.COMMANDS[name] = definition
 
     # Methods that used by pandas and sub classes
     # --------------------------------------------------------------------
@@ -153,9 +171,11 @@ class StockDataFrame(MetaDataFrame):
             error_name = error_name or name
             raise KeyError(f'column "{error_name}" not found')
 
+    _stock_create_column: bool = False
+
     def exec(
         self,
-        directive_str: str,
+        directive_str: str, /,
         create_column: Optional[bool] = None
     ) -> NDArrayAny:
         """
@@ -200,7 +220,7 @@ class StockDataFrame(MetaDataFrame):
     def alias(
         self,
         as_name: str,
-        src_name: str
+        src_name: str, /
     ) -> None:
         """
         Defines column alias or directive alias
