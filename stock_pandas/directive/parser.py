@@ -195,8 +195,8 @@ class Parser:
             argument = ArgumentNode(
                 loc=self._token.loc,
                 value=ScalarNode(
-                    self._token.value,
-                    self._token.loc
+                    loc=self._token.loc,
+                    value=self._token.value
                 )
             )
             self._next_token()
