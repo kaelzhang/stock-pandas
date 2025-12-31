@@ -83,7 +83,10 @@ class Command:
         df: StockDataFrame,
         s: slice
     ) -> ReturnType:
-        args = [arg.value for arg in self.args]
+        args = [
+            arg.arg_value
+            for arg in self.args
+        ]
         return self.formula(df, s, *args)
 
 
@@ -97,6 +100,14 @@ class Argument:
 
     value: ArgumentValue
     is_directive: bool = False
+
+    @property
+    def arg_value(self) -> CommandArgType:
+        return (
+            repr(self.value)
+            if self.is_directive
+            else self.value
+        )
 
     def __repr__(self) -> str:
         return f'({self.value})' if self.is_directive else str(self.value)

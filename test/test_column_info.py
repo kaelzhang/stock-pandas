@@ -53,5 +53,3 @@ def test_indexing():
     stock['ma:2']
 
     stock = stock[stock['close'] > stock['close'].mean()]
-
-    print(stock._stock_columns_info_map)

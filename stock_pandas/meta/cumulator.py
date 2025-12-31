@@ -324,20 +324,6 @@ class _Cumulator:
 
         return new, unclosed, source
 
-    # def _convert_to_date_df(
-    #     self,
-    #     other: DataFrame
-    # ) -> DataFrame:
-    #     date_col = self._date_col
-
-    #     print('columns:', other.columns, 'date_col:', date_col)
-
-    #     if date_col is not None and date_col in other.columns:
-    #         other = other.copy()
-    #         apply_date_to_df(other, date_col, self._to_datetime_kwargs)
-
-    #     return other
-
     def _cumulate(
         self,
         to_cumulate: DataFrame

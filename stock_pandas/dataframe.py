@@ -65,7 +65,7 @@ class StockDataFrame(MetaDataFrame):
     # Class methods, which should not be used as self.xxx()
     # --------------------------------------------------------------------
 
-    @staticmethod
+    @classmethod
     def directive_stringify(cls, directive_str: str, /) -> str:
         """
         Gets the full name of the `directive_str` which is also the actual column name of the data frame
