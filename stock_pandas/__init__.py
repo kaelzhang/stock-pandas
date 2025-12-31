@@ -1,5 +1,4 @@
 from .dataframe import StockDataFrame
-from .directive import directive_stringify
 
 from .exceptions import (
     DirectiveSyntaxError,
@@ -8,11 +7,11 @@ from .exceptions import (
 
 from .directive.command import (
     CommandPreset,
-    ReturnType,
     CommandArgType,
     CommandArg,
     CommandDefinition
 )
+from .directive.types import ReturnType
 
 from .meta.time_frame import (
     TimeFrame,

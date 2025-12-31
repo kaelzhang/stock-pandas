@@ -45,10 +45,6 @@ from .operator import OPERATORS
 
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
-# NotNode = Union[str, float, None]
-# CommandNodeArgs = List['Node']
-# NodeData = Tuple[Union['Node', NotNode, CommandNodeArgs], ...]
-
 
 class Parser:
     _input: str
@@ -97,8 +93,8 @@ class Parser:
             #     loc
             # )
             return DirectiveNode(
-                command=command,
-                loc=loc
+                loc=loc,
+                command=command
             )
 
         operator = self._expect_operator()
@@ -110,10 +106,10 @@ class Parser:
         #     loc
         # )
         return DirectiveNode(
+            loc=loc,
             command=command,
             operator=operator,
-            expression=expression,
-            loc=loc
+            expression=expression
         )
 
     def _expect_command(self) -> CommandNode:
@@ -129,17 +125,11 @@ class Parser:
         else:
             args = []
 
-        # return Node(
-        #     TYPE_COMMAND,
-        #     (name, sub, args),
-        #     loc
-        # )
-
         return CommandNode(
+            loc=loc,
             name=name,
             sub=sub,
-            args=args,
-            loc=loc
+            args=args
         )
 
     def _expect_command_name(self) -> Tuple[ScalarNode, Optional[ScalarNode]]:
@@ -157,25 +147,14 @@ class Parser:
             start, end = m.span()
             name, sub = text[:start], text[end:] # type: ignore
 
-            # sub = Node(
-            #     TYPE_SCALAR,
-            #     (sub,),
-            #     (loc[0], loc[1] + start)
-            # )
             sub = ScalarNode(
-                value=sub,
-                loc=(loc[0], loc[1] + start)
+                loc=(loc[0], loc[1] + start),
+                value=sub
             )
 
-        # return Node(
-        #     TYPE_SCALAR,
-        #     (name,),
-        #     loc
-        # ), sub
-
         return ScalarNode(
-            value=name,
-            loc=loc
+            loc=loc,
+            value=name
         ), sub
 
     def _check_normal(self) -> None:
@@ -203,14 +182,9 @@ class Parser:
             self._next_token()
             loc = self._token.loc
 
-            # argument = Node(
-            #     TYPE_ARGUMENT,
-            #     (self._expect_directive(),),
-            #     loc
-            # )
             argument = ArgumentNode(
-                value=self._expect_directive(),
-                loc=loc
+                loc=loc,
+                value=self._expect_directive()
             )
 
             self._expect(STR_PARAN_R)
@@ -219,11 +193,11 @@ class Parser:
         # normal arg
         elif not self._token.special:
             argument = ArgumentNode(
+                loc=self._token.loc,
                 value=ScalarNode(
                     self._token.value,
                     self._token.loc
-                ),
-                loc=self._token.loc
+                )
             )
             self._next_token()
 
@@ -269,8 +243,8 @@ class Parser:
         self._next_token()
 
         return OperatorNode(
-            operator=text,
-            loc=token.loc
+            loc=token.loc,
+            operator=text
         )
 
     def _expect_expression(self) -> Union[ScalarNode, CommandNode]:
@@ -282,8 +256,8 @@ class Parser:
             self._next_token()
 
             return ScalarNode(
-                value=num,
-                loc=token.loc
+                loc=token.loc,
+                value=num
             )
 
         except ValueError:

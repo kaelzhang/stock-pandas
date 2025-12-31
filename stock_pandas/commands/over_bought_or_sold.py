@@ -2,7 +2,6 @@
 # Indicators to show overbought or oversold position
 # ----------------------------------------------------
 from functools import partial
-from stock_pandas.commands.base import ReturnType
 import numpy as np
 
 from stock_pandas.common import (
@@ -18,6 +17,7 @@ from stock_pandas.directive.command import (
     CommandPreset,
     CommandArg
 )
+from stock_pandas.directive.types import ReturnType
 from .base import BUILTIN_COMMANDS
 
 from .args import (

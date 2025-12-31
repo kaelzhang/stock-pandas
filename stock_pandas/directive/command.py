@@ -22,7 +22,7 @@ def DEFAULT_ARG_COERCE(x: CommandArgType) -> CommandArgType:
     return x
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Context:
     input: str
     loc: Loc
@@ -30,6 +30,7 @@ class Context:
     commands: Commands
 
 
+@dataclass(frozen=True, slots=True)
 class CommandArg:
     """
     The definition of a command argument
@@ -39,23 +40,11 @@ class CommandArg:
         coerce (Optional[Callable[..., CommandArgType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
     """
 
-    __slots__ = (
-        'default',
-        'coerce'
-    )
-
-    default: Optional[CommandArgType]
-    coerce: Callable[..., CommandArgType]
-
-    def __init__(
-        self,
-        default: Optional[CommandArgType] = None,
-        coerce: Optional[Callable[..., CommandArgType]] = DEFAULT_ARG_COERCE
-    ) -> None:
-        self.default = default
-        self.coerce = coerce
+    default: Optional[CommandArgType] = None
+    coerce: Callable[..., CommandArgType] = DEFAULT_ARG_COERCE
 
 
+@dataclass(frozen=True, slots=True)
 class CommandPreset:
     """
     A command preset defines the formula and arguments for a command
@@ -65,21 +54,8 @@ class CommandPreset:
         args (List[CommandArg]): The arguments of the command
     """
 
-    __slots__ = (
-        'formula',
-        'args'
-    )
-
     formula: CommandFormula
     args: List[CommandArg]
-
-    def __init__(
-        self,
-        formula: CommandFormula,
-        args: List[CommandArg]
-    ) -> None:
-        self.formula = formula
-        self.args = args
 
 
 SubCommands = Dict[
@@ -93,16 +69,16 @@ CommandAliases = Dict[
 ]
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ScalarNode:
-    value: str
     loc: Loc
+    value: str
 
     def create(self, _: Context) -> str:
         return self.value
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class CommandDefinition:
     """
     A CommandDefinition is a collection of a command preset, sub commands and aliases
@@ -112,12 +88,6 @@ class CommandDefinition:
         sub_commands (Optional[Dict[str, CommandPreset]]): The sub commands. `None` indicates that there are no sub commands
         aliases (Optional[Dict[str, Optional[str]]]): The alias command names. `None` indicates that there are no aliases.
     """
-
-    __slots__ = (
-        'preset',
-        'sub_commands',
-        'aliases'
-    )
 
     preset: Optional[CommandPreset] = None
     sub_commands: Optional[SubCommands] = None

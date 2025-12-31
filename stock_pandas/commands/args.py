@@ -3,7 +3,7 @@ from stock_pandas.common import (
     column_enums
 )
 
-from .base import (
+from stock_pandas.directive.command import (
     CommandArg
 )
 

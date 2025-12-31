@@ -8,7 +8,7 @@ from copy import (
 
 from pandas import DataFrame
 
-from stock_pandas.directive import Directive
+from stock_pandas.directive.types import Directive
 from stock_pandas.common import set_attr
 from stock_pandas.properties import (
     KEY_ALIAS_MAP,

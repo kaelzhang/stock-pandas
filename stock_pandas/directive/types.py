@@ -5,7 +5,8 @@ from typing import (
     Union,
     Callable,
     List,
-    TYPE_CHECKING
+    TYPE_CHECKING,
+    Protocol
 )
 from dataclasses import dataclass
 from numpy import ndarray
@@ -113,11 +114,15 @@ class Operator:
 CommandArgType = Union[str, int, float]
 ReturnType = Tuple[ndarray, int]
 
-CommandFormula = Callable[[
-    StockDataFrame,
-    slice,
-    *CommandArgType
-], ReturnType]
+
+class CommandFormula(Protocol):
+    def __call__(
+        self,
+        df: 'StockDataFrame',
+        s: slice,
+        *args: CommandArgType
+    ) -> ReturnType: ...
+
 
 OperatorFormula = Callable[[ndarray, ndarray], ndarray]
 

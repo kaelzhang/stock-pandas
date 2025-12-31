@@ -27,43 +27,12 @@ from .command import (
 )
 
 
-# class MetaNode:
-#     """
-#     The meta node which is used to distinguish the type of Node and RootNode
-#     """
-
-#     # __slots__ = ('label', 'data', 'loc')
-
-#     # label: int
-#     # data: NodeData
-#     loc: Loc
-
-#     # def __init__(self, t, data, loc):
-#     #     self.label = t
-#     #     self.data = data
-#     #     self.loc = loc
-
-
-# class Node(MetaNode):
-#     ...
-
-
-# class RootNode(MetaNode):
-#     @classmethod
-#     def from_node(cls, node: MetaNode) -> 'RootNode':
-#         return cls(
-#             node.label,
-#             node.data,
-#             node.loc
-#         )
-
-
-@dataclass
+@dataclass(frozen=True, slots=True)
 class DirectiveNode:
+    loc: Loc
     command: CommandNode
     operator: Optional[OperatorNode] = None
     expression: Optional[ExpressionNode] = None
-    loc: Loc
 
     def create(
         self,
@@ -84,12 +53,12 @@ class DirectiveNode:
         return directive
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class CommandNode:
-    name: ScalarNode
-    sub: Optional[ScalarNode] = None
-    args: List[ArgumentNode]
     loc: Loc
+    name: ScalarNode
+    args: List[ArgumentNode]
+    sub: Optional[ScalarNode] = None
 
     def create(
         self,
@@ -177,19 +146,19 @@ class CommandNode:
         )
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class ArgumentNode:
-    value: ArgumentValueNode
     loc: Loc
+    value: ArgumentValueNode
 
     def create(self, context: Context):
         return self.value.create(context)
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class OperatorNode:
-    operator: str
     loc: Loc
+    operator: str
 
     def create(self, _: Context) -> Operator:
         return Operator(self.operator, OPERATORS.get(self.operator))

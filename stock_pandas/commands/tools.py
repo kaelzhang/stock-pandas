@@ -18,8 +18,8 @@ from stock_pandas.directive.command import (
     CommandDefinition,
     CommandPreset,
     CommandArg,
-    ReturnType
 )
+from stock_pandas.directive.types import ReturnType
 from .base import BUILTIN_COMMANDS
 
 from .args import (
