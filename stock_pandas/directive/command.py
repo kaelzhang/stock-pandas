@@ -72,9 +72,9 @@ CommandAliases = Dict[
 @dataclass(frozen=True, slots=True)
 class ScalarNode:
     loc: Loc
-    value: str
+    value: CommandArgType
 
-    def create(self, _: Context) -> str:
+    def create(self, _: Context) -> CommandArgType:
         return self.value
 
 

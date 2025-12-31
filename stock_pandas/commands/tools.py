@@ -103,7 +103,7 @@ styles = dict(
 
 
 def style(df: 'StockDataFrame', s: slice, style: str) -> ReturnType:
-    return df[s].apply(styles[style], axis=1).to_numpy(), 1
+    return df.iloc[s].apply(styles[style], axis=1).to_numpy(), 1
 
 
 BUILTIN_COMMANDS['style'] = CommandDefinition(
