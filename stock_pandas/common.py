@@ -36,10 +36,10 @@ def to_number(
 ) -> T:
     try:
         value = type_ctr(raw_value)
-    except ValueError:
+    except ValueError as e:
         raise ValueError(
             f'{name} must be a positive {type_name}, but got `{raw_value}`'
-        )
+        ) from e
 
     if value <= larger_than:
         raise ValueError(f'{name} must be greater than {larger_than}')
