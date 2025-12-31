@@ -287,16 +287,18 @@ Stock indicators will only be updated when accessing the stock indicator column 
 
 Check the [test cases](https://github.com/kaelzhang/stock-pandas/blob/master/test/test_fulfill.py) for details
 
-### ~~ directive_stringify(directive_str) -> str ~~
+### <s>directive_stringify(directive_str) -> str</s>
 
 > Since 0.30.0
+
 > Removed in 4.0.0
 
 Please use `StockDataFrame.directive_stringify` instead
 
-### ~~ stock.directive_stringify(directive: str) -> str ~~
+### <s>stock.directive_stringify(directive: str) -> str</s>
 
 > Since 0.26.0
+
 > Removed in 4.0.0
 
 Please use `StockDataFrame.directive_stringify` instead
