@@ -12,6 +12,7 @@ from .directive.command import (
     CommandDefinition
 )
 from .directive.types import ReturnType
+from .directive.cache import DirectiveCache
 
 from .meta.time_frame import (
     TimeFrame,

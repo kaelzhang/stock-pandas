@@ -1,6 +1,6 @@
 import pytest
 
-from stock_pandas.directive import Parser
+from stock_pandas.directive.parser import Parser
 from stock_pandas.common import (
     TYPE_DIRECTIVE,
     TYPE_COMMAND,

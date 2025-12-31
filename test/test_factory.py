@@ -2,10 +2,11 @@ import pytest
 
 from stock_pandas.directive import (
     parse as parse_it,
-    DirectiveCache
+    # DirectiveCache
 )
 from stock_pandas import (
-    DirectiveValueError
+    DirectiveValueError,
+    DirectiveCache
 )
 
 

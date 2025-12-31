@@ -108,7 +108,7 @@ def test_columns_manipulate(stock: StockDataFrame):
     indicators = ['ma:2', 'ma:2,open']
 
     columns_names = [
-        stock.directive_stringify(indicator)
+        StockDataFrame.directive_stringify(indicator)
         for indicator in indicators
     ]
 

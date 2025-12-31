@@ -5,7 +5,6 @@ import pandas as pd
 
 from stock_pandas import (
     StockDataFrame,
-    directive_stringify,
     DirectiveValueError
 )
 
@@ -24,7 +23,7 @@ def stock():
 
 def test_directive_stringify(stock: StockDataFrame):
     assert stock.directive_stringify('boll') == 'boll:20,close'
-    assert directive_stringify('boll') == 'boll:20,close'
+    assert StockDataFrame.directive_stringify('boll') == 'boll:20,close'
 
 
 def test_get_column(stock):

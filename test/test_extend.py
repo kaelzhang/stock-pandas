@@ -3,11 +3,11 @@ from functools import partial
 import pytest
 
 from stock_pandas import (
-    COMMANDS,
     CommandPreset,
     CommandDefinition,
     CommandArg
 )
+from stock_pandas.commands.base import BUILTIN_COMMANDS
 from stock_pandas.commands.over_bought_or_sold import kdj_j
 
 from .common import (
@@ -15,9 +15,9 @@ from .common import (
 )
 
 
-kdj = COMMANDS['kdj'].sub_commands.copy()
+kdj = BUILTIN_COMMANDS['kdj'].sub_commands.copy()
 
-COMMANDS['kdj2'] = CommandDefinition(
+BUILTIN_COMMANDS['kdj2'] = CommandDefinition(
     sub_commands=kdj
 )
 
