@@ -43,11 +43,15 @@ from .meta.cumulator import (
 )
 
 
+_cow = os.environ.get('STOCK_PANDAS_COW', '').lower()
+
 # #27
-if os.environ.get('STOCK_PANDAS_COW', '').lower() in ('1', 'on', 'true'):
+if _cow in ('1', 'on', 'true'):
     # Enable pandas Copy-on-Write mode
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/copy_on_write.html#copy-on-write-chained-assignment
     pd.options.mode.copy_on_write = True
+elif _cow in ('0', 'off', 'false'):
+    pd.options.mode.copy_on_write = False # pragma: no cover
 
 
 class StockDataFrame(MetaDataFrame):
