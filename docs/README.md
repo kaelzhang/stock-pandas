@@ -1075,9 +1075,9 @@ stock['my_indicator']  # Raises error!
 
 This isolation works due to Python's class variable mechanism:
 
-1. **COMMANDS Dictionary**: By calling `.copy()`, you create a shallow copy of the commands dictionary. This means the subclass has its own dictionary instance, so any modifications (adding/removing commands) won't affect the parent class.
+1. **`COMMANDS` Dictionary**: By calling `.copy()`, you create a shallow copy of the commands dictionary. This means the subclass has its own dictionary instance, so any modifications (adding/removing commands) won't affect the parent class.
 
-2. **DIRECTIVES_CACHE**: By creating a new `DirectiveCache()` instance, the subclass maintains its own cache of parsed directives. This ensures that:
+2. **`DIRECTIVES_CACHE`**: By creating a new `DirectiveCache()` instance, the subclass maintains its own cache of parsed directives. This ensures that:
    - Directives are parsed and cached independently for each class
    - Changes to command definitions in one class don't cause cache inconsistencies in another
 
