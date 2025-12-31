@@ -244,7 +244,7 @@ class Parser:
 
         return OperatorNode(
             loc=token.loc,
-            operator=text
+            name=text
         )
 
     def _expect_expression(self) -> Union[ScalarNode, CommandNode]:

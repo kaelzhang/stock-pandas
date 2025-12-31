@@ -25,11 +25,18 @@ class Directive:
     operator: Optional[Operator] = None
     expression: Optional[Expression] = None
 
-    def __repr__(self) -> str:
+    # Use __str__ instead of __repr__,
+    # for better debugging experience
+    # - __str__ for user method invocation
+    # - __repr__ for internal debugging
+    def __str__(self) -> str:
         return (
             f'{self.command}{self.operator}{self.expression}'
-            if self.operator and self.expression
-            else repr(self.command)
+            if (
+                self.operator is not None
+                and self.expression is not None
+            )
+            else str(self.command)
         )
 
     def run(
@@ -71,7 +78,7 @@ class Command:
     args: List[Argument]
     formula: CommandFormula
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return (
             f'{self.name}:{join_args(self.args)}'
             if self.args
@@ -104,12 +111,12 @@ class Argument:
     @property
     def arg_value(self) -> CommandArgType:
         return (
-            repr(self.value)
+            str(self.value)
             if self.is_directive
             else self.value
         )
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return f'({self.value})' if self.is_directive else str(self.value)
 
 
@@ -118,7 +125,7 @@ class Operator:
     name: str
     formula: OperatorFormula
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return self.name
 
 

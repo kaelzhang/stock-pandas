@@ -183,12 +183,3 @@ def command_full_name(
     sub: Optional[str]
 ) -> str:
     return name if sub is None else f'{name}.{sub}'
-
-
-NONE_TUPLE = (None, None)
-
-TYPE_DIRECTIVE = 1
-TYPE_COMMAND = 2
-TYPE_OPERATOR = 3
-TYPE_ARGUMENT = 4
-TYPE_SCALAR = 5

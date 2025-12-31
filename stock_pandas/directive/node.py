@@ -158,10 +158,10 @@ class ArgumentNode:
 @dataclass(frozen=True, slots=True)
 class OperatorNode:
     loc: Loc
-    operator: str
+    name: str
 
     def create(self, _: Context) -> Operator:
-        return Operator(self.operator, OPERATORS.get(self.operator))
+        return Operator(self.name, OPERATORS.get(self.name))
 
 
 ArgumentValueNode = Union[DirectiveNode, ScalarNode]
