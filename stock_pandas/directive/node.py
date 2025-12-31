@@ -1,85 +1,68 @@
+from __future__ import annotations
 from typing import (
     Optional,
-    Union
+    Union,
+    List,
+    # Tuple
+)
+from dataclasses import dataclass
+
+from stock_pandas.exceptions import DirectiveValueError
+from stock_pandas.common import (
+    command_full_name,
 )
 
 from .types import (
-    Directive
+    Directive,
+    Command,
+    Operator
 )
 from .operator import OPERATORS
 from .tokenizer import Loc
+from .command import (
+    # CommandPreset,
+    Context,
+    ScalarNode
+)
 
 
-class Context:
-    __slots__ = (
-        'input',
-        'loc',
-        'cache'
-    )
+# class MetaNode:
+#     """
+#     The meta node which is used to distinguish the type of Node and RootNode
+#     """
 
-    def __init__(
-        self,
-        input: str,
-        loc: Loc,
-        cache: DirectiveCache,
-        commands: Dict[]
-    ):
-        self.input = input
-        self.loc = loc
-        self.cache = cache
+#     # __slots__ = ('label', 'data', 'loc')
+
+#     # label: int
+#     # data: NodeData
+#     loc: Loc
+
+#     # def __init__(self, t, data, loc):
+#     #     self.label = t
+#     #     self.data = data
+#     #     self.loc = loc
 
 
-class MetaNode:
-    """
-    The meta node which is used to distinguish the type of Node and RootNode
-    """
+# class Node(MetaNode):
+#     ...
 
-    # __slots__ = ('label', 'data', 'loc')
 
-    # label: int
-    # data: NodeData
+# class RootNode(MetaNode):
+#     @classmethod
+#     def from_node(cls, node: MetaNode) -> 'RootNode':
+#         return cls(
+#             node.label,
+#             node.data,
+#             node.loc
+#         )
+
+
+@dataclass
+class DirectiveNode:
+    command: CommandNode
+    operator: Optional[OperatorNode] = None
+    expression: Optional[ExpressionNode] = None
     loc: Loc
-
-    # def __init__(self, t, data, loc):
-    #     self.label = t
-    #     self.data = data
-    #     self.loc = loc
-
-
-class Node(MetaNode):
-    ...
-
-
-class RootNode(MetaNode):
-    @classmethod
-    def from_node(cls, node: MetaNode) -> 'RootNode':
-        return cls(
-            node.label,
-            node.data,
-            node.loc
-        )
-
-
-ExpressionNode = Union['ScalarNode', 'CommandNode']
-
-
-class DirectiveNode(Node):
-    command: 'CommandNode'
-    operator: Optional['OperatorNode']
-    expression: Optional[ExpressionNode]
-    # loc: Loc
-
-    def __init__(
-        self,
-        command: 'CommandNode',
-        operator: Optional['OperatorNode'],
-        expression: Optional[ExpressionNode],
-        loc: Loc
-    ) -> None:
-        self.command = command
-        self.operator = operator
-        self.expression = expression
-        self.loc = loc
 
     def create(
         self,
@@ -96,63 +79,106 @@ class DirectiveNode(Node):
         return directive
 
 
-class CommandNode(Node):
-    name: str
-    sub: Optional[str]
-    args: List['ArgumentNode']
+@dataclass
+class CommandNode:
+    name: ScalarNode
+    sub: Optional[ScalarNode] = None
+    args: List[ArgumentNode]
     loc: Loc
 
-    def __init__(
+    def create(
         self,
-        name: str,
-        sub: Optional[str],
-        args: List['ArgumentNode'],
-        loc: Loc
-    ) -> None:
-        self.name = name
-        self.sub = sub
-        self.args = args
-        self.loc = loc
+        context: Context
+    ) -> Command:
+        main_name = self.name.value
+        commands = context.commands
+        command_def = commands.get(main_name)
+
+        if command_def is None:
+            raise DirectiveValueError(
+                context.input,
+                f'unknown command "{main_name}"',
+                self.name.loc
+            )
+
+        preset, sub_name = command_def.get_preset(self.name, self.sub, context)
+
+        preset_args = preset.args
+        args = self.args
 
 
-class ArgumentNode(Node):
-    value: Union['DirectiveNode', 'ScalarNode']
+        max_length = len(preset_args)
+        args_length = len(args)
+
+        command_name = command_full_name(main_name, sub_name)
+
+        if args_length > max_length:
+            raise DirectiveValueError(
+                context.input,
+                f'command "{command_name}" accepts max {max_length} args',
+                context.loc
+            )
+
+        coerced_args = []
+
+        for index, arg_def in enumerate(preset_args):
+            default = arg_def.default
+            setter = arg_def.coerce
+
+            if index < args_length:
+                argument, loc = args[index]
+                arg = argument.value
+            else:
+                # If the arg does not exist, use the command loc
+                loc = context.loc
+                arg = DEFAULT_ARG_VALUE
+                argument = Argument(arg)
+
+            if arg == DEFAULT_ARG_VALUE:
+                arg = default
+
+            # Setter could be optional
+            elif setter:
+                try:
+                    arg = setter(arg)
+                except ValueError as e:
+                    raise DirectiveValueError(
+                        context.input,
+                        str(e),
+                        loc
+                    )
+
+            if arg is None:
+                raise DirectiveValueError(
+                    context.input,
+                    f'args[{index}] is required for command "{command_name}"',
+                    loc
+                )
+
+            argument.value = arg
+
+            coerced_args.append(argument)
+
+        return Command(name, sub, coerced_args, preset.formula)
+
+
+@dataclass
+class ArgumentNode:
+    value: ArgumentValueNode
     loc: Loc
 
-    def __init__(
-        self,
-        value: Union['DirectiveNode', 'ScalarNode'],
-        loc: Loc
-    ) -> None:
-        self.value = value
-        self.loc = loc
+    def create(self, context: Context):
+        return self.value.create(context)
 
 
-class OperatorNode(Node):
+@dataclass
+class OperatorNode:
     operator: str
     loc: Loc
-
-    def __init__(
-        self,
-        operator: str,
-        loc: Loc
-    ) -> None:
-        self.operator = operator
-        self.loc = loc
 
     def create(self, _: Context) -> Operator:
         return Operator(self.operator, OPERATORS.get(self.operator))
 
 
-class ScalarNode(Node):
-    def __init__(
-        self,
-        value: str,
-        loc: Loc
-    ) -> None:
-        self.value = value
-        self.loc = loc
-
-    def create(self):
-        return self.value
-
+ArgumentValueNode = Union[DirectiveNode, ScalarNode]
+ExpressionNode = Union[ScalarNode, CommandNode]

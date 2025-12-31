@@ -4,24 +4,30 @@ from typing import (
     Optional,
     Callable,
     List,
-    Union,
-    Dict,
-    Protocol,
-    TYPE_CHECKING
+    Dict
 )
+from dataclasses import dataclass
 
-from numpy import ndarray
+from stock_pandas.exceptions import DirectiveValueError
 
-if TYPE_CHECKING:
-    from stock_pandas.dataframe import StockDataFrame # pragma: no cover
-
-
-ReturnType = Tuple[ndarray, int]
-CommandArgType = Union[str, int, float]
+from .cache import DirectiveCache
+from .tokenizer import Loc
+from .types import (
+    CommandArgType,
+    CommandFormula
+)
 
 
 def DEFAULT_ARG_COERCE(x: CommandArgType) -> CommandArgType:
     return x
+
+
+@dataclass
+class Context:
+    input: str
+    loc: Loc
+    cache: DirectiveCache
+    commands: Commands
 
 
 class CommandArg:
@@ -50,16 +56,6 @@ class CommandArg:
         self.coerce = coerce
 
 
-class CommandFormula(Protocol):
-    def __call__(
-        self,
-        df: 'StockDataFrame',
-        s: slice,
-        *args: CommandArgType
-    ) -> ReturnType:
-        ... # pragma: no cover
-
-
 class CommandPreset:
     """
     A command preset defines the formula and arguments for a command
@@ -86,17 +82,27 @@ class CommandPreset:
         self.args = args
 
 
-SubCommandsMap = Dict[
+SubCommands = Dict[
     str,
     CommandPreset
 ]
 
-AliasesMap = Dict[
+CommandAliases = Dict[
     str,
     Optional[str]
 ]
 
 
+@dataclass
+class ScalarNode:
+    value: str
+    loc: Loc
+
+    def create(self, _: Context) -> str:
+        return self.value
+
+
+@dataclass
 class CommandDefinition:
     """
     A CommandDefinition is a collection of a command preset, sub commands and aliases
@@ -113,20 +119,57 @@ class CommandDefinition:
         'aliases'
     )
 
-    preset: Optional[CommandPreset]
-    sub_commands: Optional[SubCommandsMap]
-    aliases: Optional[AliasesMap]
+    preset: Optional[CommandPreset] = None
+    sub_commands: Optional[SubCommands] = None
+    aliases: Optional[CommandAliases] = None
 
-    def __init__(
+    def get_preset(
         self,
-        preset: Optional[CommandPreset] = None,
-        sub_commands: Optional[SubCommandsMap] = None,
-        aliases: Optional[AliasesMap] = None
-    ) -> None:
-        # self.name = name
-        self.preset = preset
-        self.sub_commands = sub_commands
-        self.aliases = aliases
+        main: ScalarNode,
+        sub: Optional[ScalarNode],
+        context: Context
+    ) -> Tuple[CommandPreset, Optional[str]]:
+        main_name = main.value
+        sub_name = self._sub_name(sub)
+
+        if sub_name is not None:
+            if self.sub_commands is None:
+                raise DirectiveValueError(
+                    context.input,
+                    f'command "{main_name}" has no sub commands',
+                    main.loc
+                )
+
+            preset = self.sub_commands.get(sub_name)
+
+            if preset is None:
+                raise DirectiveValueError(
+                    context.input,
+                    f'unknown sub command "{sub_name}" for command "{main_name}"',
+                    sub.loc
+                )
+
+            return preset, sub_name
+
+        if self.preset is None:
+            raise DirectiveValueError(
+                context.input,
+                f'sub command should be specified for command "{main_name}"',
+                main.loc
+            )
+
+        return self.preset, None
+
+    def _sub_name(self, sub: Optional[ScalarNode]) -> Optional[str]:
+        if sub is None:
+            return None
+
+        name = sub.value
+
+        if self.aliases is not None:
+            return self.aliases.get(name, name)
+
+        return name
 
 
-COMMANDS: Dict[str, CommandDefinition] = {}
+Commands = Dict[str, CommandDefinition]

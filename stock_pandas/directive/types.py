@@ -1,65 +1,40 @@
+from __future__ import annotations
 from typing import (
     Optional,
     Tuple,
     Union,
     Callable,
-    overload
+    TYPE_CHECKING
 )
-
+from dataclasses import dataclass
 from numpy import ndarray
 
 from stock_pandas.common import (
     join_args,
-    command_full_name
 )
 
+if TYPE_CHECKING:
+    from stock_pandas.dataframe import StockDataFrame # pragma: no cover
 
-Expression = Union['Command', float]
-ArgValue = Union[str, int, float, 'Directive']
 
+@dataclass(frozen=True, slots=True)
 class Directive:
-    __slots__ = (
-        'command',
-        'operator',
-        'expression'
-    )
-
-    @overload
-    def __init__(
-        self,
-        command: 'Command',
-        operator: None,
-        expression: None
-    ) -> None:
-        ...  # pragma: no cover
-
-    @overload
-    def __init__(
-        self,
-        command: 'Command',
-        operator: 'Operator',
-        expression: Expression
-    ) -> None:
-        ...  # pragma: no cover
-
-    def __init__(
-        self,
-        command,
-        operator,
-        expression
-    ) -> None:
-        self.command = command
-        self.operator = operator
-        self.expression = expression
+    command: Command
+    operator: Optional[Operator] = None
+    expression: Optional[Expression] = None
 
     def __repr__(self) -> str:
         return (
             f'{self.command}{self.operator}{self.expression}'
-            if self.operator
+            if self.operator and self.expression
             else str(self.command)
         )
 
-    def run(self, df, s: slice) -> Tuple[ndarray, int]:
+    def run(
+        self,
+        df: StockDataFrame,
+        s: slice
+    ) -> ReturnType:
         left, period_left = self.command.run(df, s)
 
         if not self.operator:
@@ -88,74 +63,62 @@ class Directive:
         return operated, max(period_left, period_right)
 
 
+@dataclass(frozen=True, slots=True)
 class Command:
-    __slots__ = (
-        'name',
-        'sub',
-        'args',
-        'formula'
-    )
-
-    def __init__(
-        self,
-        name: str,
-        sub: Optional[str],
-        args: list,
-        formula: Callable[..., Tuple[ndarray, int]]
-    ) -> None:
-        self.name = name
-        self.sub = sub
-        self.args = args
-        self.formula = formula
+    name: str
+    args: list
+    formula: CommandFormula
 
     def __repr__(self) -> str:
-        name = command_full_name(self.name, self.sub)
+        return (
+            f'{self.name}:{join_args(self.args)}'
+            if self.args
+            else self.name
+        )
 
-        return f'{name}:{join_args(self.args)}' \
-            if self.args else name
-
-    def run(self, df, s: slice):
+    def run(
+        self,
+        df: StockDataFrame,
+        s: slice
+    ) -> ReturnType:
         args = [arg.value for arg in self.args]
         return self.formula(df, s, *args)
 
 
+@dataclass(frozen=True, slots=True)
 class Argument:
-    __slots__ = (
-        'value',
-        'is_directive'
-    )
+    """
+    Args:
+        value: The value of the argument.
+        is_directive: Whether the argument is a directive.
+    """
 
-    def __init__(
-        self,
-        value: ArgValue,
-        is_directive: bool = False
-    ) -> None:
-        """
-        Args:
-            value: The value of the argument.
-            is_directive: Whether the argument is a directive.
-        """
-
-        self.value = value
-        self.is_directive = is_directive
+    value: ArgumentValue
+    is_directive: bool = False
 
     def __repr__(self) -> str:
         return f'({self.value})' if self.is_directive else str(self.value)
 
 
+@dataclass(frozen=True, slots=True)
 class Operator:
-    __slots__ = (
-        'name',
-        'formula'
-    )
-
-    def __init__(
-        self,
-        name: str,
-        formula: Callable[[ndarray, ndarray], ndarray]
-    ) -> None:
-        self.name = name
-        self.formula = formula
+    name: str
+    formula: OperatorFormula
 
     def __repr__(self) -> str:
         return self.name
+
+
+CommandArgType = Union[str, int, float]
+ReturnType = Tuple[ndarray, int]
+
+CommandFormula = Callable[[
+    StockDataFrame,
+    slice,
+    *CommandArgType
+], ReturnType]
+
+OperatorFormula = Callable[[ndarray, ndarray], ndarray]
+
+Expression = Union[Command, float]
+ArgumentValue = Union[CommandArgType, Directive]

@@ -143,91 +143,91 @@ def create_command(context, name, sub, args) -> Command:
     return Command(name, sub, coerced_args, preset.formula)
 
 
-def process_command_name(
-    context,
-    raw_name: Tuple[str, Loc],
-    raw_sub: Optional[Tuple[str, Loc]]
-) -> Tuple[str, Optional[str], CommandPreset]:
-    """Gets the sanitized command infos, including:
-    - command name,
-    - optional sub command name
-    - and command preset
-    """
+# def process_command_name(
+#     context,
+#     raw_name: Tuple[str, Loc],
+#     raw_sub: Optional[Tuple[str, Loc]]
+# ) -> Tuple[str, Optional[str], CommandPreset]:
+#     """Gets the sanitized command infos, including:
+#     - command name,
+#     - optional sub command name
+#     - and command preset
+#     """
 
-    name, name_loc = raw_name
-    sub, sub_loc = raw_sub if raw_sub is not None else NONE_TUPLE
+#     name, name_loc = raw_name
+#     sub, sub_loc = raw_sub if raw_sub is not None else NONE_TUPLE
 
-    if name not in COMMANDS:
-        raise DirectiveValueError(
-            context.input,
-            f'unknown command "{name}"',
-            name_loc
-        )
+#     if name not in COMMANDS:
+#         raise DirectiveValueError(
+#             context.input,
+#             f'unknown command "{name}"',
+#             name_loc
+#         )
 
-    command_def = COMMANDS[name]
+#     command_def = COMMANDS[name]
 
-    main_command_preset = command_def.preset
-    subs_map = command_def.sub_commands
-    sub_aliases_map = command_def.aliases
+#     main_command_preset = command_def.preset
+#     subs_map = command_def.sub_commands
+#     sub_aliases_map = command_def.aliases
 
-    # applies sub aliases, and get the real sub name
-    if sub is not None and sub_aliases_map is not None:
-        real_sub = sub_aliases_map.get(sub, sub)
-    else:
-        real_sub = sub
+#     # applies sub aliases, and get the real sub name
+#     if sub is not None and sub_aliases_map is not None:
+#         real_sub = sub_aliases_map.get(sub, sub)
+#     else:
+#         real_sub = sub
 
-    if real_sub is not None:
-        if subs_map is None:
-            raise DirectiveValueError(
-                context.input,
-                f'command "{name}" has no sub commands',
-                sub_loc
-            )
+#     if real_sub is not None:
+#         if subs_map is None:
+#             raise DirectiveValueError(
+#                 context.input,
+#                 f'command "{name}" has no sub commands',
+#                 sub_loc
+#             )
 
-        if real_sub not in subs_map:
-            raise DirectiveValueError(
-                context.input,
-                f'unknown sub command "{sub}" for command "{name}"',
-                sub_loc
-            )
+#         if real_sub not in subs_map:
+#             raise DirectiveValueError(
+#                 context.input,
+#                 f'unknown sub command "{sub}" for command "{name}"',
+#                 sub_loc
+#             )
 
-        return name, real_sub, subs_map[real_sub]
+#         return name, real_sub, subs_map[real_sub]
 
-    if main_command_preset is None:
-        raise DirectiveValueError(
-            context.input,
-            f'sub command should be specified for command "{name}"',
-            name_loc
-        )
+#     if main_command_preset is None:
+#         raise DirectiveValueError(
+#             context.input,
+#             f'sub command should be specified for command "{name}"',
+#             name_loc
+#         )
 
-    return name, None, main_command_preset
-
-
-def create_operator(_, operator: str) -> Operator:
-    # The operator has already been validated by parser
-    return Operator(operator, OPERATORS.get(operator))  # type: ignore
+#     return name, None, main_command_preset
 
 
-def create_argument(_, arg: Tuple[Union[Directive, str, int, float], Loc]) -> Argument:
-    """Create an Argument object from the given value.
+# def create_operator(_, operator: str) -> Operator:
+#     # The operator has already been validated by parser
+#     return Operator(operator, OPERATORS.get(operator))  # type: ignore
 
-    Args:
-        _: Context object (unused)
-        arg: Tuple containing the argument value and its location
 
-    Returns:
-        An Argument object
-    """
-    # Extract the value from the tuple, ignoring the location
-    value = arg[0]
+# def create_argument(_, arg: Tuple[Union[Directive, str, int, float], Loc]) -> Argument:
+#     """Create an Argument object from the given value.
 
-    if isinstance(value, Directive):
-        # Then the directly will be executed by
-        # `df.exec(directive_str)` of the parent command
-        return Argument(str(value), True)
+#     Args:
+#         _: Context object (unused)
+#         arg: Tuple containing the argument value and its location
 
-    # Handle primitive types directly without unpacking
-    return Argument(value)
+#     Returns:
+#         An Argument object
+#     """
+#     # Extract the value from the tuple, ignoring the location
+#     value = arg[0]
+
+#     if isinstance(value, Directive):
+#         # Then the directly will be executed by
+#         # `df.exec(directive_str)` of the parent command
+#         return Argument(str(value), True)
+
+#     # Handle primitive types directly without unpacking
+#     return Argument(value)
 
 
 # The type of Scalar is the same as NotNode,
