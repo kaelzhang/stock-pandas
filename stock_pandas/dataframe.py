@@ -103,13 +103,15 @@ class StockDataFrame(MetaDataFrame):
     # --------------------------------------------------------------------
 
     @property
-    def _constructor(_) -> Type['StockDataFrame']:
+    def _constructor(self) -> Type['StockDataFrame']:
         """
         This method overrides `DataFrame._constructor`
         which ensures the return type of several DataFrame methods
         """
 
-        return StockDataFrame
+        # Use `self.__class__` instead of `StockDataFrame`
+        # so that it also works for sub classes
+        return self.__class__
 
     # --------------------------------------------------------------------
 

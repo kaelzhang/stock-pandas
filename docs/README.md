@@ -826,11 +826,22 @@ stock['change:(ma:20)']
 left operator right
 ```
 
-### Operator: `/`
+### Operator: `//`
 
 whether `left` crosses through `right` from the down side of `right` to the upper side which we call it as "cross up".
 
-### Operator: `\`
+```py
+# Which we call them "gold crosses"
+stock['macd // macd.signal']
+```
+
+Pay attention that:
+
+Since `4.0.0`, it uses a `//` operator instead of `/` for two reasons:
+- To avoid potential conflicts with future division operations
+- To maintain consistency with `\\`, since in strings we need to write `'\\'`
+
+### Operator: `\\`
 
 whether `left` crosses down `right`.
 
@@ -910,77 +921,191 @@ export STOCK_PANDAS_COW=1
 
 ****
 
-## Advanced Sections
+# Advanced Sections
 
-> How to extend stock-pandas and support more indicators,
+## How to Define a New Command
 
-> This section is only recommended for contributors, but not for normal users, for that the definition of `COMMANDS` might change in the future.
+> How to extend stock-pandas and support more indicators
 
-```py
-from stock_pandas import COMMANDS, CommandPreset
-```
+> This section is only recommended for contributors, but not for normal users, for that the API might change in the future.
 
-To add a new indicator to stock-pandas, you could update the `COMMANDS` dict.
+Since `4.0.0`, stock-pandas uses structured classes instead of tuples and dicts to define commands, making the API more explicit and type-safe.
 
 ```py
-# The value of 'new-indicator' is a tuple
-COMMANDS['new-indicator'] = (
-    # The first item of the tuple is a CommandPreset instance
-    CommandPreset(
-        formula,
-        args_setting
-    ),
-    sub_commands_dict,
-    aliases_of_sub_commands
+from stock_pandas import (
+    StockDataFrame,
+    CommandPreset,
+    CommandArgType,
+    CommandArg,
+    CommandDefinition,
+    ReturnType
 )
 ```
 
-You could check [here](https://github.com/kaelzhang/stock-pandas/blob/master/stock_pandas/commands/base.py#L54) to figure out the typings for `COMMANDS`.
+To add a new indicator to stock-pandas, use the `StockDataFrame.define_command` class method:
 
-For a simplest indicator, such as simple moving average, you could check the implementation [here](https://github.com/kaelzhang/stock-pandas/blob/master/stock_pandas/commands/trend_following.py#L60).
+```py
+# Define a new command
+StockDataFrame.define_command(
+    'new-indicator',
+    CommandDefinition(
+        preset=CommandPreset(
+            formula=formula,
+            args=args_list
+        ),
+        sub_commands=sub_commands_dict,
+        aliases=aliases_dict
+    )
+)
+```
 
-### formula(df, s, *args) -> Tuple[np.ndarray, int]
+For a simple indicator, such as simple moving average, you could check the implementation [here](https://github.com/kaelzhang/stock-pandas/blob/master/stock_pandas/commands/trend_following.py#L60).
 
-`formula` is a `Callable[[StockDataFrame, slice, ...], [ndarray, int]]`.
+### CommandFormula: formula(df, s, *args) -> ReturnType
+
+`formula` is a `Callable[[StockDataFrame, slice, ...], Tuple[ndarray, int]]`.
 
 - **df** `StockDataFrame` the first argument of `formula` is the stock dataframe itself
 - **s** `slice` sometimes, we don't need to calculate the whole dataframe but only part of it. This argument is passed into the formula by `stock_pandas` and should not be changed manually.
-- **args** `Tuple[Any]` the args of the indicator which is defined by `args_setting`
+- **args** `Tuple[CommandArgType]` the args of the indicator which is defined by the `args` list
 
-The Callable returns a tuple:
-- The first item of the tuple is the calculated result which is a numpy ndarray.
-- The second item of the tuple is the mininum periods to calculate the indicator.
+The formula returns `ReturnType`, which is `Tuple[ndarray, int]`:
+- The first item is the calculated result as a numpy ndarray.
+- The second item is the minimum periods needed to calculate the indicator.
 
-### args_setting: [(default, validate_and_coerce), ...]
+### CommandArg: Defining Command Arguments
 
-`args_setting` is a list of tuples.
-
-- The first item of each tuple is the default value of the parameter, and it could be `None` which implies it has no default value and is required.
-
-- The second item is a raisable callable which receives user input, validates it, coerces the type of the value and returns it. If the parameter has a default value and user don't specified a value, the function will be skipped.
-
-### sub_commands_dict: Dict[str, CommandPreset]
-
-A dict to declare sub commands, such as `boll.upper`.
-
-`sub_commands_dict` could be `None` which indicates the indicator has no sub commands
-
-### aliases_of_sub_commands: Dict[str, Optional[str]]
-
-Which declares the shortcut or alias of the commands, such as `boll.u`
+`CommandArg` is a dataclass that defines each argument of a command:
 
 ```py
-dict(
-    u='upper'
+CommandArg(
+    default=default_value,
+    coerce=coerce_function
 )
 ```
 
-If the value of an alias is `None`, which means it is an alias of the main command, such as `macd.dif`
+- **default** `Optional[CommandArgType]`: The default value for the argument. `None` indicates that it is a **required** argument.
+- **coerce** `Callable[[CommandArgType], CommandArgType]`: A raisable callable that validates the input, coerces the type, and returns the validated value. If a default value is provided and the user doesn't specify a value, the coerce function will be skipped.
+
+**Example:**
 
 ```py
-dict(
-    dif=None
+from stock_pandas.common import period_to_int
+
+args_ma = [
+    # Required period argument with type coercion
+    CommandArg(coerce=period_to_int),
+    # Optional 'on' argument with default value
+    CommandArg(default='close')
+]
+```
+
+### CommandDefinition: Complete Command Definition
+
+`CommandDefinition` is a dataclass that combines all aspects of a command:
+
+```py
+CommandDefinition(
+    preset=command_preset,
+    sub_commands=sub_commands_dict,
+    aliases=aliases_dict
 )
+```
+
+- **preset** `Optional[CommandPreset]`: The main command preset. `None` indicates that only sub commands exist (e.g., `kdj` has only `kdj.k`, `kdj.d`, `kdj.j`).
+- **sub_commands** `Optional[Dict[str, CommandPreset]]`: A dict declaring sub commands, such as `boll.upper`. `None` indicates no sub commands.
+- **aliases** `Optional[Dict[str, Optional[str]]]`: A dict declaring shortcuts or aliases for commands. `None` indicates no aliases.
+
+**Example with sub commands and aliases:**
+
+```py
+StockDataFrame.define_command(
+    'macd',
+    CommandDefinition(
+        preset=CommandPreset(macd_formula, args_macd),
+        sub_commands=dict(
+            signal=CommandPreset(macd_signal_formula, args_macd_all),
+            histogram=CommandPreset(macd_histogram_formula, args_macd_all)
+        ),
+        aliases=dict(
+            s='signal',       # macd.s is alias for macd.signal
+            h='histogram',    # macd.h is alias for macd.histogram
+            dif=None,         # macd.dif is alias for macd (main command)
+            dea='signal',
+            macd='histogram'
+        )
+    )
+)
+```
+
+When an alias value is `None`, it means the alias refers to the main command. For example, `macd.dif` is an alias for `macd` itself.
+
+## How to Isolate Custom Commands
+
+By default, when you call `StockDataFrame.define_command()`, the command is registered globally for the `StockDataFrame` class and all its instances. This is because `COMMANDS` and `DIRECTIVES_CACHE` are class variables that are shared across all instances.
+
+If you need to create isolated command spaces for different use cases, you can create a subclass and override these class variables:
+
+```py
+from stock_pandas import StockDataFrame, DirectiveCache
+
+class MyStockDataFrame(StockDataFrame):
+    # Create an independent copy of COMMANDS
+    COMMANDS = StockDataFrame.COMMANDS.copy()
+    # Create an independent directive cache
+    DIRECTIVES_CACHE = DirectiveCache()
+```
+
+Now you can define commands specifically for `MyStockDataFrame` without affecting the base `StockDataFrame` class:
+
+```py
+# Define a custom command for MyStockDataFrame only
+MyStockDataFrame.define_command('my_indicator', my_command_definition)
+
+# This command is only available in MyStockDataFrame
+my_stock = MyStockDataFrame(data)
+my_stock['my_indicator']  # Works!
+
+# But not available in the base StockDataFrame
+stock = StockDataFrame(data)
+stock['my_indicator']  # Raises error!
+```
+
+### Why This Works
+
+This isolation works due to Python's class variable mechanism:
+
+1. **COMMANDS Dictionary**: By calling `.copy()`, you create a shallow copy of the commands dictionary. This means the subclass has its own dictionary instance, so any modifications (adding/removing commands) won't affect the parent class.
+
+2. **DIRECTIVES_CACHE**: By creating a new `DirectiveCache()` instance, the subclass maintains its own cache of parsed directives. This ensures that:
+   - Directives are parsed and cached independently for each class
+   - Changes to command definitions in one class don't cause cache inconsistencies in another
+
+3. **Class Method Resolution**: When you call `MyStockDataFrame.define_command()`, Python resolves `cls.COMMANDS` to `MyStockDataFrame.COMMANDS`, which is the independent copy you created.
+
+### Use Cases
+
+This pattern is useful when:
+
+- **Testing**: You want to add test-specific indicators without polluting the global command space
+- **Multiple Strategies**: Different trading strategies require different custom indicators
+- **Library Development**: You're building a library on top of stock-pandas and want to provide additional indicators without affecting users who don't need them
+- **Experimentation**: You want to try different command implementations without risking interference with production code
+
+**Example with multiple isolated classes:**
+
+```py
+class StrategyA_DataFrame(StockDataFrame):
+    COMMANDS = StockDataFrame.COMMANDS.copy()
+    DIRECTIVES_CACHE = DirectiveCache()
+
+class StrategyB_DataFrame(StockDataFrame):
+    COMMANDS = StockDataFrame.COMMANDS.copy()
+    DIRECTIVES_CACHE = DirectiveCache()
+
+# Each class can have its own custom commands
+StrategyA_DataFrame.define_command('custom_a', definition_a)
+StrategyB_DataFrame.define_command('custom_b', definition_b)
 ```
 
 ## Development
