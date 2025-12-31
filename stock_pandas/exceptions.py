@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 REGEX_CARRIAGE_RETURN = re.compile(r'\r|\n', re.A)
 CR = '\n'
@@ -31,7 +32,12 @@ class DirectiveError(Exception):
 
 
 class DirectiveSyntaxError(DirectiveError):
-    def __init__(self, directive, message_template: str, token) -> None:
+    def __init__(
+        self,
+        directive: str,
+        message_template: str,
+        token: Any
+    ) -> None:
         line, column = token.loc
 
         self.directive = directive
@@ -40,14 +46,14 @@ class DirectiveSyntaxError(DirectiveError):
         self.column = column
 
 
-def unexpected_token(directive, token) -> DirectiveSyntaxError:
+def unexpected_token(directive: str, token: Any) -> DirectiveSyntaxError:
     return DirectiveSyntaxError(directive, 'unexpected token "{}"', token)
 
 
 class DirectiveValueError(DirectiveError):
     name: str = 'DirectiveValueError'
 
-    def __init__(self, directive, message, loc) -> None:
+    def __init__(self, directive: str, message: str, loc: Any) -> None:
         self.directive = directive
         self.message = message
 

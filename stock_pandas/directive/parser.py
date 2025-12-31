@@ -138,14 +138,14 @@ class Parser:
         text = self._token.value
         loc = self._token.loc
 
-        m = REGEX_DOT_WHITESPACES.search(text)  # type: ignore
+        m = REGEX_DOT_WHITESPACES.search(text)
 
         if m is None:
             # There is no dot -> no sub command name
             name, sub = text, None
         else:
             start, end = m.span()
-            name, sub = text[:start], text[end:] # type: ignore
+            name, sub = text[:start], text[end:]
 
             sub = ScalarNode(
                 loc=(loc[0], loc[1] + start),
@@ -224,8 +224,8 @@ class Parser:
         if not self._is(value):
             raise self._unexpected()
 
-    def _next_token(self):
-        self._token = next(self._tokens)  # type: ignore
+    def _next_token(self) -> None:
+        self._token = next(self._tokens)
 
     def _expect_operator(self) -> OperatorNode:
         self._no_end()

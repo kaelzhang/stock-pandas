@@ -3,6 +3,7 @@
 # ----------------------------------------------------
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -11,8 +12,12 @@ from stock_pandas.common import (
     period_to_int,
     style_enums,
     to_direction,
-    rolling_calc
+    rolling_calc,
+    NDArrayAny
 )
+
+if TYPE_CHECKING:
+    from stock_pandas.dataframe import StockDataFrame  # pragma: no cover
 
 from stock_pandas.directive.command import (
     CommandDefinition,
@@ -27,7 +32,7 @@ from .args import (
 )
 
 
-def column(df, s, column) -> ReturnType:
+def column(df: 'StockDataFrame', s: slice, column: str) -> ReturnType:
     """Gets the series of the column named `column`
     """
 
@@ -45,7 +50,11 @@ POSITIVE_INFINITY = float('inf')
 NEGATIVE_INFINITY = float('-inf')
 
 
-def check_increase(direction, current, ndarray) -> bool:
+def check_increase(
+    direction: int,
+    current: float,
+    ndarray: NDArrayAny
+) -> bool:
     for value in ndarray:
         if (value - current) * direction > 0:
             current = value
@@ -55,7 +64,13 @@ def check_increase(direction, current, ndarray) -> bool:
     return True
 
 
-def increase(df, s, on: str, repeat: int, direction: int) -> ReturnType:
+def increase(
+    df: 'StockDataFrame',
+    s: slice,
+    on: str,
+    repeat: int,
+    direction: int
+) -> ReturnType:
     period = repeat + 1
 
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
@@ -87,7 +102,7 @@ styles = dict(
 )
 
 
-def style(df, s, style: str) -> ReturnType:
+def style(df: 'StockDataFrame', s: slice, style: str) -> ReturnType:
     return df[s].apply(styles[style], axis=1).to_numpy(), 1
 
 
@@ -101,7 +116,12 @@ BUILTIN_COMMANDS['style'] = CommandDefinition(
 )
 
 
-def repeat(df, s, on: str, repeat: int) -> ReturnType:
+def repeat(
+    df: 'StockDataFrame',
+    s: slice,
+    on: str,
+    repeat: int
+) -> ReturnType:
     result = df.exec(on)[s]
 
     if repeat == 1:
@@ -127,7 +147,12 @@ BUILTIN_COMMANDS['repeat'] = CommandDefinition(
 )
 
 
-def change(df, s, on: str, period: int) -> ReturnType:
+def change(
+    df: 'StockDataFrame',
+    s: slice,
+    on: str,
+    period: int
+) -> ReturnType:
     """Get the percentage change for `on`
     """
 

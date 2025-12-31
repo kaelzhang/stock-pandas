@@ -43,7 +43,7 @@ class Token:
         self.EOF = EOF
 
 
-def create_normal_token(text, line, col) -> Optional[Token]:
+def create_normal_token(text: str, line: int, col: int) -> Optional[Token]:
     if not text:
         return
 
@@ -75,7 +75,7 @@ class Tokenizer:
 
         self._reset()
 
-    def __iter__(self) -> Iterator['Token']:
+    def __iter__(self) -> Iterator[Token]:
         self._reset()
         return self
 

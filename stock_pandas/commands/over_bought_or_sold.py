@@ -2,12 +2,20 @@
 # Indicators to show overbought or oversold position
 # ----------------------------------------------------
 from functools import partial
+from typing import (
+    TYPE_CHECKING, Iterator
+)
+
 import numpy as np
 
 from stock_pandas.common import (
     rolling_calc,
     period_to_int,
 )
+
+if TYPE_CHECKING:
+    from stock_pandas.dataframe import StockDataFrame  # pragma: no cover
+
 from stock_pandas.math.ma import (
     calc_smma
 )
@@ -31,7 +39,12 @@ from .args import (
 # llv & hhv
 # ----------------------------------------------------
 
-def llv(df, s, period, column) -> ReturnType:
+def llv(
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    column: str
+) -> ReturnType:
     """Gets LLV (Lowest of Low Value)
     """
 
@@ -49,7 +62,12 @@ preset_llv = CommandPreset(llv, [
 BUILTIN_COMMANDS['llv'] = CommandDefinition(preset_llv)
 
 
-def hhv(df, s, period, column) -> ReturnType:
+def hhv(
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    column: str
+) -> ReturnType:
     """Gets HHV (Highest of High Value)
     """
 
@@ -70,7 +88,13 @@ BUILTIN_COMMANDS['hhv'] = CommandDefinition(preset_hhv)
 # Donchian Channel
 # ref: https://en.wikipedia.org/wiki/Donchian_channel
 
-def donchian(df, s, period, hhv_column, llv_column) -> ReturnType:
+def donchian(
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    hhv_column: str,
+    llv_column: str
+) -> ReturnType:
     """Gets Donchian Channel
     """
 
@@ -104,7 +128,13 @@ BUILTIN_COMMANDS['donchian'] = CommandDefinition(
 # rsv
 # ----------------------------------------------------
 
-def rsv(column_low, column_high, df, s, period) -> ReturnType:
+def rsv(
+    column_low: str,
+    column_high: str,
+    df: 'StockDataFrame',
+    s: slice,
+    period: int
+) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
 
@@ -137,7 +167,7 @@ def ewma(
     array: np.ndarray,
     period: int,
     init: float
-):
+) -> Iterator[float]:
     """Exponentially weighted moving average
     https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
 
@@ -159,7 +189,7 @@ def ewma(
 
 def kdj_k(
     base: str,
-    df,
+    df: 'StockDataFrame',
     s: slice,
     period_rsv: int,
     period_k: int,
@@ -175,8 +205,8 @@ def kdj_k(
 
 def kdj_d(
     base: str,
-    df,
-    s,
+    df: 'StockDataFrame',
+    s: slice,
     period_rsv: int,
     period_k: int,
     period_d: int,
@@ -189,8 +219,8 @@ def kdj_d(
 
 def kdj_j(
     base: str,
-    df,
-    s,
+    df: 'StockDataFrame',
+    s: slice,
     period_rsv: int,
     period_k: int,
     period_d: int,
@@ -260,7 +290,7 @@ BUILTIN_COMMANDS['kdj'] = CommandDefinition(
 # rsi
 # ----------------------------------------------------
 
-def rsi(df, _, period) -> ReturnType:
+def rsi(df: 'StockDataFrame', _: slice, period: int) -> ReturnType:
     """Calculates N-period RSI (Relative Strength Index)
 
     https://en.wikipedia.org/wiki/Relative_strength_index

@@ -3,6 +3,8 @@
 # ----------------------------------------------------
 
 from functools import partial
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from stock_pandas.common import (
@@ -10,6 +12,9 @@ from stock_pandas.common import (
     times_to_float,
     rolling_calc
 )
+
+if TYPE_CHECKING:
+    from stock_pandas.dataframe import StockDataFrame  # pragma: no cover
 
 from stock_pandas.directive.command import (
     CommandDefinition,
@@ -26,13 +31,25 @@ from .args import (
 # boll
 # ----------------------------------------------------
 
-def boll(df, s, period, column) -> ReturnType:
+def boll(
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    column: str
+) -> ReturnType:
     """Gets the mid band of bollinger bands
     """
     return df.exec(f'ma:{period},{column}')[s], period
 
 
-def boll_band(upper: bool, df, s, period, times, column) -> ReturnType:
+def boll_band(
+    upper: bool,
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    times: float,
+    column: str
+) -> ReturnType:
     """Gets the upper band or the lower band of bolinger bands
 
     Args:
@@ -84,7 +101,12 @@ BUILTIN_COMMANDS['boll'] = CommandDefinition(
 )
 
 
-def bbw(df, s: slice, period: int, column: str) -> ReturnType:
+def bbw(
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    column: str
+) -> ReturnType:
     """Gets the width of bollinger bands
     """
 

@@ -1,5 +1,6 @@
 from typing import (
-    Optional
+    Optional,
+    Any
 )
 from copy import (
     copy,
@@ -44,7 +45,7 @@ class ColumnInfo:
             self.period
         )
 
-    def update(self, size) -> 'ColumnInfo':
+    def update(self, size: int) -> 'ColumnInfo':
         """Creates a new ColumnInfo and update the size
         """
 
@@ -105,15 +106,15 @@ def update_info_size(
     return info.update(size)
 
 
-def init_stock_metas(target) -> None:
+def init_stock_metas(target: Any) -> None:
     set_attr(target, KEY_ALIAS_MAP, {})
     set_attr(target, KEY_COLUMNS_INFO_MAP, {})
 
 
 def copy_stock_metas(
-    meta_source,
-    target,
-    copy_columns_info=True,
+    meta_source: Any,
+    target: Any,
+    copy_columns_info: bool = True,
 ) -> None:
     """
     Simply copy metadata from source to target
@@ -136,8 +137,8 @@ def copy_stock_metas(
 
 
 def copy_clean_stock_metas(
-    source,
-    target,
+    source: Any,
+    target: Any,
     slice_obj: OptionalSlice = None,
     axis: int = 0
 ) -> None:
@@ -182,11 +183,11 @@ def copy_clean_stock_metas(
 
 
 def ensure_return_type(
-    cls,
+    cls: Any,
     method: str,
     should_apply_constructor: bool
 ) -> None:
-    def helper(self, *args, **kwargs):
+    def helper(self: Any, *args: Any, **kwargs: Any) -> Any:
         ret = getattr(super(cls, self), method)(*args, **kwargs)
 
         if should_apply_constructor:

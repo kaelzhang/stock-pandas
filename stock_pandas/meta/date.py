@@ -70,7 +70,7 @@ def apply_date_to_series(
     series: Series,
     date_col: str,
     to_datetime_kwargs: dict
-):
+) -> None:
     date = series[date_col]
     series.drop(date_col, inplace=True)
     series.rename(
@@ -83,7 +83,7 @@ def apply_date_to_df(
     date_col: str,
     to_datetime_kwargs: dict,
     check: bool = False
-):
+) -> None:
     if check and date_col not in df.columns:
         return
 

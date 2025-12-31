@@ -2,11 +2,16 @@
 # Trend-following momentum indicators
 # ----------------------------------------------------
 
+from typing import TYPE_CHECKING
+
 from pandas import concat
 
 from stock_pandas.common import (
     period_to_int,
 )
+
+if TYPE_CHECKING:
+    from stock_pandas.dataframe import StockDataFrame  # pragma: no cover
 
 from stock_pandas.math.ma import (
     calc_ma,
@@ -30,7 +35,7 @@ from .args import (
 # ----------------------------------------------------
 
 
-def ma(df, s: slice, period: int, on: str) -> ReturnType:
+def ma(df: 'StockDataFrame', s: slice, period: int, on: str) -> ReturnType:
     """Gets simple moving average
 
     Args:
@@ -70,7 +75,12 @@ BUILTIN_COMMANDS['ma'] = CommandDefinition(
 # ema
 # ----------------------------------------------------
 
-def ema(df, s, period, column) -> ReturnType:
+def ema(
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    column: str
+) -> ReturnType:
     """Gets Exponential Moving Average
     """
 
@@ -88,14 +98,25 @@ BUILTIN_COMMANDS['ema'] = CommandDefinition(
 # macd
 # ----------------------------------------------------
 
-def macd(df, s, fast_period, slow_period) -> ReturnType:
+def macd(
+    df: 'StockDataFrame',
+    s: slice,
+    fast_period: int,
+    slow_period: int
+) -> ReturnType:
     fast = df.exec(f'ema:{fast_period},close', False)[s]
     slow = df.exec(f'ema:{slow_period},close', False)[s]
 
     return fast - slow, fast_period
 
 
-def macd_signal(df, s, fast_period, slow_period, signal_period) -> ReturnType:
+def macd_signal(
+    df: 'StockDataFrame',
+    s: slice,
+    fast_period: int,
+    slow_period: int,
+    signal_period: int
+) -> ReturnType:
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
 
     return calc_ewma(macd, signal_period), fast_period
@@ -105,11 +126,11 @@ MACD_HISTOGRAM_TIMES = 2.0
 
 
 def macd_histogram(
-    df,
-    s,
-    fast_period,
-    slow_period,
-    signal_period
+    df: 'StockDataFrame',
+    s: slice,
+    fast_period: int,
+    slow_period: int,
+    signal_period: int
 ) -> ReturnType:
     macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
     macd_s = df.exec(
@@ -156,7 +177,14 @@ BUILTIN_COMMANDS['macd'] = CommandDefinition(
 # bbi
 # ----------------------------------------------------
 
-def bbi(df, _, a, b, c, d) -> ReturnType:
+def bbi(
+    df: 'StockDataFrame',
+    _: slice,
+    a: int,
+    b: int,
+    c: int,
+    d: int
+) -> ReturnType:
     """Calculates BBI (Bull and Bear Index) which is the average of
     ma:3, ma:6, ma:12, ma:24 by default
     """
@@ -185,7 +213,7 @@ BUILTIN_COMMANDS['bbi'] = CommandDefinition(
 # Ref: https://www.investopedia.com/terms/a/atr.asp
 # ----------------------------------------------------
 
-def atr(df, s: slice, period: int) -> ReturnType:
+def atr(df: 'StockDataFrame', s: slice, period: int) -> ReturnType:
     """Calculates TR (True Range)
     """
 

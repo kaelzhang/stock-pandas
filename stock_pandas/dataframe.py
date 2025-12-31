@@ -164,7 +164,11 @@ class StockDataFrame(MetaDataFrame):
 
         return self._get_column(name, origin_name)
 
-    def _get_column(self, name: str, error_name: str = None) -> Series:
+    def _get_column(
+        self,
+        name: str,
+        error_name: Optional[str] = None
+    ) -> Series:
         try:
             return self._get_item_cache(name)
         except KeyError:
@@ -281,7 +285,7 @@ class StockDataFrame(MetaDataFrame):
             not forward
         )
 
-    def fulfill(self):
+    def fulfill(self) -> 'StockDataFrame':
         """
         Fulfill all the stock columns in the dataframe
 
@@ -304,7 +308,7 @@ class StockDataFrame(MetaDataFrame):
             for key in keys
         ]
 
-    def _map_single_key(self, key) -> str:
+    def _map_single_key(self, key: Any) -> str:
         if not isinstance(key, str):
             # It might be an `pandas.DataFrame` indexer type,
             # or an KeyError which we should let pandas raise
@@ -423,7 +427,7 @@ class StockDataFrame(MetaDataFrame):
 
         return array
 
-    def _is_normal_column(self, column_name) -> bool:
+    def _is_normal_column(self, column_name: str) -> bool:
         return column_name in self.columns and \
             column_name not in self._stock_columns_info_map
 

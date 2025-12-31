@@ -5,7 +5,8 @@ from typing import (
     Tuple,
     TypeVar,
     Type,
-    Any
+    Any,
+    List
 )
 
 from numpy.typing import (
@@ -17,7 +18,7 @@ import numpy as np
 NDArrayAny = NDArray[Any]
 
 
-def set_attr(target, key, value) -> None:
+def set_attr(target: Any, key: str, value: Any) -> None:
     object.__setattr__(target, key, value)
 
 
@@ -53,7 +54,7 @@ repeat_to_int: ReturnInt = partial(to_number, int, 'int', 'repeat', 0)
 times_to_float: ReturnFloat = partial(to_number, float, 'float', 'times', 0.)
 
 
-def create_enum(choices: list, name: str, value: str) -> str:
+def create_enum(choices: List[str], name: str, value: str) -> str:
     if value in choices:
         return value
 
@@ -106,7 +107,7 @@ def compare_cross(
 ARGS_SEPARATOR = ','
 
 
-def join_args(args: list) -> str:
+def join_args(args: List[Any]) -> str:
     return ARGS_SEPARATOR.join([
         str(arg) for arg in args
     ])
