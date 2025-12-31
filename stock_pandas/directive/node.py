@@ -104,7 +104,7 @@ class CommandNode:
             if index < args_length:
                 arg_node = args[index]
                 loc = arg_node.loc
-                value = arg_node.value.create(context)
+                value = arg_node.create(context)
                 is_directive = isinstance(value, Directive)
             else:
                 # If the arg does not exist, use the command loc
