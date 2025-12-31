@@ -233,28 +233,6 @@ Appends rows of `other` to the end of caller, returning a new object.
 
 This method has nearly the same hehavior of [`pandas.DataFrame.append()`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.append.html), but instead it returns an instance of `StockDataFrame`, and it applies `date_col` to the newly-appended row(s) if possible.
 
-### stock.directive_stringify(directive: str) -> str
-
-> Since 0.26.0
-
-Gets the full name of the `directive` which is also the actual column name of the data frame
-
-```py
-stock.directive_stringify('kdj.j')
-# "kdj.j:9,3,3,50.0"
-```
-
-And also
-
-```py
-from stock_pandas import directive_stringify
-
-directive_stringify('kdj.j')
-# "kdj.j:9,3,3,50.0"
-```
-
-Actually, `directive_stringify` does not rely on StockDataFrame instances.
-
 ### stock.rolling_calc(size, on, apply, forward, fill) -> np.ndarray
 
 > Since 0.27.0
@@ -309,18 +287,41 @@ Stock indicators will only be updated when accessing the stock indicator column 
 
 Check the [test cases](https://github.com/kaelzhang/stock-pandas/blob/master/test/test_fulfill.py) for details
 
-### directive_stringify(directive_str) -> str
+### ~~ directive_stringify(directive_str) -> str ~~
 
-> since 0.30.0
+> Since 0.30.0
+> Removed in 4.0.0
 
-Similar to `stock.directive_stringify()` but could be called without class initialization
+Please use `StockDataFrame.directive_stringify` instead
+
+### ~~ stock.directive_stringify(directive: str) -> str ~~
+
+> Since 0.26.0
+> Removed in 4.0.0
+
+Please use `StockDataFrame.directive_stringify` instead
+
+### StockDataFrame.directive_stringify(directive: str) -> str
+
+> New in 4.0.0
+
+The classmethod to get the full name of the `directive` which is also the actual column name of the data frame
 
 ```py
-from stock_pandas import directive_stringify
-
-directive_stringify('boll')
-# boll:21,close
+StockDataFrame.directive_stringify('kdj.j')
+# "kdj.j:9,3,3,50.0"
 ```
+
+### StockDataFrame.define_command(...) -> None
+
+```py
+StockDataFrame.define_command(
+    name: str,
+    definition: CommandDefinition
+) -> None
+```
+
+The classmethod to define a new customized command which could be shared with all instances
 
 ## Cumulation and DatetimeIndex
 
