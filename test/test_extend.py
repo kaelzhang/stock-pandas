@@ -3,6 +3,7 @@ from functools import partial
 import pytest
 
 from stock_pandas import (
+    StockDataFrame,
     CommandPreset,
     CommandDefinition,
     CommandArg
@@ -15,19 +16,20 @@ from .common import (
 )
 
 
-kdj = BUILTIN_COMMANDS['kdj'].sub_commands.copy()
+sub_commands = BUILTIN_COMMANDS['kdj'].sub_commands.copy()
 
-BUILTIN_COMMANDS['kdj2'] = CommandDefinition(
-    sub_commands=kdj
-)
-
-kdj['j'] = CommandPreset(
+command = sub_commands['j'] = CommandPreset(
     partial(kdj_j, 'kdj2'),
     [
         CommandArg(default)
         for default in [9, 3, 3, 50.]
     ]
 )
+
+
+StockDataFrame.define_command('kdj2', CommandDefinition(
+    sub_commands=sub_commands
+))
 
 
 @pytest.fixture

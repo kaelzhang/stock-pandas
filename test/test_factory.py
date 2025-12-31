@@ -1,21 +1,24 @@
 import pytest
 
-from stock_pandas.directive import (
+from stock_pandas.directive.parse import (
     parse as parse_it,
     # DirectiveCache
 )
+from stock_pandas.commands.base import BUILTIN_COMMANDS
 from stock_pandas import (
     DirectiveValueError,
     DirectiveCache
 )
 
 
+COMMANDS = BUILTIN_COMMANDS.copy()
+
 def parse(string):
-    return parse_it(string, DirectiveCache())
+    return parse_it(string, DirectiveCache(), COMMANDS)
 
 
-def run_case(case, apply=False):
-    c, cc, sc, a, o, e, s = case
+def run_case(case):
+    c, n, a, o, e, s = case
     print('directive:', c)
 
     directive = parse(c)
@@ -24,8 +27,8 @@ def run_case(case, apply=False):
     operator = directive.operator
     value = directive.expression
 
-    assert command.name == cc
-    assert command.sub == sc
+    assert command.name == n
+    # assert command.sub == sc
     assert [a.value for a in command.args] == a
 
     if o is None:
@@ -44,8 +47,6 @@ def test_valid_columns_after_apply():
             'macd.dif',
             # command name
             'macd',
-            # sub command
-            None,
             # arguments
             [12, 26],
             # operator
@@ -57,8 +58,7 @@ def test_valid_columns_after_apply():
         ),
         (
             'macd.signal',
-            'macd',
-            'signal',
+            'macd.signal',
             [12, 26, 9],
             None,
             None,
@@ -69,7 +69,7 @@ def test_valid_columns_after_apply():
     print()
 
     for case in CASES:
-        run_case(case, True)
+        run_case(case)
 
 
 def test_column_with_two_command_real_case():
@@ -77,8 +77,7 @@ def test_column_with_two_command_real_case():
 
     expr = directive.expression
 
-    assert expr.name == 'boll'
-    assert expr.sub == 'upper'
+    assert expr.name == 'boll.upper'
     assert [a.value for a in expr.args] == [20, 2, 'close']
 
 

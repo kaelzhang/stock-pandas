@@ -429,7 +429,7 @@ stock['boll']
 stock['kdj.j < 0']
 
 # kdj %K cross up kdj %D
-stock['kdj.k / kdj.d']
+stock['kdj.k // kdj.d']
 
 # 5-period simple moving average
 stock['ma:5']

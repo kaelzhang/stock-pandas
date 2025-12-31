@@ -53,7 +53,7 @@ def test_append(stock):
 
 def test_cross(stock):
     assert stock['ma:10 >< ma:5']['2020-02-21']
-    assert stock['ma:10 / ma:5']['2020-02-21']
+    assert stock['ma:10 // ma:5']['2020-02-21']
     assert stock['ma:5 \\ ma:10']['2020-02-21']
     assert not stock['ma:10 \\ ma:5']['2020-02-21']
 
@@ -112,8 +112,8 @@ def test_donchian(stock):
 
 
 def test_macd(stock):
-    assert stock['macd / macd.dea']['2020-02-10']
-    assert stock['macd.histogram / 0']['2020-02-10']
+    assert stock['macd // macd.dea']['2020-02-10']
+    assert stock['macd.histogram // 0']['2020-02-10']
 
 
 def test_rsi(stock):
