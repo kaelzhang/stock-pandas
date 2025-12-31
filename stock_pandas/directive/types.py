@@ -130,7 +130,12 @@ class Operator:
 
 
 CommandArgType = Union[str, int, float]
-ReturnType = Tuple[ndarray, int]
+ReturnType = Tuple[
+    ndarray,
+    # The minimum periods to calculate the indicator,
+    # which is actually `lookback + 1`
+    int
+]
 
 
 class CommandFormula(Protocol):
