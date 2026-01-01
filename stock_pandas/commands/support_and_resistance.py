@@ -64,6 +64,10 @@ def boll_band(
     prices = df.get_column(column)[s].to_numpy()
 
     ma = df.exec(f'ma:{period},{column}')[s]
+
+    # Unlike historical volatility (HV),
+    # for bollinger bands, we use the population standard deviation (n)
+    # ref: https://en.wikipedia.org/wiki/Bollinger_Bands
     mstd = rolling_calc(
         prices,
         period,
@@ -148,7 +152,13 @@ def hv(
 
     close = df.get_column('close')[s]
     log_return = np.log(close / close.shift(1))
-    rolling_std = rolling_calc(log_return, period, np.std)
+    rolling_std = log_return.rolling(
+        window=period,
+        min_periods=period
+
+    # We must use ddof=1 to get the sample standard deviation (n-1)
+    # for historical volatility.
+    ).std(ddof=1)
 
     return (
         rolling_std * np.sqrt(trading_days * DAY_MINUTES / minutes),
@@ -163,7 +173,9 @@ def trading_days_to_int(value: str) -> int:
         raise ValueError(f'`{value}` is not a valid trading days')
 
     if days <= 0 or days > 365:
-        raise ValueError(f'`{value}` must be greater than 0 and less than 365')
+        raise ValueError(
+            f'trading days must be greater than 0 and less than 365, but got `{days}`'
+        )
 
     return days
 

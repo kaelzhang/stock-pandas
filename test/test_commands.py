@@ -1,3 +1,7 @@
+from decimal import (
+    Decimal,
+    ROUND_DOWN
+)
 import pytest
 import numpy as np
 
@@ -101,6 +105,19 @@ def test_bbw(stock):
 
     for i in range(len(a)):
         assert to_fixed(a[i], 8) == to_fixed(b[i], 8), f'{i}: {a[i]} != {b[i]}'
+
+
+def test_hv(stock):
+    def apply_precision(value: float) -> Decimal:
+        return Decimal(value).quantize(
+            Decimal('0.000001'),
+            rounding=ROUND_DOWN
+        )
+
+    assert apply_precision(stock['hv:20']['2020-03-09']) == Decimal('0.305508')
+    assert apply_precision(
+        stock['hv:20,1d,252']['2020-03-09']
+    ) == Decimal('0.305508')
 
 
 def test_donchian(stock):

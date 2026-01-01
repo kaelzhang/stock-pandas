@@ -18,6 +18,7 @@
 [atr]: #atr-the-average-true-range
 [llv]: #llv-lowest-of-low-values
 [hhv]: #hhv-highest-of-high-values
+[hv]: #hv-historical-volatility
 [column]: #column
 [increase]: #increase
 [style]: #style
@@ -32,7 +33,7 @@
 **stock-pandas** inherits and extends `pandas.DataFrame` to support:
 - Stock Statistics
 - Stock Indicators, including:
-  - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi], [**ATR**][atr]
+  - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi], [**ATR**][atr], [**HV**][hv]
   - Dynamic support and resistance indicators, such as [**BOLL**][boll], [**BBW**][bbw]
   - Over-bought / over-sold indicators, such as [**KDJ**][kdj], [**RSI**][rsi]
   - Other indicators, such as [**LLV**][llv], [**HHV**][hhv]

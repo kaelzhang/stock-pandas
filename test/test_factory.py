@@ -96,7 +96,11 @@ def test_value_error():
         ('style:cartoon', 'should be either'),
         ('increase:close,5,3', 'direction'),
         ('kdj.j:9,3,3,a', 'a float'),
-        ('kdj.j:9,3,3,200', 'in between')
+        ('kdj.j:9,3,3,200', 'in between'),
+        ('hv:10,invalid', '`invalid` is not a valid time frame'),
+        ('hv:10,15m,invalid', '`invalid` is not a valid trading days'),
+        ('hv:10,15m,0', 'but got `0`'),
+        ('hv:10,15m,366', 'but got `366`'),
     ]
 
     for directive_str, err_msg in CASES:
