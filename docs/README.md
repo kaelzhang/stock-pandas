@@ -742,7 +742,7 @@ stock['donchian.l']
 hv:<period>,<time_frame>,<trading_days>
 ```
 
-Gets the historical valatility, the statistical measure of the dispersion of returns for a security or index over a period of time
+Gets the historical volatility, the statistical measure of the dispersion of returns for a security or index over a period of time
 
 - **period** `int`
 - **time_frame** string type of `TimeFrame`, `'1m'`, `'3m'`, etc
