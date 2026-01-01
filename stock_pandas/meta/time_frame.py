@@ -39,9 +39,14 @@ class TimeFrame:
 
     _unify: TimeFrameUnifier
     _str: str
+    _minutes: int
 
     def __str__(self) -> str:
         return self._str
+
+    @property
+    def minutes(self) -> int:
+        return self._minutes
 
     def unify(self, date: Timestamp) -> int:
         """
@@ -86,7 +91,8 @@ MAGNITUDE_YEAR   = 100000000
 def define(
     suffix: str,
     name: Union[str, List[str]],
-    unify: TimeFrameUnifier
+    unify: TimeFrameUnifier,
+    minutes: int
 ) -> TimeFrame:
     names = name if isinstance(name, list) else [name]
     primary_name = names[0]
@@ -94,6 +100,7 @@ def define(
     class NewClass(TimeFrame):
         _unify = staticmethod(unify)
         _str = primary_name
+        _minutes = minutes
 
     NewClass.__name__ = f'TimeFrame{suffix}'
 
@@ -116,11 +123,11 @@ def unify_minute(n: int, date: Timestamp) -> int:
     )
 
 
-TimeFrame.m1 = define('m1', '1m', partial(unify_minute, 1))
-TimeFrame.m3 = define('m3', '3m', partial(unify_minute, 3))
-TimeFrame.m5 = define('m5', '5m', partial(unify_minute, 5))
-TimeFrame.m15 = define('m15', '15m', partial(unify_minute, 15))
-TimeFrame.m30 = define('m30', '30m', partial(unify_minute, 30))
+TimeFrame.m1 = define('m1', '1m', partial(unify_minute, 1), 1)
+TimeFrame.m3 = define('m3', '3m', partial(unify_minute, 3), 3)
+TimeFrame.m5 = define('m5', '5m', partial(unify_minute, 5), 5)
+TimeFrame.m15 = define('m15', '15m', partial(unify_minute, 15), 15)
+TimeFrame.m30 = define('m30', '30m', partial(unify_minute, 30), 30)
 
 
 def unify_hour(n: int, date: Timestamp) -> int:
@@ -132,12 +139,14 @@ def unify_hour(n: int, date: Timestamp) -> int:
     )
 
 
-TimeFrame.H1 = define('H1', ['1h', '1H'], partial(unify_hour, 1))
-TimeFrame.H2 = define('H2', ['2h', '2H'], partial(unify_hour, 2))
-TimeFrame.H4 = define('H4', ['4h', '4H'], partial(unify_hour, 4))
-TimeFrame.H6 = define('H6', ['6h', '6H'], partial(unify_hour, 6))
-TimeFrame.H8 = define('H8', ['8h', '8H'], partial(unify_hour, 8))
-TimeFrame.H12 = define('H12', ['12h', '12H'], partial(unify_hour, 12))
+TimeFrame.H1 = define('H1', ['1h', '1H'], partial(unify_hour, 1), 60)
+TimeFrame.H2 = define('H2', ['2h', '2H'], partial(unify_hour, 2), 120)
+TimeFrame.H4 = define('H4', ['4h', '4H'], partial(unify_hour, 4), 240)
+TimeFrame.H6 = define('H6', ['6h', '6H'], partial(unify_hour, 6), 360)
+TimeFrame.H8 = define('H8', ['8h', '8H'], partial(unify_hour, 8), 480)
+TimeFrame.H12 = define(
+    'H12', ['12h', '12H'], partial(unify_hour, 12), 720
+)
 
 
 def unify_date(n: int, date: Timestamp) -> int:
@@ -148,9 +157,9 @@ def unify_date(n: int, date: Timestamp) -> int:
     )
 
 
-TimeFrame.D1 = define('D1', ['1d', '1D'], partial(unify_date, 1))
-TimeFrame.D3 = define('D3', ['3d', '3D'], partial(unify_date, 3))
-TimeFrame.W1 = define('W1', ['1w', '1W'], partial(unify_date, 7))
+TimeFrame.D1 = define('D1', ['1d', '1D'], partial(unify_date, 1), 1440)
+TimeFrame.D3 = define('D3', ['3d', '3D'], partial(unify_date, 3), 4320)
+TimeFrame.W1 = define('W1', ['1w', '1W'], partial(unify_date, 7), 10080)
 
 
 def unify_month(n: int, date: Timestamp) -> int:
@@ -160,7 +169,7 @@ def unify_month(n: int, date: Timestamp) -> int:
     )
 
 
-TimeFrame.M1 = define('M1', '1M', partial(unify_month, 1))
+TimeFrame.M1 = define('M1', '1M', partial(unify_month, 1), 525600)
 
 
 def unify_year(n: int, date: Timestamp) -> int:
@@ -169,4 +178,4 @@ def unify_year(n: int, date: Timestamp) -> int:
     )
 
 
-TimeFrame.Y1 = define('Y1', ['1y', '1Y'], partial(unify_year, 1))
+TimeFrame.Y1 = define('Y1', ['1y', '1Y'], partial(unify_year, 1), 525600)

@@ -50,7 +50,7 @@ if _cow in ('1', 'on', 'true'):
     # Enable pandas Copy-on-Write mode
     # https://pandas.pydata.org/pandas-docs/stable/user_guide/copy_on_write.html#copy-on-write-chained-assignment
     pd.options.mode.copy_on_write = True
-elif _cow in ('0', 'off', 'false'):
+elif _cow in ('0', 'off', 'false'): # pragma: no cover
     pd.options.mode.copy_on_write = False # pragma: no cover
 
 

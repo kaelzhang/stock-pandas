@@ -152,6 +152,11 @@ Which prints the 2-period simple moving average on column `"close"`.
     - `'6h'` or `TimeFrame.H6`
     - `'8h'` or `TimeFrame.H8`
     - `'12h'` or `TimeFrame.H12`
+    - `'1d'` or `TimeFrame.D1`
+    - `'3d'` or `TimeFrame.D3`
+    - `'1W'` or `TimeFrame.W1`
+    - `'1M'` or `TimeFrame.M1`
+    - `'1Y'` or `TimeFrame.Y1`
 
 ### stock.exec(directive: str, create_column: bool=False) -> np.ndarray
 
@@ -710,7 +715,7 @@ donchian.upper:<period>,<column_upper>
 donchian.lower:<period>,<column_lower>
 ```
 
-Gets the Donchian channels
+Gets the Donchian channels, the historical view of price volatility by charting a security's highest and lowest prices over a set period
 
 - **period** `int`
 - **column_upper?** `str='high'` The column to calculate highest high values, defaults to `'high'`
@@ -728,6 +733,23 @@ stock['donchian.upper']
 # Donchian lower channel, which is equivalent to stock['donchian.l']
 stock['donchian.lower']
 stock['donchian.l']
+```
+
+### `hv`, Historical Volatility
+
+```
+hv:<period>,<time_frame>,<trading_days>
+```
+
+Gets the historical valatility, the statistical measure of the dispersion of returns for a security or index over a period of time
+
+- **period** `int`
+- **time_frame** string type of `TimeFrame`, `'1m'`, `'3m'`, etc
+- **trading_days** `int=252` trading days in a year, defaults to `252`, for crypto currencies, `365` should be used.
+
+```py
+# 10-period historical volatility for 15-minute data based on 365 yearly trading days
+stock['hv:10,15m,365']
 ```
 
 

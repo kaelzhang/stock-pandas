@@ -22,6 +22,11 @@ from stock_pandas.directive.command import (
     CommandArg,
 )
 from stock_pandas.directive.types import ReturnType
+from stock_pandas.meta.time_frame import (
+    timeFrames,
+    TimeFrame
+)
+
 from .base import BUILTIN_COMMANDS
 
 from .args import (
@@ -129,8 +134,53 @@ BUILTIN_COMMANDS['bbw'] = CommandDefinition(
 )
 
 
-# def vol(df, s: slice, period: int) -> ReturnType:
-#     """Gets the volatility of the stock
-#     """
+DAY_MINUTES = TimeFrame.D1.minutes
 
-#     # return df.get_column('volume')[s].to_numpy(), period
+def hv(
+    df: 'StockDataFrame',
+    s: slice,
+    period: int,
+    minutes: int,
+    trading_days: int
+) -> ReturnType:
+    """Gets the historical volatility of the stock
+    """
+
+    close = df.get_column('close')[s]
+    log_return = np.log(close / close.shift(1))
+    rolling_std = rolling_calc(log_return, period, np.std)
+
+    return (
+        rolling_std * np.sqrt(trading_days * DAY_MINUTES / minutes),
+        period + 1
+    )
+
+
+def trading_days_to_int(value: str) -> int:
+    try:
+        days = int(value)
+    except ValueError:
+        raise ValueError(f'`{value}` is not a valid trading days')
+
+    if days <= 0 or days > 365:
+        raise ValueError(f'`{value}` must be greater than 0 and less than 365')
+
+    return days
+
+
+def time_frame_to_minutes(value: str) -> int:
+    time_frame = timeFrames.get(value)
+
+    if time_frame is None:
+        raise ValueError(f'`{value}` is not a valid time frame')
+
+    return time_frame.minutes
+
+
+BUILTIN_COMMANDS['hv'] = CommandDefinition(
+    CommandPreset(hv, [
+        CommandArg(coerce=period_to_int),
+        CommandArg(DAY_MINUTES, time_frame_to_minutes),
+        CommandArg(252, trading_days_to_int)
+    ])
+)
