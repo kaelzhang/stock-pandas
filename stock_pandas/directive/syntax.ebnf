@@ -1,4 +1,6 @@
-directive ::= primary_directive ( operator expression )?
+directive ::= expression ( operator expression )?
+
+expression ::= number | primary_directive
 
 primary_directive ::=
   ( "-" | "~" )?
@@ -14,14 +16,25 @@ primary_directive ::=
 
 wrapped_directive ::= "(" directive ")"
 
-operator ::= logical_operator | math_operator
+operator ::=
+  style_operator
+  | bitwise_operator
+  | logical_operator
+  | addition_operator
+  | multiplication_operator
+
+style_operator ::= '//' | '\\' | '><'
+
+// Bitwise operators
+bitwise_operator ::= '|' | '&' | '^'
 
 // Logical (Boolean) operators
-logical_operator ::= '//' | '\\' | '><' | '<' | '<=' | '==' | '!=' | '>=' | '>' | '|' | '&'
-// Math operators
-math_operator ::= '/' | '*' | '+' | '-'
+logical_operator ::=  '<' | '<=' | '==' | '!=' | '>=' | '>' | '|' | '&'
 
-expression ::= number | primary_directive
+// Math operators
+addition_operator ::= '+' | '-'
+multiplication_operator ::= '*' | '/'
+
 
 command ::= command_name ( ":" param ( "," param )* )? ( "@" series ( "," series )* )?
 
