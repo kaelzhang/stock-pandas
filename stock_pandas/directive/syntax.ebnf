@@ -1,6 +1,20 @@
-directive ::= expression ( operator expression )?
+// Top level: lowest priority operators (Style operators: '//' | '\\' | '><')
+directive ::= bitwise_expression ( style_operator bitwise_expression )*
 
-expression ::= number | primary_directive
+// Bitwise operators ('|' | '&' | '^')
+bitwise_expression ::= logical_expression ( bitwise_operator logical_expression )*
+
+// Logical operators ('<' | '<=' | '==' | '!=' | '>=' | '>' | '||' | '&&')
+logical_expression ::= addition_expression ( logical_operator addition_expression )*
+
+// Addition operators ('+' | '-')
+addition_expression ::= multiplication_expression ( addition_operator multiplication_expression )*
+
+// Multiplication operators (highest priority: '*' | '/')
+multiplication_expression ::= primary_expression ( multiplication_operator primary_expression )*
+
+// Primary expressions (no operators)
+primary_expression ::= number | primary_directive
 
 primary_directive ::=
   ( "-" | "~" )?
@@ -16,20 +30,13 @@ primary_directive ::=
 
 wrapped_directive ::= "(" directive ")"
 
-operator ::=
-  style_operator
-  | bitwise_operator
-  | logical_operator
-  | addition_operator
-  | multiplication_operator
-
 style_operator ::= '//' | '\\' | '><'
 
 // Bitwise operators
 bitwise_operator ::= '|' | '&' | '^'
 
 // Logical (Boolean) operators
-logical_operator ::=  '<' | '<=' | '==' | '!=' | '>=' | '>' | '|' | '&'
+logical_operator ::=  '<' | '<=' | '==' | '!=' | '>=' | '>' | '||' | '&&'
 
 // Math operators
 addition_operator ::= '+' | '-'
