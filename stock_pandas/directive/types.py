@@ -1,22 +1,23 @@
 from __future__ import annotations
-import operator
 from typing import (
     Optional,
-    Tuple,
     Union,
-    Callable,
     List,
-    Any,
     TYPE_CHECKING,
     Protocol
 )
 from dataclasses import dataclass
-from numpy.typing import NDArray
 
 from stock_pandas.common import (
     join_args,
 )
-from stock_pandas.directive.cache import DirectiveCache
+
+from .operator import (
+    OperatorArgType,
+    OperatorFormula,
+    UnaryOperatorFormula,
+    ReturnType
+)
 
 if TYPE_CHECKING:
     from stock_pandas.dataframe import StockDataFrame # pragma: no cover
@@ -149,8 +150,7 @@ class UnaryOperator:
 
 
 OperandType = Union[Command, Expression, float]
-PrimativeType = Union[str, int, float]
-ReturnType = NDArray[Any]
+PrimativeType = Union[int, float, bool]
 
 
 class CommandFormula(Protocol):
@@ -168,9 +168,5 @@ class CommandLookback(Protocol):
         *args: PrimativeType
     ) -> int: ...
 
-
-OperatorArgType = Union[float, ReturnType]
-OperatorFormula = Callable[[OperatorArgType, OperatorArgType], ReturnType]
-UnaryOperatorFormula = Callable[[OperatorArgType], ReturnType]
 
 Directive = Union[Expression, Command]
