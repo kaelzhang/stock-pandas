@@ -1,3 +1,12 @@
+// Example:
+// ✅ 1. ( close < boll.lower ) & ( kdj.j < 0 )
+// ✅ 2. ( close ) > boll.lower
+// ✅ 3. - (boll.upper - close) < close
+// ✅ 4. - boll.upper < close
+// ✅ 5. - boll
+// ✅ 6. - bbw / 4 * ma:20 + 2 * ma:20
+// ✅ 7. - bbw / 4 * ( ma:20 + - 2 * ma:20 ) < close
+
 // Top level: lowest priority operators (Style operators: '//' | '\\' | '><')
 directive ::= bitwise_expression ( style_operator bitwise_expression )*
 
@@ -19,13 +28,7 @@ primary_expression ::= number | primary_directive
 primary_directive ::=
   ( "-" | "~" )?
   (
-    // ✅ ( close < boll.lower ) & ( kdj.j < 0 )
-    // ✅ ( close ) > boll.lower
-    // ✅ `- (boll.upper - close) < close`
-    wrapped_directive
-    // ✅ `- boll.upper < close`
-    // ✅ `- boll`
-    | command
+    wrapped_directive | command
   )
 
 wrapped_directive ::= "(" directive ")"

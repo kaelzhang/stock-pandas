@@ -1,82 +1,101 @@
 from __future__ import annotations
+import operator
 from typing import (
     Optional,
     Tuple,
     Union,
     Callable,
     List,
+    Any,
     TYPE_CHECKING,
     Protocol
 )
 from dataclasses import dataclass
-from numpy import ndarray
+from numpy.typing import NDArray
 
 from stock_pandas.common import (
     join_args,
 )
+from stock_pandas.directive.cache import DirectiveCache
 
 if TYPE_CHECKING:
     from stock_pandas.dataframe import StockDataFrame # pragma: no cover
 
 
+def _run_expression(
+    expression: OperandType,
+    df: StockDataFrame,
+    s: slice
+) -> OperatorArgType:
+    if isinstance(expression, float):
+        return expression
+
+    return expression.run(df, s)
+
+
 @dataclass(frozen=True, slots=True)
-class Directive:
-    command: Command
-    operator: Optional[Operator] = None
-    expression: Optional[Expression] = None
+class Expression:
+    operator: Union[OperatorFormula, UnaryOperatorFormula]
+    left: Optional[OperandType] = None
+    right: Optional[OperandType] = None
+    root: bool = False
 
     # Use __str__ instead of __repr__,
     # for better debugging experience
     # - __str__ for user method invocation
     # - __repr__ for internal debugging
     def __str__(self) -> str:
-        return (
-            f'{self.command}{self.operator}{self.expression}'
-            if (
-                self.operator is not None
-                and self.expression is not None
-            )
-            else str(self.command)
+        stringified = (
+            f'{self.operator}{self.right}'
+            if self.right is None
+            else f'{self.operator}{self.operator}{self.right}'
         )
+
+        return (
+            f'({stringified})'
+            if self.root
+            # We do not need to wrap the stringified directive
+            # for top-level directives
+            else stringified
+        )
+
+    @property
+    def cumulative_lookback(self) -> int:
+        right_lb = self.right.cumulative_lookback()
+
+        if self.left is None:
+            return right_lb
+
+        left_lb = self.left.cumulative_lookback()
+        return max(left_lb, right_lb)
 
     def run(
         self,
         df: StockDataFrame,
         s: slice
     ) -> ReturnType:
-        left, period_left = self.command.run(df, s)
+        if self.left is None:
+            return self.operator.formula(_run_expression(self.right, df, s))
 
-        if not self.operator:
-            return left, period_left
-
-        expr = self.expression
-
-        right, period_right = (
-            expr.run(df, s)
-            if isinstance(expr, Command)
-            else (expr, 0)
+        return self.operator.formula(
+            _run_expression(self.left, df, s),
+            _run_expression(self.right, df, s)
         )
-
-        operated = self.operator.formula(left, right)
-
-        # Since 0.12.0
-        # `operated` will not be of type np.nan
-
-        # # Plan.A: `np.nan` makes non-sense, so mark them all as False
-        # # or Plan.B: mark as `np.nan` ?
-        # # Plan.A has better compatibility,
-        # #   and `operated` is often used as condition indexer,
-        # #   so it must be of bool type
-        # operated = operated & is_not_nan(left) & is_not_nan(right)
-
-        return operated, max(period_left, period_right)
 
 
 @dataclass(frozen=True, slots=True)
 class Command:
+    """
+    Args:
+        lookback (CommandLookback): How many `np.nan`
+    """
+
     name: str
-    args: List[Argument]
+    params: List[PrimativeType]
+    series: List[Command, Expression]
     formula: CommandFormula
+    lockback: CommandLookback
+    root: bool = False
 
     def __str__(self) -> str:
         return (
@@ -85,39 +104,30 @@ class Command:
             else self.name
         )
 
+    @property
+    def cumulative_lookback(self) -> int:
+        base_lb = self.lockback(*self.params)
+
+        series_lb = max(
+            series.cumulative_lookback
+            for series in self.series
+        )
+
+        # Since the current command calcuates based on the series,
+        # the lookback increases
+        return base_lb + series_lb
+
     def run(
         self,
         df: StockDataFrame,
         s: slice
     ) -> ReturnType:
-        args = [
-            arg.arg_value
-            for arg in self.args
+        arrays = [
+            series.run(df, s)
+            for series in self.series
         ]
-        return self.formula(df, s, *args)
 
-
-@dataclass(frozen=True, slots=True)
-class Argument:
-    """
-    Args:
-        value: The value of the argument.
-        is_directive: Whether the argument is a directive.
-    """
-
-    value: ArgumentValue
-    is_directive: bool = False
-
-    @property
-    def arg_value(self) -> CommandArgType:
-        return (
-            str(self.value)
-            if self.is_directive
-            else self.value
-        )
-
-    def __str__(self) -> str:
-        return f'({self.value})' if self.is_directive else str(self.value)
+        return self.formula(*self.params, *arrays)
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,25 +139,38 @@ class Operator:
         return self.name
 
 
-CommandArgType = Union[str, int, float]
-ReturnType = Tuple[
-    ndarray,
-    # The minimum periods to calculate the indicator,
-    # which is actually `lookback + 1`
-    int
-]
+@dataclass(frozen=True, slots=True)
+class UnaryOperator:
+    name: str
+    formula: UnaryOperatorFormula
+
+    def __str__(self) -> str:
+        return self.name
+
+
+OperandType = Union[Command, Expression, float]
+PrimativeType = Union[str, int, float]
+ReturnType = NDArray[Any]
 
 
 class CommandFormula(Protocol):
     def __call__(
         self,
-        df: 'StockDataFrame',
-        s: slice,
-        *args: CommandArgType
+        # df: 'StockDataFrame',
+        # s: slice,
+        *args: Union[PrimativeType, ReturnType]
     ) -> ReturnType: ...
 
 
-OperatorFormula = Callable[[ndarray, ndarray], ndarray]
+class CommandLookback(Protocol):
+    def __call__(
+        self,
+        *args: PrimativeType
+    ) -> int: ...
 
-Expression = Union[Command, float]
-ArgumentValue = Union[CommandArgType, Directive]
+
+OperatorArgType = Union[float, ReturnType]
+OperatorFormula = Callable[[OperatorArgType, OperatorArgType], ReturnType]
+UnaryOperatorFormula = Callable[[OperatorArgType], ReturnType]
+
+Directive = Union[Expression, Command]
