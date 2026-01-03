@@ -99,10 +99,10 @@ OPERATORS = {
 }
 
 
-def plus(
-    array: NDArrayAny
-) -> NDArrayAny:
-    return array
+# def plus(
+#     array: NDArrayAny
+# ) -> NDArrayAny:
+#     return array
 
 
 def minus(
@@ -121,7 +121,7 @@ def not_operator(
 # - directive
 # ~ directive
 UNERY_OPERATORS = {
-    '+': plus,
+    # '+': plus,
     '-': minus,
     '~': not_operator
 }

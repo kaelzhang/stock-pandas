@@ -1,10 +1,17 @@
 directive ::=
-  // unary operator
-  ( "+" | "-" | "~" )? directive
-  // parentheses
-  | "(" directive ")"
-  // binary operator
-  | directive operator expression
+  ( "-" | "~" )?
+  (
+    // ✅ ( close < boll.lower ) & ( kdj.j < 0 )
+    // ✅ ( close ) > boll.lower
+    // ✅ `- (boll.upper - close) < close`
+    wrapped_directive
+    // ✅ `- boll.upper < close`
+    // ✅ `- boll`
+    | command
+  )
+  ( operator expression )?
+
+wrapped_directive ::= "(" directive ")"
 
 operator ::= logical_operator | math_operator
 
@@ -13,19 +20,27 @@ logical_operator ::= '//' | '\\' | '><' | '<' | '<=' | '==' | '!=' | '>=' | '>' 
 // Math operators
 math_operator ::= '/' | '*' | '+' | '-'
 
-expression ::= number | directive
+expression ::= number | wrapped_directive | command
 
 command ::= command_name ( ":" param ( "," param )* )? ( "@" series ( "," series )* )?
 
-command_name ::= main_command_name | main_command_name "." sub_command_name
-main_command_name ::= alphabets
-sub_command_name ::= alphabets
+command_name ::= main_command_name ( "." sub_command_name )?
+
+// fallback to column
+main_command_name ::= ALPHABETS
+sub_command_name ::= ALPHABETS
 
 // - empty_string: default value
 // - number: number value
-param ::= empty_string | number
+param ::= EMPTY_STRING | number
 
 // - empty_string: default value
-// - alphabets: column name
+// - ALPHABETS: column name
 // - directive: nested directive
-series ::= empty_string | alphabets | "(" directive ")"
+series ::= EMPTY_STRING | ALPHABETS | wrapped_directive
+
+number ::= DIGIT+ ( "." DIGIT+ )?
+DIGIT  ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+ALPHABETS ::= [a-zA-Z_][a-zA-Z0-9_]*
+EMPTY_STRING ::= ""
