@@ -25,7 +25,7 @@ def cross_down(
     right: NDArrayAny
 ) -> NDArrayAny:
     cross, less = compare_cross(left, right)
-    return cross & ~ less  # type: ignore
+    return cross & ~ less
 
 
 def less_than(
@@ -46,7 +46,14 @@ def equal(
     left: NDArrayAny,
     right: NDArrayAny
 ) -> NDArrayAny:
-    return left == right  # type: ignore
+    return left == right
+
+
+def not_equal(
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
+    return left != right
 
 
 def larger_than_or_equal(
@@ -63,13 +70,58 @@ def larger_than(
     return left > right
 
 
+def logical_or(
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
+    return left | right
+
+
+def logical_and(
+    left: NDArrayAny,
+    right: NDArrayAny
+) -> NDArrayAny:
+    return left & right
+
+
 OPERATORS = {
-    '><': cross,
     '//': cross_up,
     '\\': cross_down,
+    '><': cross,
     '<': less_than,
     '<=': less_than_or_equal,
     '==': equal,
+    '!=': not_equal,
     '>=': larger_than_or_equal,
-    '>': larger_than
+    '>': larger_than,
+    '|': logical_or,
+    '&': logical_and
+}
+
+
+def plus(
+    array: NDArrayAny
+) -> NDArrayAny:
+    return array
+
+
+def minus(
+    array: NDArrayAny
+) -> NDArrayAny:
+    return - array
+
+
+def not_operator(
+    array: NDArrayAny
+) -> NDArrayAny:
+    return ~ array
+
+
+# + directive
+# - directive
+# ~ directive
+UNERY_OPERATORS = {
+    '+': plus,
+    '-': minus,
+    '~': not_operator
 }

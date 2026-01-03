@@ -1,0 +1,31 @@
+directive ::=
+  // unary operator
+  ( "+" | "-" | "~" )? directive
+  // parentheses
+  | "(" directive ")"
+  // binary operator
+  | directive operator expression
+
+operator ::= logical_operator | math_operator
+
+// Logical (Boolean) operators
+logical_operator ::= '//' | '\\' | '><' | '<' | '<=' | '==' | '!=' | '>=' | '>' | '|' | '&'
+// Math operators
+math_operator ::= '/' | '*' | '+' | '-'
+
+expression ::= number | directive
+
+command ::= command_name ( ":" param ( "," param )* )? ( "@" series ( "," series )* )?
+
+command_name ::= main_command_name | main_command_name "." sub_command_name
+main_command_name ::= alphabets
+sub_command_name ::= alphabets
+
+// - empty_string: default value
+// - number: number value
+param ::= empty_string | number
+
+// - empty_string: default value
+// - alphabets: column name
+// - directive: nested directive
+series ::= empty_string | alphabets | "(" directive ")"
