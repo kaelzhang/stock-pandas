@@ -9,18 +9,35 @@
 
 
 // Top level: lowest priority operators:
-// Bitwise operators: '|' | '&' | '^')
+// Logical operators: '||' | '&&'
 // -> bool series
-directive ::= bitwise_expression ( logical_operator bitwise_expression )*
+directive ::= bitwise_or_expression ( logical_operator bitwise_or_expression )*
 
-logical_expression ( bitwise_operator logical_expression )*
-
+// Bitwise OR operator: '|' (lowest priority)
 // -> bool series
-logical_expression ::= style_expression ( logical_operator style_expression )*
+bitwise_or_expression ::= bitwise_xor_expression ( bitwise_or_operator bitwise_xor_expression )*
 
+// Bitwise XOR operator: '^'
 // -> bool series
-style_expression ::= addtion_expression ( style_operator addtion_expression )*
+bitwise_xor_expression ::= bitwise_and_expression ( bitwise_xor_operator bitwise_and_expression )*
 
+// Bitwise AND operator: '&' (highest priority)
+// -> bool series
+bitwise_and_expression ::= relational_expression ( bitwise_and_operator relational_expression )*
+
+// Relational operators: '<' | '<=' | '>=' | '>'
+// -> bool series
+relational_expression ::= equality_expression ( relational_operator equality_expression )*
+
+// Equality operators: '==' | '!='
+// -> bool series
+equality_expression ::= style_expression ( equality_operator style_expression )*
+
+// Style operators: '//' | '\\' | '><'
+// -> bool series
+style_expression ::= addition_expression ( style_operator addition_expression )*
+
+// Addition operators: '+' | '-'
 // -> float series
 addition_expression ::= multiplication_expression ( addition_operator multiplication_expression )*
 
@@ -43,13 +60,13 @@ wrapped_directive ::= "(" directive ")"
 // ----------------------------------------------------------------
 logical_operator ::= '||' | '&&'
 
-// Bitwise operators
+// Bitwise operators (priority: | < ^ < &)
 bitwise_or_operator ::= '|'
 bitwise_xor_operator ::= '^'
 bitwise_and_operator ::= '&'
 
 // Logical (Boolean) operators
-relational_operator ::=  '<' | '<=' | '>=' | '>' |
+relational_operator ::= '<' | '<=' | '>=' | '>'
 
 equality_operator ::= '==' | '!='
 
