@@ -1,4 +1,6 @@
-directive ::=
+directive ::= primary_directive ( operator expression )?
+
+primary_directive ::=
   ( "-" | "~" )?
   (
     // ✅ ( close < boll.lower ) & ( kdj.j < 0 )
@@ -9,7 +11,6 @@ directive ::=
     // ✅ `- boll`
     | command
   )
-  ( operator expression )?
 
 wrapped_directive ::= "(" directive ")"
 
@@ -20,7 +21,7 @@ logical_operator ::= '//' | '\\' | '><' | '<' | '<=' | '==' | '!=' | '>=' | '>' 
 // Math operators
 math_operator ::= '/' | '*' | '+' | '-'
 
-expression ::= number | wrapped_directive | command
+expression ::= number | primary_directive
 
 command ::= command_name ( ":" param ( "," param )* )? ( "@" series ( "," series )* )?
 
