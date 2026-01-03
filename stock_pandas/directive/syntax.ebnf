@@ -7,19 +7,25 @@
 // ✅ 6. - bbw / 4 * ma:20 + 2 * ma:20
 // ✅ 7. - bbw / 4 * ( ma:20 + - 2 * ma:20 ) < close
 
-// Top level: lowest priority operators (Style operators: '//' | '\\' | '><')
-directive ::= bitwise_expression ( style_operator bitwise_expression )*
 
-// Bitwise operators ('|' | '&' | '^')
-bitwise_expression ::= logical_expression ( bitwise_operator logical_expression )*
+// Top level: lowest priority operators:
+// Bitwise operators: '|' | '&' | '^')
+// -> bool series
+directive ::= bitwise_expression ( logical_operator bitwise_expression )*
 
-// Logical operators ('<' | '<=' | '==' | '!=' | '>=' | '>' | '||' | '&&')
-logical_expression ::= addition_expression ( logical_operator addition_expression )*
+logical_expression ( bitwise_operator logical_expression )*
 
-// Addition operators ('+' | '-')
+// -> bool series
+logical_expression ::= style_expression ( logical_operator style_expression )*
+
+// -> bool series
+style_expression ::= addtion_expression ( style_operator addtion_expression )*
+
+// -> float series
 addition_expression ::= multiplication_expression ( addition_operator multiplication_expression )*
 
 // Multiplication operators (highest priority: '*' | '/')
+// -> float series
 multiplication_expression ::= primary_expression ( multiplication_operator primary_expression )*
 
 // Primary expressions (no operators)
@@ -33,17 +39,29 @@ primary_directive ::=
 
 wrapped_directive ::= "(" directive ")"
 
-style_operator ::= '//' | '\\' | '><'
+// Priority from lowest to highest
+// ----------------------------------------------------------------
+logical_operator ::= '||' | '&&'
 
 // Bitwise operators
-bitwise_operator ::= '|' | '&' | '^'
+bitwise_or_operator ::= '|'
+bitwise_xor_operator ::= '^'
+bitwise_and_operator ::= '&'
 
 // Logical (Boolean) operators
-logical_operator ::=  '<' | '<=' | '==' | '!=' | '>=' | '>' | '||' | '&&'
+relational_operator ::=  '<' | '<=' | '>=' | '>' |
+
+equality_operator ::= '==' | '!='
+
+// Since style operator generates bool series from data series
+// for logical operators,
+// we put the priority higher than equality operators
+style_operator ::= '//' | '\\' | '><'
 
 // Math operators
 addition_operator ::= '+' | '-'
 multiplication_operator ::= '*' | '/'
+// ----------------------------------------------------------------
 
 
 command ::= command_name ( ":" param ( "," param )* )? ( "@" series ( "," series )* )?
@@ -63,7 +81,7 @@ param ::= EMPTY_STRING | number
 // - directive: nested directive
 series ::= EMPTY_STRING | ALPHABETS | wrapped_directive
 
-number ::= DIGIT+ ( "." DIGIT+ )?
+number ::= ( "-" )? DIGIT+ ( "." DIGIT+ )?
 DIGIT  ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 
 ALPHABETS ::= [a-zA-Z_][a-zA-Z0-9_]*
