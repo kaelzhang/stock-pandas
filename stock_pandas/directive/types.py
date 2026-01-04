@@ -159,8 +159,8 @@ class Operator(Generic[OF]):
         return self.name
 
 
-OperandType = Union[Command, Expression, UnaryExpression, float]
 NumberType = Union[int, float]
+OperandType = Union[Command, Expression, UnaryExpression, NumberType]
 CommandParamType = Union[NumberType, bool]
 PrimativeType = Union[CommandParamType, str]
 

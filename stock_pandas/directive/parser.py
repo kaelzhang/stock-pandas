@@ -3,9 +3,7 @@ from typing import (
     Tuple,
     List,
     Optional,
-    Union,
-    # Type,
-    # Dict
+    Union
 )
 
 from .tokenizer import (
@@ -49,6 +47,10 @@ from .node import (
     SeriesArgumentNode,
     OperatorNode,
     ScalarNode
+)
+
+from .types import (
+    NumberType
 )
 
 from stock_pandas.exceptions import (
@@ -245,7 +247,7 @@ class Parser:
 
         if operator is None:
             if number is not None:
-                return ScalarNode(
+                return ScalarNode[NumberType](
                     loc=loc,
                     value=number
                 )
@@ -259,7 +261,7 @@ class Parser:
 
             # Then there is a minus sign
             self._next_token()
-            return ScalarNode(
+            return ScalarNode[NumberType](
                 loc=loc,
                 value= - number
             )
@@ -326,13 +328,13 @@ class Parser:
             start, end = m.span()
             name, sub = text[:start], text[end:]
 
-            sub = ScalarNode(
+            sub = ScalarNode[str](
                 loc=(loc[0], loc[1] + start),
                 value=sub
             )
 
         self._next_token()
-        return ScalarNode(
+        return ScalarNode[str](
             loc=loc,
             value=name
         ), sub
@@ -365,7 +367,7 @@ class Parser:
             args.append(
                 ArgumentNode(
                     loc=loc,
-                    value=ScalarNode(
+                    value=ScalarNode[NumberType](
                         loc=loc,
                         value=number
                     )
@@ -392,7 +394,7 @@ class Parser:
         loc = self._token.loc
         argument = SeriesArgumentNode(
             loc=loc,
-            value=ScalarNode(
+            value=ScalarNode[str](
                 loc=loc,
                 value=self._token.value
             )

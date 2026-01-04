@@ -4,7 +4,9 @@ from typing import (
     Optional,
     Callable,
     List,
-    Dict
+    Dict,
+    TypeVar,
+    Generic
 )
 from dataclasses import dataclass
 
@@ -74,12 +76,15 @@ CommandAliases = Dict[
 ]
 
 
-@dataclass(frozen=True, slots=True)
-class ScalarNode:
-    loc: Loc
-    value: PrimativeType
+PT = TypeVar('PT', bound=PrimativeType)
 
-    def create(self, _: Context) -> PrimativeType:
+
+@dataclass(frozen=True, slots=True)
+class ScalarNode(Generic[PT]):
+    loc: Loc
+    value: PT
+
+    def create(self, _: Context) -> PT:
         return self.value
 
 
@@ -100,8 +105,8 @@ class CommandDefinition:
 
     def get_preset(
         self,
-        main: ScalarNode,
-        sub: Optional[ScalarNode],
+        main: ScalarNode[str],
+        sub: Optional[ScalarNode[str]],
         context: Context
     ) -> Tuple[CommandPreset, Optional[str]]:
         main_name = main.value
@@ -135,7 +140,7 @@ class CommandDefinition:
 
         return self.preset, None
 
-    def _sub_name(self, sub: Optional[ScalarNode]) -> Optional[str]:
+    def _sub_name(self, sub: Optional[ScalarNode[str]]) -> Optional[str]:
         if sub is None:
             return None
 

@@ -18,7 +18,8 @@ from .types import (
     Command,
     Operator,
     CommandParamType,
-    CommandSeriesType
+    CommandSeriesType,
+    NumberType
 )
 from .operator import (
     OperatorFormula,
@@ -75,10 +76,10 @@ class UnaryExpressionNode:
 @dataclass(frozen=True, slots=True)
 class CommandNode:
     loc: Loc
-    name: ScalarNode
+    name: ScalarNode[str]
     args: List[ArgumentNode]
     series: List[SeriesArgumentNode]
-    sub: Optional[ScalarNode] = None
+    sub: Optional[ScalarNode[str]] = None
 
     def create(
         self,
@@ -207,7 +208,7 @@ class ArgumentNode:
     loc: Loc
     # command:,2
     # -> [None, 2]
-    value: Optional[ScalarNode]
+    value: Optional[ScalarNode[NumberType]]
 
     def create(self, context: Context):
         if self.value is None:
@@ -247,7 +248,10 @@ SeriesNodeTypes = Union[
     CommandNode,
     str
 ]
+
 ExpressionNodeTypes = Union[
-    ScalarNode,
-    SeriesNodeTypes
+    ScalarNode[NumberType],
+    ExpressionNode,
+    UnaryExpressionNode,
+    CommandNode
 ]
