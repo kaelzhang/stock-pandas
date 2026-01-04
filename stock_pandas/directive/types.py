@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import (
-    Optional,
+    # Optional,
     Union,
     List,
     TYPE_CHECKING,
@@ -41,7 +41,7 @@ class Expression:
     operator: OperatorFormula
     left: OperandType
     right: OperandType
-    root: bool = False
+    # root: bool = False
 
     # Use __str__ instead of __repr__,
     # for better debugging experience
@@ -54,13 +54,15 @@ class Expression:
             else f'{self.operator}{self.operator}{self.right}'
         )
 
-        return (
-            f'({stringified})'
-            if self.root
-            # We do not need to wrap the stringified directive
-            # for top-level directives
-            else stringified
-        )
+        return stringified
+
+        # return (
+        #     f'({stringified})'
+        #     if self.root
+        #     # We do not need to wrap the stringified directive
+        #     # for top-level directives
+        #     else stringified
+        # )
 
     @property
     def cumulative_lookback(self) -> int:
@@ -94,6 +96,10 @@ class UnaryExpression:
     def __str__(self) -> str:
         return f'{self.operator}{self.expression}'
 
+    @property
+    def cumulative_lookback(self) -> int:
+        return self.expression.cumulative_lookback()
+
     def run(self, df: StockDataFrame, s: slice) -> ReturnType:
         ...
 
@@ -109,8 +115,8 @@ class Command:
     params: List[PrimativeType]
     series: List[Command, Expression]
     formula: CommandFormula
-    lockback: CommandLookback
-    root: bool = False
+    lookback: CommandLookback
+    # root: bool = False
 
     def __str__(self) -> str:
         return (
@@ -121,7 +127,7 @@ class Command:
 
     @property
     def cumulative_lookback(self) -> int:
-        base_lb = self.lockback(*self.params)
+        base_lb = self.lookback(*self.params)
 
         series_lb = max(
             series.cumulative_lookback
@@ -174,4 +180,4 @@ class CommandLookback(Protocol):
     ) -> int: ...
 
 
-Directive = Union[Expression, Command]
+Directive = Union[Expression, UnaryExpression, Command]

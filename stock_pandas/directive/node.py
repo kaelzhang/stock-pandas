@@ -3,7 +3,7 @@ from typing import (
     Optional,
     Generic,
     List,
-    TypeVar
+    # TypeVar
     # Tuple
 )
 from dataclasses import dataclass
@@ -70,11 +70,13 @@ class UnaryExpressionNode:
     ) -> Expression:
         return Expression(self.operator.create(context), self.expression.create(context))
 
+
 @dataclass(frozen=True, slots=True)
 class CommandNode:
     loc: Loc
     name: ScalarNode
     args: List[ArgumentNode]
+    series: List[SeriesNode]
     sub: Optional[ScalarNode] = None
 
     def create(

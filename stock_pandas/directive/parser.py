@@ -21,8 +21,7 @@ from .tokenizer import (
 )
 
 from .operator import (
-    # OperatorFormula,
-    # UnaryOperatorFormula,
+    OperatorFormula,
     OperatorMap,
     OF,
 
@@ -56,9 +55,12 @@ from stock_pandas.exceptions import (
 
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
 
+
+OperatorPriority = List[OperatorMap[OperatorFormula]]
+
 # Lower priority processes eariler,
 # and comes more to the right of the list
-OPERATOR_PRIORITY: List[OperatorMap] = [
+OPERATOR_PRIORITY: OperatorPriority = [
     MULTIPLICATION_OPERATORS,
     ADDITION_OPERATORS,
     STYLE_OPERATORS,
@@ -69,6 +71,8 @@ OPERATOR_PRIORITY: List[OperatorMap] = [
     BITWISE_OR_OPERATORS,
     LOGICAL_OPERATORS
 ]
+
+ExpressionNodeTypes = Union[ExpressionNode, UnaryExpressionNode, ScalarNode]
 
 
 class Parser:
@@ -94,41 +98,11 @@ class Parser:
     # An _expect_<type> method
     # - should NOT next_token at the begining
     # - should next_token at the end
-    # - should returns Node or Tuple[Node]
+    # - should returns Node or Nodes
 
     # Actually bitwise expression
-    def _expect_directive(self) -> ExpressionNode:
-        self._expect_expression(OPERATOR_PRIORITY.copy())
-        # loc = self._token.loc
-
-        # command = self._expect_command()
-
-        # if self._token.EOF or self._is(STR_PARAN_R):
-        #     # There is no operator
-        #     # return Node(
-        #     #     TYPE_DIRECTIVE,
-        #     #     (command, None, None),
-        #     #     loc
-        #     # )
-        #     return DirectiveNode(
-        #         loc=loc,
-        #         command=command
-        #     )
-
-        # operator = self._expect_operator()
-        # expression = self._expect_expression()
-
-        # # return Node(
-        # #     TYPE_DIRECTIVE,
-        # #     (command, operator, expression),
-        # #     loc
-        # # )
-        # return DirectiveNode(
-        #     loc=loc,
-        #     command=command,
-        #     operator=operator,
-        #     expression=expression
-        # )
+    def _expect_directive(self) -> ExpressionNodeTypes:
+        return self._expect_expression(OPERATOR_PRIORITY.copy())
 
     def _expect_operator(
         self,
@@ -189,14 +163,38 @@ class Parser:
             formula=formula
         )
 
-    def _expect_logical_expression(self) -> ExpressionNode:
-        left = self._expect_bitwise_or_expression()
+    # def _expect_logical_expression(self) -> ExpressionNode:
+    #     left = self._expect_bitwise_or_expression()
+
+    #     while (
+    #         (operator := self._detect_operator(LOGICAL_OPERATORS))
+    #         and operator is not None
+    #     ):
+    #         right = self._expect_bitwise_or_expression()
+    #         left = ExpressionNode(
+    #             loc=left.loc,
+    #             operator=operator,
+    #             right=right
+    #         )
+
+    #     return left
+
+    def _expect_expression(
+        self,
+        operator_priority: OperatorPriority
+    ) -> ExpressionNodeTypes:
+        if not operator_priority:
+            return self._expect_primary_expression()
+
+        operators = operator_priority.pop()
+        left = self._expect_expression(operator_priority.copy())
 
         while (
-            (operator := self._detect_operator(LOGICAL_OPERATORS))
+            (operator := self._detect_operator(operators))
             and operator is not None
         ):
-            right = self._expect_bitwise_or_expression()
+            self._next_token()
+            right = self._expect_expression(operator_priority.copy())
             left = ExpressionNode(
                 loc=left.loc,
                 operator=operator,
@@ -205,25 +203,9 @@ class Parser:
 
         return left
 
-    # def _expect_logical_expression(self) -> ExpressionNode:
-    #     left = self._expect_style_expression()
-    #     ...
-
-    # def _expect_style_expression(self) -> ExpressionNode:
-    #     left = self._expect_addition_expression()
-    #     ...
-
-    # def _expect_addition_expression(self) -> ExpressionNode:
-    #     left = self._expect_multiplication_expression()
-    #     ...
-
-    # def _expect_multiplication_expression(self) -> ExpressionNode:
-    #     left = self._expect_primary_expression()
-    #     ...
-
     def _expect_primary_expression(
         self
-    ) -> Union[ExpressionNode, UnaryExpressionNode, ScalarNode]:
+    ) -> ExpressionNodeTypes:
         unary = self._token.value
         loc = self._token.loc
 
