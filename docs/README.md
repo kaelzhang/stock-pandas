@@ -642,7 +642,9 @@ stock['kdj.d:9,3,3,50.0']
 stock[['kdj.k:9,9', 'kdj.d:9,9,9', 'kdj.j:9,9,9']]
 ```
 
-### `kdjc`, another variety of stochastic oscillator
+### <s>`kdjc`, another variety of stochastic oscillator</s>
+
+> Removed in 4.x
 
 Unlike `kdj`, `kdjc` uses **close** value instead of high and low value to calculate `rsv`, which makes the indicator more sensitive than `kdj`
 

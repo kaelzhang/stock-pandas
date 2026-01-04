@@ -181,43 +181,43 @@ from stock_pandas.exceptions import DirectiveSyntaxError
 #         assert convert(parsed) == expect
 
 
-# def test_invalid_columns():
-#     CASES = [
-#         ('a >', 'unexpected EOF'),
-#         ('>', 'unexpected token'),
-#         ('ma@(abc', 'unexpected EOF'),
-#         ('ma > 0 >', 'unexpected EOF'),
-#         ('ma@(abc > 0 >', 'unexpected EOF'),
-#         ('ma:5 > 0)', 'expect EOF')
-#     ]
+def test_invalid_columns():
+    CASES = [
+        ('a >', 'unexpected EOF'),
+        ('>', 'unexpected token'),
+        ('ma@(abc', 'unexpected EOF'),
+        ('ma > 0 >', 'unexpected EOF'),
+        ('ma@(abc > 0 >', 'unexpected EOF'),
+        ('ma:5 > 0)', 'expect EOF')
+    ]
 
-#     def parse(input):
-#         return Parser(input).parse()
+    def parse(input):
+        return Parser(input).parse()
 
-#     for directive_str, err_msg in CASES:
-#         with pytest.raises(DirectiveSyntaxError, match=err_msg):
-#             parse(directive_str)
-
-
-# def test_invalid_directive():
-#     try:
-#         Parser('''
-# repeat
-#     :
-#         5
-
-#     @   (
-#             column@close >> boll.upper
-#         )
-# ''').parse()
-#     except Exception as e:
-#         assert e.line == 7, 'line'
-#         assert e.column == 26, 'column'
-#         print()
-#         print(e)
+    for directive_str, err_msg in CASES:
+        with pytest.raises(DirectiveSyntaxError, match=err_msg):
+            parse(directive_str)
 
 
-def test_basic():
-    parser = Parser('ma:5 a)')
-    parsed = parser.parse()
-    print(parsed)
+def test_invalid_directive():
+    try:
+        Parser('''
+repeat
+    :
+        5
+
+    @   (
+            column@close >> boll.upper
+        )
+''').parse()
+    except Exception as e:
+        assert e.line == 7, 'line'
+        assert e.column == 26, 'column'
+        print()
+        print(e)
+
+
+# def test_basic():
+#     parser = Parser('rsi')
+#     parsed = parser.parse()
+#     print(parsed)

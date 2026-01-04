@@ -7,7 +7,7 @@ from typing import (
     Protocol,
     Generic
 )
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from stock_pandas.common import (
     join_args,
@@ -37,12 +37,26 @@ def _run_expression(
     return expression.run(df, s)
 
 
-@dataclass(frozen=True, slots=True)
-class Expression:
-    operator: OperatorFormula
+def _get_cumulative_lookback(expression: OperandType) -> int:
+    if not isinstance(expression, Lookback):
+        return 0
+
+    return expression.cumulative_lookback
+
+
+@dataclass
+class Lookback:
+    cumulative_lookback: int = field(init=False)
+
+    def __post_init__(self):
+        self.cumulative_lookback = self._cumulative_lookback()
+
+
+@dataclass(slots=True)
+class Expression(Lookback):
+    operator: Operator[OperatorFormula]
     left: OperandType
     right: OperandType
-    # root: bool = False
 
     # Use __str__ instead of __repr__,
     # for better debugging experience
@@ -65,14 +79,13 @@ class Expression:
         #     else stringified
         # )
 
-    @property
-    def cumulative_lookback(self) -> int:
-        right_lb = self.right.cumulative_lookback()
+    def _cumulative_lookback(self) -> int:
+        right_lb = _get_cumulative_lookback(self.right)
 
         if self.left is None:
             return right_lb
 
-        left_lb = self.left.cumulative_lookback()
+        left_lb = _get_cumulative_lookback(self.left)
         return max(left_lb, right_lb)
 
     def run(
@@ -80,33 +93,29 @@ class Expression:
         df: StockDataFrame,
         s: slice
     ) -> ReturnType:
-        if self.left is None:
-            return self.operator(_run_expression(self.right, df, s))
-
-        return self.operator(
+        return self.operator.formula(
             _run_expression(self.left, df, s),
             _run_expression(self.right, df, s)
         )
 
 
-@dataclass(frozen=True, slots=True)
-class UnaryExpression:
-    operator: UnaryOperatorFormula
+@dataclass(slots=True)
+class UnaryExpression(Lookback):
+    operator: Operator[UnaryOperatorFormula]
     expression: Directive
 
     def __str__(self) -> str:
         return f'{self.operator}{self.expression}'
 
-    @property
-    def cumulative_lookback(self) -> int:
-        return self.expression.cumulative_lookback()
+    def _cumulative_lookback(self) -> int:
+        return self.expression.cumulative_lookback
 
     def run(self, df: StockDataFrame, s: slice) -> ReturnType:
-        return self.operator(self.expression.run(df, s))
+        return self.operator.formula(self.expression.run(df, s))
 
 
-@dataclass(frozen=True, slots=True)
-class Command:
+@dataclass(slots=True)
+class Command(Lookback):
     """
     Args:
         lookback (CommandLookback): How many `np.nan`
@@ -125,12 +134,11 @@ class Command:
             else self.name
         )
 
-    @property
-    def cumulative_lookback(self) -> int:
+    def _cumulative_lookback(self) -> int:
         base_lb = self.lookback(*self.args)
 
         series_lb = max(
-            series.cumulative_lookback
+            _get_cumulative_lookback(series)
             for series in self.series
         )
 

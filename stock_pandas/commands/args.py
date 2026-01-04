@@ -1,6 +1,6 @@
 from stock_pandas.common import (
     period_to_int,
-    column_enums
+    # column_enums
 )
 
 from stock_pandas.directive.command import (

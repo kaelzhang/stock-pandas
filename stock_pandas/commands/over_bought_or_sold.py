@@ -1,10 +1,8 @@
 #
 # Indicators to show overbought or oversold position
 # ----------------------------------------------------
-from asyncio import Lock
-from functools import partial
 from typing import (
-    TYPE_CHECKING, Iterator
+    Iterator
 )
 
 import numpy as np
@@ -13,9 +11,6 @@ from stock_pandas.common import (
     rolling_calc,
     period_to_int,
 )
-
-if TYPE_CHECKING:
-    from stock_pandas.dataframe import StockDataFrame  # pragma: no cover
 
 from stock_pandas.math.ma import (
     calc_smma
@@ -26,16 +21,16 @@ from stock_pandas.directive.command import (
     CommandPreset,
     CommandArg
 )
-from stock_pandas.directive.types import ReturnType
+from stock_pandas.directive.types import (
+    ReturnType,
+    CommandArgInputType
+)
 from .base import BUILTIN_COMMANDS
 
 from .args import (
     arg_period,
-    lookback_period,
-    # arg_column_high,
-    # arg_column_low,
+    lookback_period
 )
-
 
 
 # llv & hhv
@@ -51,10 +46,12 @@ def llv(
     return rolling_calc(column, period, min)
 
 
-preset_llv = CommandPreset(llv, [
-    arg_period,
-    arg_column_low
-])
+preset_llv = CommandPreset(
+    formula=llv,
+    lookback=lookback_period,
+    args=[arg_period],
+    series=['low']
+)
 BUILTIN_COMMANDS['llv'] = CommandDefinition(preset_llv)
 
 
@@ -71,9 +68,7 @@ def hhv(
 preset_hhv = CommandPreset(
     formula=hhv,
     lookback=lookback_period,
-    args=[
-        arg_period
-    ],
+    args=[arg_period],
     series=['high']
 )
 BUILTIN_COMMANDS['hhv'] = CommandDefinition(preset_hhv)
@@ -83,19 +78,14 @@ BUILTIN_COMMANDS['hhv'] = CommandDefinition(preset_hhv)
 # ref: https://en.wikipedia.org/wiki/Donchian_channel
 
 def donchian(
-    df: 'StockDataFrame',
-    s: slice,
     period: int,
-    hhv_column: str,
-    llv_column: str
+    hhv_series: ReturnType,
+    llv_series: ReturnType
 ) -> ReturnType:
     """Gets Donchian Channel
     """
 
-    hhv = df.exec(f'hhv:{period},{hhv_column}')[s]
-    llv = df.exec(f'llv:{period},{llv_column}')[s]
-
-    return (hhv + llv) / 2, period
+    return (hhv(period, hhv_series) + llv(period, llv_series)) / 2
 
 
 BUILTIN_COMMANDS['donchian'] = CommandDefinition(
@@ -121,29 +111,31 @@ BUILTIN_COMMANDS['donchian'] = CommandDefinition(
 # ----------------------------------------------------
 
 def rsv(
-    column_low: str,
-    column_high: str,
-    df: 'StockDataFrame',
-    s: slice,
-    period: int
+    period: int,
+    high_series: ReturnType,
+    low_series: ReturnType,
+    close_series: ReturnType
 ) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
 
-    llv = df.exec(f'llv:{period},{column_low}')[s]
-    hhv = df.exec(f'hhv:{period},{column_high}')[s]
+    llv_series = llv(period, low_series)
+    hhv_series = hhv(period, high_series)
 
     v = (
-        (df.get_column('close')[s] - llv) / (hhv - llv)
+        (close_series - llv_series) / (hhv_series - llv_series)
     ).fillna(0).astype('float64') * 100
 
-    return v.to_numpy(), period
+    return v.to_numpy()
 
+series_rsv = ['high', 'low', 'close']
 
 BUILTIN_COMMANDS['rsv'] = CommandDefinition(
     CommandPreset(
-        partial[ReturnType](rsv, 'low', 'high'),
-        [arg_period]
+        formula=rsv,
+        lookback=lookback_period,
+        args=[arg_period],
+        series=series_rsv
     )
 )
 
@@ -180,51 +172,69 @@ def ewma(
 
 
 def kdj_k(
-    base: str,
-    df: 'StockDataFrame',
-    s: slice,
+    # base: str,
+    # df: 'StockDataFrame',
+    # s: slice,
     period_rsv: int,
     period_k: int,
-    init: float
+    init: float,
+    high_series: ReturnType,
+    low_series: ReturnType,
+    close_series: ReturnType
 ) -> ReturnType:
     """Gets KDJ K
     """
 
-    rsv = df.exec(f'{base}:{period_rsv}')[s]
+    rsv_series = rsv(period_rsv, high_series, low_series, close_series)
 
-    return np.fromiter(ewma(rsv, period_k, init), float), period_rsv
+    return np.fromiter(ewma(rsv_series, period_k, init), float)
 
 
 def kdj_d(
-    base: str,
-    df: 'StockDataFrame',
-    s: slice,
+    # base: str,
+    # df: 'StockDataFrame',
+    # s: slice,
     period_rsv: int,
     period_k: int,
     period_d: int,
-    init: float
+    init: float,
+    high_series: ReturnType,
+    low_series: ReturnType,
+    close_series: ReturnType
 ) -> ReturnType:
-    k = df.exec(f'{base}.k:{period_rsv},{period_k},{init}')[s]
+    k_series = kdj_k(
+        period_rsv, period_k, init,
+        high_series, low_series, close_series
+    )
 
-    return np.fromiter(ewma(k, period_d, init), float), period_rsv
+    return np.fromiter(ewma(k_series, period_d, init), float)
 
 
 def kdj_j(
-    base: str,
-    df: 'StockDataFrame',
-    s: slice,
+    # base: str,
+    # df: 'StockDataFrame',
+    # s: slice,
     period_rsv: int,
     period_k: int,
     period_d: int,
-    init: float
+    init: float,
+    high_series: ReturnType,
+    low_series: ReturnType,
+    close_series: ReturnType
 ) -> ReturnType:
-    k = df.exec(f'{base}.k:{period_rsv},{period_k},{init}')[s]
-    d = df.exec(f'{base}.d:{period_rsv},{period_k},{period_d},{init}')[s]
+    k_series = kdj_k(
+        period_rsv, period_k, init,
+        high_series, low_series, close_series
+    )
+    d_series = kdj_d(
+        period_rsv, period_k, period_d, init,
+        high_series, low_series, close_series
+    )
 
-    return KDJ_WEIGHT_K * k - KDJ_WEIGHT_D * d, period_rsv
+    return KDJ_WEIGHT_K * k_series - KDJ_WEIGHT_D * d_series
 
 
-def init_to_float(raw_value: str) -> float:
+def init_to_float(raw_value: CommandArgInputType) -> float:
     try:
         value = float(raw_value)
     except Exception:
@@ -262,18 +272,21 @@ args_dj = [
 BUILTIN_COMMANDS['kdj'] = CommandDefinition(
     sub_commands={
         'k': CommandPreset(
-            partial(kdj_k, 'rsv'),
-            args_k
+            formula=kdj_k,
+            args=args_k,
+            series=series_rsv
         ),
 
         'd': CommandPreset(
-            partial(kdj_d, 'kdj'),
-            args_dj
+            formula=kdj_d,
+            args=args_dj,
+            series=series_rsv
         ),
 
         'j': CommandPreset(
-            partial(kdj_j, 'kdj'),
-            args_dj
+            formula=kdj_j,
+            args=args_dj,
+            series=series_rsv
         )
     }
 )
@@ -282,13 +295,13 @@ BUILTIN_COMMANDS['kdj'] = CommandDefinition(
 # rsi
 # ----------------------------------------------------
 
-def rsi(df: 'StockDataFrame', _: slice, period: int) -> ReturnType:
+def rsi(period: int, close_series: ReturnType) -> ReturnType:
     """Calculates N-period RSI (Relative Strength Index)
 
     https://en.wikipedia.org/wiki/Relative_strength_index
     """
 
-    delta = df.get_column('close').diff().to_numpy()
+    delta = np.diff(close_series)
 
     # gain
     U = (np.absolute(delta) + delta) / 2.
@@ -298,40 +311,19 @@ def rsi(df: 'StockDataFrame', _: slice, period: int) -> ReturnType:
     smma_u = calc_smma(U, period)
     smma_d = calc_smma(D, period)
 
-    return 100 - 100 / (1. + smma_u / smma_d), period
+    return 100 - 100 / (1. + smma_u / smma_d)
+
+
+def lookback_rsi(period: int) -> int:
+    # period - 1 + 1 (diff)
+    return period
 
 
 BUILTIN_COMMANDS['rsi'] = CommandDefinition(
     CommandPreset(
-        rsi,
-        [arg_period]
+        formula=rsi,
+        lookback=lookback_rsi,
+        args=[arg_period],
+        series=['close']
     )
-)
-
-
-# kdjc
-# ----------------------------------------------------
-
-BUILTIN_COMMANDS['rsvc'] = CommandDefinition(
-    CommandPreset(
-        partial(rsv, 'close', 'close'),
-        [arg_period]
-    )
-)
-
-BUILTIN_COMMANDS['kdjc'] = CommandDefinition(
-    sub_commands={
-        'k': CommandPreset(
-            partial(kdj_k, 'rsvc'),
-            args_k
-        ),
-        'd': CommandPreset(
-            partial(kdj_d, 'kdjc'),
-            args_dj
-        ),
-        'j': CommandPreset(
-            partial(kdj_j, 'kdjc'),
-            args_dj
-        )
-    }
 )

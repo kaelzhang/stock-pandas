@@ -383,6 +383,7 @@ class Parser:
                     )
                 )
             )
+            self._next_token()
 
         if self._is(STR_COMMA):
             if number is None:

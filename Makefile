@@ -1,7 +1,7 @@
 files = stock_pandas test *.py
 # test_files = *
-test_files = parser
-# test_files = commands
+# test_files = parser
+test_files = commands
 # test_files = cum_append
 
 export STOCK_PANDAS_BUILDING_EXT = 1
