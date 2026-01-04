@@ -2,6 +2,7 @@ from typing import (
     Union,
     Callable,
     Any,
+    TypeVar,
     Dict
 )
 
@@ -15,10 +16,12 @@ from numpy.typing import NDArray
 
 ReturnType = NDArray[Any]
 OperatorArgType = Union[float, ReturnType]
+
 OperatorFormula = Callable[[OperatorArgType, OperatorArgType], ReturnType]
-UnaryOperatorFormula = Callable[[OperatorArgType], ReturnType]
-OperatorMap = Dict[str, OperatorFormula]
-UnaryOperatorMap = Dict[str, UnaryOperatorFormula]
+UnaryOperatorFormula = Callable[[ReturnType], ReturnType]
+
+OF = TypeVar('OF', OperatorFormula, UnaryOperatorFormula)
+type OperatorMap[OF] = Dict[str, OF]
 
 
 def logical_or(
@@ -35,7 +38,7 @@ def logical_and(
     return left & right
 
 
-LOGICAL_OPERATORS: OperatorMap = {
+LOGICAL_OPERATORS: OperatorMap[OperatorFormula] = {
     '||': logical_or,
     '&&': logical_and
 }
@@ -48,7 +51,7 @@ def bitwise_or(
     return left | right
 
 
-BITWISE_OR_OPERATORS: OperatorMap = {
+BITWISE_OR_OPERATORS: OperatorMap[OperatorFormula] = {
     '|': bitwise_or,
 }
 
@@ -60,7 +63,7 @@ def bitwise_xor(
     return left ^ right
 
 
-BITWISE_XOR_OPERATORS: OperatorMap = {
+BITWISE_XOR_OPERATORS: OperatorMap[OperatorFormula] = {
     '^': bitwise_xor,
 }
 
@@ -72,7 +75,7 @@ def bitwise_and(
     return left & right
 
 
-BITWISE_AND_OPERATORS: OperatorMap = {
+BITWISE_AND_OPERATORS: OperatorMap[OperatorFormula] = {
     '&': bitwise_and,
 }
 
@@ -105,7 +108,7 @@ def larger_than(
     return left > right
 
 
-RELATIONAL_OPERATORS: OperatorMap = {
+RELATIONAL_OPERATORS: OperatorMap[OperatorFormula] = {
     '<': less_than,
     '<=': less_than_or_equal,
     '>=': larger_than_or_equal,
@@ -127,7 +130,7 @@ def not_equal(
     return left != right
 
 
-EQUALITY_OPERATORS: OperatorMap = {
+EQUALITY_OPERATORS: OperatorMap[OperatorFormula] = {
     '==': equal,
     '!=': not_equal,
 }
@@ -157,7 +160,7 @@ def cross_down(
     return cross & ~ less
 
 
-STYLE_OPERATORS: OperatorMap = {
+STYLE_OPERATORS: OperatorMap[OperatorFormula] = {
     '//': cross_up,
     '\\': cross_down,
     '><': cross
@@ -178,7 +181,7 @@ def subtraction(
     return left - right
 
 
-ADDITION_OPERATORS: OperatorMap = {
+ADDITION_OPERATORS: OperatorMap[OperatorFormula] = {
     '+': addition,
     '-': subtraction
 }
@@ -198,7 +201,7 @@ def division(
     return left / right
 
 
-MULTIPLICATION_OPERATORS: OperatorMap = {
+MULTIPLICATION_OPERATORS: OperatorMap[OperatorFormula] = {
     '*': multiplication,
     '/': division
 }
@@ -219,7 +222,7 @@ def not_operator(
 # + directive
 # - directive
 # ~ directive
-UNARY_OPERATORS: UnaryOperatorMap = {
+UNARY_OPERATORS: OperatorMap[UnaryOperatorFormula] = {
     '-': minus,
     '~': not_operator
 }

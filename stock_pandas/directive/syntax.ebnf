@@ -46,13 +46,11 @@ addition_expression ::= multiplication_expression ( addition_operator multiplica
 multiplication_expression ::= primary_expression ( multiplication_operator primary_expression )*
 
 // Primary expressions (no operators)
-primary_expression ::= number | primary_directive
+primary_expression ::= number | unary_expression
 
-primary_directive ::=
-  ( "-" | "~" )?
-  (
-    wrapped_directive | command
-  )
+unary_expression ::= ( "-" | "~" )? primary_directive
+
+primary_directive ::= wrapped_directive | command
 
 wrapped_directive ::= "(" directive ")"
 

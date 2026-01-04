@@ -21,6 +21,9 @@ STR_COMMA = ','
 STR_PARAN_L = '('
 STR_PARAN_R = ')'
 
+STR_MINUS = '-'
+STR_TILDE = '~'
+
 REGEX_NOT_WHITESPACE = re.compile(r'[^\s]', re.A)
 
 Loc = Tuple[int, int]

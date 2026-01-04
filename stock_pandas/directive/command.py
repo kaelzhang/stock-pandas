@@ -13,12 +13,12 @@ from stock_pandas.exceptions import DirectiveValueError
 from .cache import DirectiveCache
 from .tokenizer import Loc
 from .types import (
-    CommandArgType,
+    PrimativeType,
     CommandFormula
 )
 
 
-def DEFAULT_ARG_COERCE(x: CommandArgType) -> CommandArgType:
+def DEFAULT_ARG_COERCE(x: CommandArgType) -> PrimativeType:
     return x
 
 
@@ -72,9 +72,9 @@ CommandAliases = Dict[
 @dataclass(frozen=True, slots=True)
 class ScalarNode:
     loc: Loc
-    value: CommandArgType
+    value: PrimativeType
 
-    def create(self, _: Context) -> CommandArgType:
+    def create(self, _: Context) -> PrimativeType:
         return self.value
 
 

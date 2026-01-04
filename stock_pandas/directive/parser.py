@@ -3,7 +3,9 @@ from typing import (
     Tuple,
     List,
     Optional,
-    Union
+    Union,
+    # Type,
+    # Dict
 )
 
 from .tokenizer import (
@@ -13,14 +15,33 @@ from .tokenizer import (
     STR_COLON,
     STR_COMMA,
     STR_PARAN_L,
-    STR_PARAN_R
+    STR_PARAN_R,
+    # STR_MINUS,
+    STR_TILDE
+)
+
+from .operator import (
+    # OperatorFormula,
+    # UnaryOperatorFormula,
+    OperatorMap,
+    OF,
+
+    MULTIPLICATION_OPERATORS,
+    ADDITION_OPERATORS,
+    STYLE_OPERATORS,
+    EQUALITY_OPERATORS,
+    RELATIONAL_OPERATORS,
+    BITWISE_AND_OPERATORS,
+    BITWISE_XOR_OPERATORS,
+    BITWISE_OR_OPERATORS,
+    LOGICAL_OPERATORS,
+
+    UNARY_OPERATORS,
 )
 
 from .node import (
-    # MetaNode,
-    # Node,
-    # RootNode,
-    DirectiveNode,
+    ExpressionNode,
+    UnaryExpressionNode,
     CommandNode,
     ArgumentNode,
     OperatorNode,
@@ -32,18 +53,22 @@ from stock_pandas.exceptions import (
     unexpected_token
 )
 
-# from stock_pandas.common import (
-#     TYPE_DIRECTIVE,
-#     TYPE_COMMAND,
-#     TYPE_OPERATOR,
-#     TYPE_ARGUMENT,
-#     TYPE_SCALAR
-# )
-
-from .operator import OPERATORS
-
 
 REGEX_DOT_WHITESPACES = re.compile(r'\.\s*', re.A)
+
+# Lower priority processes eariler,
+# and comes more to the right of the list
+OPERATOR_PRIORITY: List[OperatorMap] = [
+    MULTIPLICATION_OPERATORS,
+    ADDITION_OPERATORS,
+    STYLE_OPERATORS,
+    EQUALITY_OPERATORS,
+    RELATIONAL_OPERATORS,
+    BITWISE_AND_OPERATORS,
+    BITWISE_XOR_OPERATORS,
+    BITWISE_OR_OPERATORS,
+    LOGICAL_OPERATORS
+]
 
 
 class Parser:
@@ -54,19 +79,10 @@ class Parser:
     def __init__(self, directive_str: str) -> None:
         self._input = directive_str
 
-    def parse(self) -> DirectiveNode:
+    def parse(self) -> ExpressionNode:
         self._tokens = Tokenizer(self._input)
 
         self._next_token()
-
-        # Why we do not support?
-        #   (directive) operator (directive)
-        #
-        # If a directive has operator,
-        # then the result of directive must be of bool type,
-        # comparison of two bool series makes no sense.
-        #
-        # So, to make it simple, we expect directive from the beginning
         directive = self._expect_directive()
 
         self._expect_eof()
@@ -80,37 +96,194 @@ class Parser:
     # - should next_token at the end
     # - should returns Node or Tuple[Node]
 
-    def _expect_directive(self) -> DirectiveNode:
-        loc = self._token.loc
+    # Actually bitwise expression
+    def _expect_directive(self) -> ExpressionNode:
+        self._expect_expression(OPERATOR_PRIORITY.copy())
+        # loc = self._token.loc
 
-        command = self._expect_command()
+        # command = self._expect_command()
 
-        if self._token.EOF or self._is(STR_PARAN_R):
-            # There is no operator
-            # return Node(
-            #     TYPE_DIRECTIVE,
-            #     (command, None, None),
-            #     loc
-            # )
-            return DirectiveNode(
-                loc=loc,
-                command=command
+        # if self._token.EOF or self._is(STR_PARAN_R):
+        #     # There is no operator
+        #     # return Node(
+        #     #     TYPE_DIRECTIVE,
+        #     #     (command, None, None),
+        #     #     loc
+        #     # )
+        #     return DirectiveNode(
+        #         loc=loc,
+        #         command=command
+        #     )
+
+        # operator = self._expect_operator()
+        # expression = self._expect_expression()
+
+        # # return Node(
+        # #     TYPE_DIRECTIVE,
+        # #     (command, operator, expression),
+        # #     loc
+        # # )
+        # return DirectiveNode(
+        #     loc=loc,
+        #     command=command,
+        #     operator=operator,
+        #     expression=expression
+        # )
+
+    def _expect_operator(
+        self,
+        operators: OperatorMap[OF]
+    ) -> OperatorNode[OF]:
+        """
+        Expect an operator, if not found, raise
+        """
+
+        self._no_end()
+
+        token = self._token
+        text = token.value
+
+        if (
+            not token.special
+            or (formula := operators.get(text)) is None
+        ):
+            raise DirectiveSyntaxError(
+                self._input,
+                '"{}" is an invalid operator',
+                token
             )
 
-        operator = self._expect_operator()
-        expression = self._expect_expression()
+        self._next_token()
 
-        # return Node(
-        #     TYPE_DIRECTIVE,
-        #     (command, operator, expression),
-        #     loc
-        # )
-        return DirectiveNode(
-            loc=loc,
-            command=command,
-            operator=operator,
-            expression=expression
+        return OperatorNode[OF](
+            loc=token.loc,
+            name=text,
+            formula=formula
         )
+
+    def _detect_operator(
+        self,
+        operators: OperatorMap[OF]
+    ) -> Optional[OperatorNode[OF]]:
+        """
+        Expect an operator, ok if not found, then return None
+        """
+
+        if self._token.EOF:
+            return None
+
+        if not self._token.special:
+            return None
+
+        value = self._token.value
+        formula = operators.get(value)
+
+        if formula is None:
+            return None
+
+        self._next_token()
+
+        return OperatorNode[OF](
+            loc=self._token.loc,
+            name=value,
+            formula=formula
+        )
+
+    def _expect_logical_expression(self) -> ExpressionNode:
+        left = self._expect_bitwise_or_expression()
+
+        while (
+            (operator := self._detect_operator(LOGICAL_OPERATORS))
+            and operator is not None
+        ):
+            right = self._expect_bitwise_or_expression()
+            left = ExpressionNode(
+                loc=left.loc,
+                operator=operator,
+                right=right
+            )
+
+        return left
+
+    # def _expect_logical_expression(self) -> ExpressionNode:
+    #     left = self._expect_style_expression()
+    #     ...
+
+    # def _expect_style_expression(self) -> ExpressionNode:
+    #     left = self._expect_addition_expression()
+    #     ...
+
+    # def _expect_addition_expression(self) -> ExpressionNode:
+    #     left = self._expect_multiplication_expression()
+    #     ...
+
+    # def _expect_multiplication_expression(self) -> ExpressionNode:
+    #     left = self._expect_primary_expression()
+    #     ...
+
+    def _expect_primary_expression(
+        self
+    ) -> Union[ExpressionNode, UnaryExpressionNode, ScalarNode]:
+        unary = self._token.value
+        loc = self._token.loc
+
+        # We always need to detect whether there is a unary operator
+        operator = self._detect_operator(UNARY_OPERATORS)
+
+        if operator is not None:
+            self._next_token()
+
+        # We always need to detect whether there is a number
+        value = self._token.value
+
+        try:
+            number = float(value)
+        except ValueError:
+            number = None
+
+        if operator is None:
+            if number is not None:
+                self._next_token()
+                return ScalarNode(
+                    loc=loc,
+                    value=number
+                )
+            else:
+                return self._expect_primary_directive()
+
+
+        if number is not None:
+            if unary == STR_TILDE:
+                return self._unexpected()
+
+            self._next_token()
+            return ScalarNode(
+                loc=loc,
+                value= - number
+            )
+
+        right = self._expect_primary_directive()
+        self._next_token()
+
+        return UnaryExpressionNode(
+            loc=loc,
+            operator=operator,
+            expression=right
+        )
+
+    def _expect_primary_directive(self) -> ExpressionNode:
+        if self._is(STR_PARAN_L):
+            self._next_token()
+            loc = self._token.loc
+            directive = self._expect_directive()
+            self._expect(STR_PARAN_R)
+            self._next_token()
+            return ExpressionNode(
+                loc=loc,
+                directive=directive
+            )
+
+        return self._expect_command()
 
     def _expect_command(self) -> CommandNode:
         loc = self._token.loc
@@ -226,26 +399,6 @@ class Parser:
 
     def _next_token(self) -> None:
         self._token = next(self._tokens)
-
-    def _expect_operator(self) -> OperatorNode:
-        self._no_end()
-
-        token = self._token
-        text = token.value
-
-        if not token.special or text not in OPERATORS:
-            raise DirectiveSyntaxError(
-                self._input,
-                '"{}" is an invalid operator',
-                token
-            )
-
-        self._next_token()
-
-        return OperatorNode(
-            loc=token.loc,
-            name=text
-        )
 
     def _expect_expression(self) -> Union[ScalarNode, CommandNode]:
         self._check_normal()

@@ -1,8 +1,9 @@
 from __future__ import annotations
 from typing import (
     Optional,
-    Union,
+    Generic,
     List,
+    TypeVar
     # Tuple
 )
 from dataclasses import dataclass
@@ -14,12 +15,16 @@ from stock_pandas.common import (
 )
 
 from .types import (
-    Directive,
+    Expression,
     Command,
     Operator,
-    Argument
+    UnaryOperator
 )
-from .operator import OPERATORS
+from .operator import (
+    OperatorFormula,
+    UnaryOperatorFormula,
+    OF
+)
 from .tokenizer import Loc
 from .command import (
     Context,
@@ -28,30 +33,42 @@ from .command import (
 
 
 @dataclass(frozen=True, slots=True)
-class DirectiveNode:
+class ExpressionNode:
     loc: Loc
-    command: CommandNode
+    left: ExpressionNode
     operator: Optional[OperatorNode] = None
-    expression: Optional[ExpressionNode] = None
+    right: Optional[ExpressionNode] = None
+
+    # def create(
+    #     self,
+    #     context: Context
+    # ) -> Directive:
+    #     directive = (
+    #         Directive(self.command.create(context))
+    #         if self.operator is None
+    #         else Directive(
+    #             self.command.create(context),
+    #             self.operator.create(context),
+    #             self.expression.create(context)
+    #         )
+    #     )
+
+    #     context.cache.set(str(directive), directive)
+
+    #     return directive
+
+
+@dataclass(frozen=True, slots=True)
+class UnaryExpressionNode:
+    loc: Loc
+    operator: OperatorNode
+    expression: ExpressionNode
 
     def create(
         self,
         context: Context
-    ) -> Directive:
-        directive = (
-            Directive(self.command.create(context))
-            if self.operator is None
-            else Directive(
-                self.command.create(context),
-                self.operator.create(context),
-                self.expression.create(context)
-            )
-        )
-
-        context.cache.set(str(directive), directive)
-
-        return directive
-
+    ) -> Expression:
+        return Expression(self.operator.create(context), self.expression.create(context))
 
 @dataclass(frozen=True, slots=True)
 class CommandNode:
@@ -156,13 +173,27 @@ class ArgumentNode:
 
 
 @dataclass(frozen=True, slots=True)
-class OperatorNode:
+class OperatorNode(Generic[OF]):
     loc: Loc
     name: str
+    formula: OF
 
     def create(self, _: Context) -> Operator:
-        return Operator(self.name, OPERATORS.get(self.name))
+        ...
+        # return Operator(self.name, OPERATORS.get(self.name))
 
 
-ArgumentValueNode = Union[DirectiveNode, ScalarNode]
-ExpressionNode = Union[ScalarNode, CommandNode]
+# @dataclass(frozen=True, slots=True)
+# class UnaryOperatorNode:
+#     loc: Loc
+#     name: str
+#     formula: UnaryOperatorFormula
+
+#     def create(self, _: Context) -> UnaryOperator:
+#         return UnaryOperator(self.name, UNARY_OPERATORS.get(self.name))
+
+
+
+# ArgumentValueNode = Union[DirectiveNode, ScalarNode]
+# ExpressionNode = Union[ScalarNode, CommandNode]
+# #

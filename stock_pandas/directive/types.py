@@ -4,7 +4,8 @@ from typing import (
     Union,
     List,
     TYPE_CHECKING,
-    Protocol
+    Protocol,
+    Generic
 )
 from dataclasses import dataclass
 
@@ -16,7 +17,8 @@ from .operator import (
     OperatorArgType,
     OperatorFormula,
     UnaryOperatorFormula,
-    ReturnType
+    ReturnType,
+    OF
 )
 
 if TYPE_CHECKING:
@@ -36,9 +38,9 @@ def _run_expression(
 
 @dataclass(frozen=True, slots=True)
 class Expression:
-    operator: Union[OperatorFormula, UnaryOperatorFormula]
-    left: Optional[OperandType] = None
-    right: Optional[OperandType] = None
+    operator: OperatorFormula
+    left: OperandType
+    right: OperandType
     root: bool = False
 
     # Use __str__ instead of __repr__,
@@ -82,6 +84,18 @@ class Expression:
             _run_expression(self.left, df, s),
             _run_expression(self.right, df, s)
         )
+
+
+@dataclass(frozen=True, slots=True)
+class UnaryExpression:
+    operator: UnaryOperatorFormula
+    expression: Expression
+
+    def __str__(self) -> str:
+        return f'{self.operator}{self.expression}'
+
+    def run(self, df: StockDataFrame, s: slice) -> ReturnType:
+        ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,18 +146,9 @@ class Command:
 
 
 @dataclass(frozen=True, slots=True)
-class Operator:
+class Operator(Generic[OF]):
     name: str
-    formula: OperatorFormula
-
-    def __str__(self) -> str:
-        return self.name
-
-
-@dataclass(frozen=True, slots=True)
-class UnaryOperator:
-    name: str
-    formula: UnaryOperatorFormula
+    formula: OF
 
     def __str__(self) -> str:
         return self.name
