@@ -75,10 +75,11 @@ def test_valid_columns_after_apply():
 def test_column_with_two_command_real_case():
     directive = parse('ma:10 > boll.upper:20')
 
-    expr = directive.expression
+    expr = directive.right
 
     assert expr.name == 'boll.upper'
-    assert [a.value for a in expr.args] == [20, 2, 'close']
+    assert expr.args == [20, 2]
+    assert expr.series == ['close']
 
 
 def test_value_error():

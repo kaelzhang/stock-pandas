@@ -2,6 +2,7 @@ from typing import (
     Optional,
     Any
 )
+from dataclasses import dataclass
 from copy import (
     copy,
     deepcopy
@@ -17,26 +18,11 @@ from stock_pandas.properties import (
 )
 
 
+@dataclass(slots=True)
 class ColumnInfo:
-    __slots__ = (
-        'size',
-        'directive',
-        'period'
-    )
-
     size: int
     directive: Directive
     period: int
-
-    def __init__(
-        self,
-        size: int,
-        directive: Directive,
-        period: int
-    ) -> None:
-        self.size = size
-        self.directive = directive
-        self.period = period
 
     def __deepcopy__(self, _) -> 'ColumnInfo':
         return ColumnInfo(
@@ -54,9 +40,6 @@ class ColumnInfo:
             self.directive,
             self.period
         )
-
-    def __repr__(self) -> str:
-        return f'<ColumnInfo {self.directive}, size:{self.size}, period:{self.period}>'  # noqa: E501
 
 
 OptionalSlice = Optional[slice]

@@ -19,7 +19,7 @@ def test_rolling_calc_backward(stock: StockDataFrame):
         max
     )
 
-    hhv_numpy = stock['hhv:5,open'].to_numpy()
+    hhv_numpy = stock['hhv:5@open'].to_numpy()
 
     assert np.array_equal(hhv, hhv_numpy, equal_nan=True)
 
@@ -34,6 +34,6 @@ def test_rolling_calc_forward(stock: StockDataFrame):
 
     start = 4
 
-    hhv_numpy = stock['hhv:5,open'].to_numpy()
+    hhv_numpy = stock['hhv:5@open'].to_numpy()
 
     assert np.array_equal(hhv[:-start], hhv_numpy[start:], equal_nan=True)
