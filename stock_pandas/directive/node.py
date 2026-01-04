@@ -31,7 +31,9 @@ from .tokenizer import Loc
 from .command import (
     Context,
     ScalarNode,
-    CommandPreset
+    CommandPreset,
+    column,
+    lookback_zero
 )
 
 
@@ -51,11 +53,6 @@ class ExpressionNode:
             left=self.left.create(context),
             right=self.right.create(context)
         )
-
-        # TODO: fix __str__
-        # context.cache.set(str(directive), directive)
-
-        # return directive
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,7 +79,7 @@ class CommandNode:
     series: List[SeriesArgumentNode]
     sub: Optional[ScalarNode[str]] = None
 
-    def _empty_command(self, context: Context) -> Optional[Command]:
+    def _empty_command(self, _: Context) -> Optional[Command]:
         if (
             self.sub is not None
             or self.args
@@ -90,13 +87,13 @@ class CommandNode:
         ):
             return None
 
-        command_def = context.commands.get('column').preset
+        name = self.name.value
         return Command(
-            name=self.name,
+            name=name,
             args=[],
-            series=[self.name],
-            formula=command_def.formula,
-            lookback=command_def.lookback
+            series=[name],
+            formula=column,
+            lookback=lookback_zero
         )
 
     def create(

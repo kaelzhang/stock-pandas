@@ -362,31 +362,31 @@ class Parser:
 
         loc = self._token.loc
         number = self._detect_number()
+        argument = None
 
         if number is not None:
-            args.append(
-                ArgumentNode(
+            argument = ArgumentNode(
+                loc=loc,
+                value=ScalarNode[NumberType](
                     loc=loc,
-                    value=ScalarNode[NumberType](
-                        loc=loc,
-                        value=number
-                    )
+                    value=number
                 )
             )
         elif not self._token.special:
-            args.append(
-                ArgumentNode(
+            argument = ArgumentNode(
+                loc=loc,
+                value=ScalarNode[str](
                     loc=loc,
-                    value=ScalarNode[str](
-                        loc=loc,
-                        value=self._token.value
-                    )
+                    value=self._token.value
                 )
             )
             self._next_token()
 
+        if argument is not None:
+            args.append(argument)
+
         if self._is(STR_COMMA):
-            if number is None:
+            if argument is None:
                 # It allows to define a default argument:
                 # `boll:,2` <=> `boll:20,2`
                 args.append(

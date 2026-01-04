@@ -151,8 +151,18 @@ BUILTIN_COMMANDS['macd'] = CommandDefinition(
         series=series_ma
     ),
     dict(
-        signal=CommandPreset(macd_signal, args_macd_all),
-        histogram=CommandPreset(macd_histogram, args_macd_all)
+        signal=CommandPreset(
+            formula=macd_signal,
+            lookback=lookback_macd_signal,
+            args=args_macd_all,
+            series=series_ma
+        ),
+        histogram=CommandPreset(
+            formula=macd_histogram,
+            lookback=lookback_macd_signal,
+            args=args_macd_all,
+            series=series_ma
+        )
     ),
     dict(
         s='signal',

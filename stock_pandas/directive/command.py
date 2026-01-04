@@ -16,6 +16,7 @@ from .cache import DirectiveCache
 from .tokenizer import Loc
 from .types import (
     PrimativeType,
+    ReturnType,
     CommandArgInputType,
     CommandFormula,
     CommandLookback
@@ -151,3 +152,12 @@ class CommandDefinition:
 
 
 Commands = Dict[str, CommandDefinition]
+
+def column(series: ReturnType) -> ReturnType:
+    """Gets the series of the column named `column`
+    """
+    return series
+
+
+def lookback_zero(*args) -> int:
+    return 0

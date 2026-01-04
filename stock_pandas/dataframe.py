@@ -416,7 +416,7 @@ class StockDataFrame(MetaDataFrame):
         calc_slice = slice(calc_delta, None)
         fulfill_slice = slice(neg_delta, None)
 
-        partial, _ = column_info.directive.run(self, calc_slice)
+        partial = column_info.directive.run(self, calc_slice)
 
         if neg_delta == calc_delta:
             array = partial

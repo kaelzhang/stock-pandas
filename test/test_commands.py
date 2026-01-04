@@ -63,28 +63,24 @@ def test_cross(stock):
 
 
 def test_increase(stock):
-    assert stock['increase:close,3,1']['2020-02-13']
-    assert type(stock.exec('increase:close,3', False)) is np.ndarray
-    assert stock['increase:close,3']['2020-02-13']
-    assert not stock['increase:close,4']['2020-02-13']
-    assert stock['increase:close,3,-1']['2020-02-24']
+    assert stock['increase:3,1@close']['2020-02-13']
+    assert type(stock.exec('increase:3@close', False)) is np.ndarray
+    assert stock['increase:3@close']['2020-02-13']
+    assert not stock['increase:4@close']['2020-02-13']
+    assert stock['increase:3,-1@close']['2020-02-24']
 
 
 def test_repeat(stock):
     stock = stock[:'2020-02-13']  # type: ignore
 
-    assert stock['repeat:(style:bullish),1']['2020-02-13']
-    assert stock['repeat:(style:bullish),2']['2020-02-13']
-    assert stock['repeat:(style:bullish),6']['2020-02-13']
-    assert not stock['repeat:(style:bullish),7']['2020-02-13']
+    assert stock['repeat:1@(style:bullish)']['2020-02-13']
+    assert stock['repeat:2@(style:bullish)']['2020-02-13']
+    assert stock['repeat:6@(style:bullish)']['2020-02-13']
+    assert not stock['repeat:7@(style:bullish)']['2020-02-13']
 
 
 def test_indexing(stock):
     assert type(stock[['kdj.k', 'kdj.d']]) is StockDataFrame
-
-
-def test_column(stock):
-    assert stock['column:close'].iloc[-1] == stock['close'].iloc[-1]
 
 
 def test_boll(stock):
@@ -93,7 +89,7 @@ def test_boll(stock):
     assert stock['close > boll']['2020-02-05']
 
     boll = stock['boll.upper']
-    maboll = stock['ma:2@boll.upper']
+    maboll = stock['ma:2@(boll.upper)']
     assert maboll.iloc[-1] == (boll.iloc[-1] + boll.iloc[-2]) / 2
 
 

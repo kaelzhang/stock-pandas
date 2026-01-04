@@ -19,33 +19,13 @@ from stock_pandas.directive.command import (
     CommandDefinition,
     CommandPreset,
     CommandArg,
+    lookback_zero
 )
 from stock_pandas.directive.types import ReturnType
 from .base import BUILTIN_COMMANDS
 
 from .common import (
-    arg_required,
-    lookback_period,
-    lookback_zero
-)
-
-
-def column(series: ReturnType) -> ReturnType:
-    """Gets the series of the column named `column`
-    """
-
-    return series
-
-
-# TODO:
-# Posibility to deprecate this command
-BUILTIN_COMMANDS['column'] = CommandDefinition(
-    CommandPreset(
-        formula=column,
-        lookback=lookback_zero,
-        args=[],
-        series=[None]
-    )
+    lookback_period
 )
 
 
@@ -91,7 +71,6 @@ BUILTIN_COMMANDS['increase'] = CommandDefinition(
         formula=increase,
         lookback=lookback_period,
         args=[
-            arg_required,
             arg_repeat,
             CommandArg(1, to_direction)
         ],

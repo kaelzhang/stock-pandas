@@ -78,12 +78,9 @@ column_enums: ReturnStr = partial(create_enum, [
 ], 'column')
 
 
-def to_direction(value: str) -> int:
-    if value == '1':
-        return 1
-
-    if value == '-1':
-        return - 1
+def to_direction(value: int) -> int:
+    if value == 1 or value == -1:
+        return value
 
     raise ValueError(f'direction must be `1` or `-1`, but got `{value}`')
 
