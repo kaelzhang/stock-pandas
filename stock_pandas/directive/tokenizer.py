@@ -24,6 +24,8 @@ STR_PARAN_R = ')'
 STR_MINUS = '-'
 STR_TILDE = '~'
 
+STR_AT = '@'
+
 REGEX_NOT_WHITESPACE = re.compile(r'[^\s]', re.A)
 
 Loc = Tuple[int, int]

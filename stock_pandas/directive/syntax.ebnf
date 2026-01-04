@@ -96,7 +96,9 @@ param ::= EMPTY_STRING | number
 // - directive: nested directive
 series ::= EMPTY_STRING | ALPHABETS | wrapped_directive
 
-number ::= ( "-" )? DIGIT+ ( "." DIGIT+ )?
+number ::= ( "-" )? positive_number
+positive_number ::= DIGIT+ ( "." DIGIT+ )?
+
 DIGIT  ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 
 ALPHABETS ::= [a-zA-Z_][a-zA-Z0-9_]*

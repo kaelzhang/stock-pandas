@@ -168,7 +168,9 @@ class CommandNode:
 @dataclass(frozen=True, slots=True)
 class ArgumentNode:
     loc: Loc
-    value: ScalarNode
+    # command:,2
+    # -> [None, 2]
+    value: Optional[ScalarNode]
 
     def create(self, context: Context):
         return self.value.create(context)
@@ -177,7 +179,7 @@ class ArgumentNode:
 @dataclass(frozen=True, slots=True)
 class SeriesArgumentNode:
     loc: Loc
-    value: ExpressionNodeTypes
+    value: Optional[SeriesNodeTypes]
 
     def create(self, context: Context):
         return self.value.create(context)
@@ -204,11 +206,14 @@ class OperatorNode(Generic[OF]):
 #         return UnaryOperator(self.name, UNARY_OPERATORS.get(self.name))
 
 
-ExpressionNodeTypes = Union[
+SeriesNodeTypes = Union[
     ExpressionNode,
     UnaryExpressionNode,
-    ScalarNode,
     CommandNode
+]
+ExpressionNodeTypes = Union[
+    ScalarNode,
+    SeriesNodeTypes
 ]
 
 # ArgumentValueNode = Union[DirectiveNode, ScalarNode]
