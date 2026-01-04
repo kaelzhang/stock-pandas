@@ -176,9 +176,6 @@ def rolling_calc(
     return np.append(unshifted, np.repeat(fill, period - 1))
 
 
-DEFAULT_ARG_VALUE = ''
-
-
 def command_full_name(
     name: str,
     sub: Optional[str]

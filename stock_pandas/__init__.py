@@ -12,8 +12,8 @@ from .directive.command import (
 )
 from .directive.types import (
     ReturnType,
-    PrimativeType,
-    PrimativeArgType
+    CommandParamType,
+    NumberType
 )
 from .directive.cache import DirectiveCache
 

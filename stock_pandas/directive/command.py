@@ -13,13 +13,15 @@ from stock_pandas.exceptions import DirectiveValueError
 from .cache import DirectiveCache
 from .tokenizer import Loc
 from .types import (
+    CommandParamType,
     PrimativeType,
-    PrimativeArgType,
-    CommandFormula
+    NumberType,
+    CommandFormula,
+    CommandLookback
 )
 
 
-def DEFAULT_ARG_COERCE(x: PrimativeArgType) -> PrimativeType:
+def DEFAULT_ARG_COERCE(x: NumberType) -> CommandParamType:
     return x
 
 
@@ -37,12 +39,12 @@ class CommandArg:
     The definition of a command argument
 
     Args:
-        default (Optional[CommandArgType] = None): The default value for the argument. `None` indicates that it is NOT an optional argument
-        coerce (Optional[Callable[..., CommandArgType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
+        default (Optional[CommandParamType] = None): The default value for the argument. `None` indicates that it is NOT an optional argument
+        coerce (Optional[Callable[..., CommandParamType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
     """
 
-    default: Optional[PrimativeType] = None
-    coerce: Callable[[PrimativeArgType], PrimativeType] = DEFAULT_ARG_COERCE
+    default: Optional[CommandParamType] = None
+    coerce: Callable[[NumberType], CommandParamType] = DEFAULT_ARG_COERCE
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,7 +58,9 @@ class CommandPreset:
     """
 
     formula: CommandFormula
+    lookback: CommandLookback
     args: List[CommandArg]
+    series: List[str]
 
 
 SubCommands = Dict[

@@ -3,22 +3,22 @@ from typing import (
     Optional,
     Generic,
     List,
-    Union,
-    # TypeVar
-    # Tuple
+    Union
 )
 from dataclasses import dataclass
 
 from stock_pandas.exceptions import DirectiveValueError
 from stock_pandas.common import (
-    command_full_name,
-    DEFAULT_ARG_VALUE
+    command_full_name
 )
 
 from .types import (
     Expression,
+    UnaryExpression,
     Command,
-    Operator
+    Operator,
+    CommandParamType,
+    CommandSeriesType
 )
 from .operator import (
     OperatorFormula,
@@ -28,7 +28,8 @@ from .operator import (
 from .tokenizer import Loc
 from .command import (
     Context,
-    ScalarNode
+    ScalarNode,
+    CommandPreset
 )
 
 
@@ -36,26 +37,23 @@ from .command import (
 class ExpressionNode:
     loc: Loc
     left: ExpressionNodeTypes
-    operator: Optional[OperatorNode[OperatorFormula]] = None
-    right: Optional[ExpressionNodeTypes] = None
+    operator: OperatorNode[OperatorFormula]
+    right: ExpressionNodeTypes
 
-    # def create(
-    #     self,
-    #     context: Context
-    # ) -> Directive:
-    #     directive = (
-    #         Directive(self.command.create(context))
-    #         if self.operator is None
-    #         else Directive(
-    #             self.command.create(context),
-    #             self.operator.create(context),
-    #             self.expression.create(context)
-    #         )
-    #     )
+    def create(
+        self,
+        context: Context
+    ) -> Expression:
+        return Expression(
+            operator=self.operator.create(context),
+            left=self.left.create(context),
+            right=self.right.create(context)
+        )
 
-    #     context.cache.set(str(directive), directive)
+        # TODO: fix __str__
+        # context.cache.set(str(directive), directive)
 
-    #     return directive
+        # return directive
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,8 +65,11 @@ class UnaryExpressionNode:
     def create(
         self,
         context: Context
-    ) -> Expression:
-        return Expression(self.operator.create(context), self.expression.create(context))
+    ) -> UnaryExpression:
+        return UnaryExpression(
+            operator=self.operator.create(context),
+            expression=self.expression.create(context)
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,49 +96,58 @@ class CommandNode:
             )
 
         preset, sub_name = command_def.get_preset(self.name, self.sub, context)
+        name = command_full_name(main_name, sub_name)
 
+        args = self._coerce_args(name, preset, context)
+        series = self._coerce_series(name, preset, context)
+
+        return Command(
+            name=name,
+            params=args,
+            series=series,
+            formula=preset.formula,
+            lookback=preset.lookback
+        )
+
+    def _coerce_args(
+        self,
+        name: str,
+        preset: CommandPreset,
+        context: Context
+    ) -> List[CommandParamType]:
         preset_args = preset.args
         args = self.args
-
 
         max_length = len(preset_args)
         args_length = len(args)
 
-        command_name = command_full_name(main_name, sub_name)
-
         if args_length > max_length:
             raise DirectiveValueError(
                 context.input,
-                f'command "{command_name}" accepts max {max_length} args',
+                f'command "{name}" accepts max {max_length} params',
                 context.loc
             )
 
-        coerced_args = []
+        coerced = []
 
         for index, arg_def in enumerate(preset_args):
             default = arg_def.default
             setter = arg_def.coerce
 
-            is_directive = False
-
             if index < args_length:
                 arg_node = args[index]
                 loc = arg_node.loc
                 value = arg_node.create(context)
-                is_directive = isinstance(value, Directive)
             else:
                 # If the arg does not exist, use the command loc
                 loc = context.loc
-                value = DEFAULT_ARG_VALUE
+                value = None
 
-            if value == DEFAULT_ARG_VALUE:
+            if value is None:
                 value = default
 
             # Setter could be optional
-            elif (
-                setter is not None
-                and not is_directive
-            ):
+            elif setter is not None:
                 try:
                     value = setter(value)
                 except ValueError as e:
@@ -150,19 +160,46 @@ class CommandNode:
             if value is None:
                 raise DirectiveValueError(
                     context.input,
-                    f'args[{index}] is required for command "{command_name}"',
+                    f'args[{index}] is required for command "{name}"',
                     loc
                 )
 
-            coerced_args.append(
-                Argument(value, is_directive)
+            coerced.append(value)
+
+        return coerced
+
+    def _coerce_series(
+        self,
+        name: str,
+        preset: CommandPreset,
+        context: Context
+    ) -> List[CommandSeriesType]:
+        preset_series = preset.series
+        series = self.series
+
+        max_length = len(preset_series)
+        series_length = len(series)
+
+        if series_length > max_length:
+            raise DirectiveValueError(
+                context.input,
+                f'command "{name}" accepts max {max_length} series',
+                context.loc
             )
 
-        return Command(
-            command_full_name(main_name, sub_name),
-            coerced_args,
-            preset.formula
-        )
+        coerced = []
+
+        for index, default in enumerate(preset_series):
+            if index < series_length:
+                value = series[index].create(context)
+                if value is None:
+                    value = default
+            else:
+                value = default
+
+            coerced.append(value)
+
+        return coerced
 
 
 @dataclass(frozen=True, slots=True)
@@ -173,6 +210,9 @@ class ArgumentNode:
     value: Optional[ScalarNode]
 
     def create(self, context: Context):
+        if self.value is None:
+            return None
+
         return self.value.create(context)
 
 
@@ -182,6 +222,9 @@ class SeriesArgumentNode:
     value: Optional[SeriesNodeTypes]
 
     def create(self, context: Context):
+        if self.value is None:
+            return None
+
         return self.value.create(context)
 
 
@@ -192,30 +235,19 @@ class OperatorNode(Generic[OF]):
     formula: OF
 
     def create(self, _: Context) -> Operator:
-        ...
-        # return Operator(self.name, OPERATORS.get(self.name))
-
-
-# @dataclass(frozen=True, slots=True)
-# class UnaryOperatorNode:
-#     loc: Loc
-#     name: str
-#     formula: UnaryOperatorFormula
-
-#     def create(self, _: Context) -> UnaryOperator:
-#         return UnaryOperator(self.name, UNARY_OPERATORS.get(self.name))
+        return Operator[OF](
+            name=self.name,
+            formula=self.formula
+        )
 
 
 SeriesNodeTypes = Union[
     ExpressionNode,
     UnaryExpressionNode,
-    CommandNode
+    CommandNode,
+    str
 ]
 ExpressionNodeTypes = Union[
     ScalarNode,
     SeriesNodeTypes
 ]
-
-# ArgumentValueNode = Union[DirectiveNode, ScalarNode]
-# ExpressionNode = Union[ScalarNode, CommandNode]
-# #

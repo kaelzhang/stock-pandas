@@ -112,11 +112,10 @@ class Command:
     """
 
     name: str
-    params: List[PrimativeType]
-    series: List[Command, Expression]
+    params: List[CommandParamType]
+    series: List[CommandSeriesType]
     formula: CommandFormula
     lookback: CommandLookback
-    # root: bool = False
 
     def __str__(self) -> str:
         return (
@@ -160,9 +159,10 @@ class Operator(Generic[OF]):
         return self.name
 
 
-OperandType = Union[Command, Expression, float]
-PrimativeArgType = Union[int, float]
-PrimativeType = Union[PrimativeArgType, bool]
+OperandType = Union[Command, Expression, UnaryExpression, float]
+NumberType = Union[int, float]
+CommandParamType = Union[NumberType, bool]
+PrimativeType = Union[CommandParamType, str]
 
 
 class CommandFormula(Protocol):
@@ -170,15 +170,16 @@ class CommandFormula(Protocol):
         self,
         # df: 'StockDataFrame',
         # s: slice,
-        *args: Union[PrimativeType, ReturnType]
+        *args: Union[CommandParamType, ReturnType]
     ) -> ReturnType: ...
 
 
 class CommandLookback(Protocol):
     def __call__(
         self,
-        *args: PrimativeType
+        *args: CommandParamType
     ) -> int: ...
 
 
 Directive = Union[Expression, UnaryExpression, Command]
+CommandSeriesType = Union[Directive, str]

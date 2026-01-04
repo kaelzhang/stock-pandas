@@ -178,14 +178,12 @@ class Parser:
             return self._expect_primary_expression()
 
         operators = operator_priority.pop()
-        print('_expect_expression', operators, len(operator_priority))
         left = self._expect_expression(operator_priority.copy())
 
         while (
             (operator := self._detect_operator(operators))
             and operator is not None
         ):
-            # self._next_token()
             right = self._expect_expression(OPERATOR_PRIORITY.copy())
             left = ExpressionNode(
                 loc=left.loc,
@@ -234,7 +232,6 @@ class Parser:
     def _expect_primary_expression(
         self
     ) -> ExpressionNodeTypes:
-        print('_expect_primary_expression', self._token)
         self._no_end()
 
         unary = self._token.value
@@ -277,7 +274,6 @@ class Parser:
         )
 
     def _expect_primary_directive(self) -> ExpressionNodeTypes:
-        print('_expect_primary_directive', self._token)
         if self._is(STR_PARAN_L):
             # For `wrapped_directive` in "syntax.ebnf"
             return self._expect_wrapped_directive()
@@ -293,10 +289,7 @@ class Parser:
 
     def _expect_command(self) -> CommandNode:
         loc = self._token.loc
-
         name, sub = self._expect_command_name()
-
-        print('_expect_command', name, sub)
 
         if self._is(STR_COLON):
             self._next_token()
@@ -309,8 +302,6 @@ class Parser:
             series = self._expect_series([])
         else:
             series = []
-
-        print('command args', args, series)
 
         return CommandNode(
             loc=loc,
@@ -370,8 +361,6 @@ class Parser:
         loc = self._token.loc
         number = self._detect_number()
 
-        print('_expect_arg', number, self._token)
-
         if number is not None:
             args.append(
                 ArgumentNode(
@@ -399,23 +388,13 @@ class Parser:
 
         return args
 
-    def _generate_column_series_argument(self) -> SeriesArgumentNode:
+    def _generate_series_argument(self) -> SeriesArgumentNode:
         loc = self._token.loc
         argument = SeriesArgumentNode(
             loc=loc,
-            value=CommandNode(
+            value=ScalarNode(
                 loc=loc,
-                name=ScalarNode(
-                    loc=loc,
-                    value=DEFAULT_COMMAND_NAME
-                ),
-                args=[
-                    ArgumentNode(
-                        loc=loc,
-                        value=self._token.value
-                    )
-                ],
-                series=[]
+                value=self._token.value
             )
         )
         self._next_token()
@@ -430,7 +409,7 @@ class Parser:
         if self._is(STR_PARAN_L):
             argument = self._expect_wrapped_directive()
         elif not self._token.special:
-            argument = self._generate_column_series_argument()
+            argument = self._generate_series_argument()
 
         if argument is not None:
             series.append(argument)
