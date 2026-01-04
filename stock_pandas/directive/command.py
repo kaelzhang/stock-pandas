@@ -14,11 +14,12 @@ from .cache import DirectiveCache
 from .tokenizer import Loc
 from .types import (
     PrimativeType,
+    PrimativeArgType,
     CommandFormula
 )
 
 
-def DEFAULT_ARG_COERCE(x: CommandArgType) -> PrimativeType:
+def DEFAULT_ARG_COERCE(x: PrimativeArgType) -> PrimativeType:
     return x
 
 
@@ -40,8 +41,8 @@ class CommandArg:
         coerce (Optional[Callable[..., CommandArgType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
     """
 
-    default: Optional[CommandArgType] = None
-    coerce: Callable[..., CommandArgType] = DEFAULT_ARG_COERCE
+    default: Optional[PrimativeType] = None
+    coerce: Callable[[PrimativeArgType], PrimativeType] = DEFAULT_ARG_COERCE
 
 
 @dataclass(frozen=True, slots=True)

@@ -7,11 +7,14 @@ from .exceptions import (
 
 from .directive.command import (
     CommandPreset,
-    CommandArgType,
     CommandArg,
     CommandDefinition
 )
-from .directive.types import ReturnType
+from .directive.types import (
+    ReturnType,
+    PrimativeType,
+    PrimativeArgType
+)
 from .directive.cache import DirectiveCache
 
 from .meta.time_frame import (

@@ -178,16 +178,18 @@ class Parser:
             return self._expect_primary_expression()
 
         operators = operator_priority.pop()
+        print('_expect_expression', operators, len(operator_priority))
         left = self._expect_expression(operator_priority.copy())
 
         while (
             (operator := self._detect_operator(operators))
             and operator is not None
         ):
-            self._next_token()
-            right = self._expect_expression(operator_priority.copy())
+            # self._next_token()
+            right = self._expect_expression(OPERATOR_PRIORITY.copy())
             left = ExpressionNode(
                 loc=left.loc,
+                left=left,
                 operator=operator,
                 right=right
             )
@@ -223,28 +225,29 @@ class Parser:
         if number is not None:
             return - number if is_minus else number
 
-        # We need to look back to STR_MINUS
-        self._look_back()
+        if is_minus:
+            # We need to look back to STR_MINUS
+            self._look_back()
+
         return None
 
     def _expect_primary_expression(
         self
     ) -> ExpressionNodeTypes:
+        print('_expect_primary_expression', self._token)
+        self._no_end()
+
         unary = self._token.value
         loc = self._token.loc
 
         # We always need to detect whether there is a unary operator
         operator = self._detect_operator(UNARY_OPERATORS)
 
-        if operator is not None:
-            self._next_token()
-
         # We always need to detect whether there is a number
         number = self._detect_positive_number()
 
         if operator is None:
             if number is not None:
-                self._next_token()
                 return ScalarNode(
                     loc=loc,
                     value=number
@@ -274,6 +277,7 @@ class Parser:
         )
 
     def _expect_primary_directive(self) -> ExpressionNodeTypes:
+        print('_expect_primary_directive', self._token)
         if self._is(STR_PARAN_L):
             # For `wrapped_directive` in "syntax.ebnf"
             return self._expect_wrapped_directive()
@@ -292,7 +296,7 @@ class Parser:
 
         name, sub = self._expect_command_name()
 
-        self._next_token()
+        print('_expect_command', name, sub)
 
         if self._is(STR_COLON):
             self._next_token()
@@ -305,6 +309,8 @@ class Parser:
             series = self._expect_series([])
         else:
             series = []
+
+        print('command args', args, series)
 
         return CommandNode(
             loc=loc,
@@ -334,6 +340,7 @@ class Parser:
                 value=sub
             )
 
+        self._next_token()
         return ScalarNode(
             loc=loc,
             value=name
@@ -363,6 +370,8 @@ class Parser:
         loc = self._token.loc
         number = self._detect_number()
 
+        print('_expect_arg', number, self._token)
+
         if number is not None:
             args.append(
                 ArgumentNode(
@@ -373,7 +382,6 @@ class Parser:
                     )
                 )
             )
-            self._next_token()
 
         if self._is(STR_COMMA):
             if number is None:
@@ -449,11 +457,11 @@ class Parser:
     def _unexpected(self) -> DirectiveSyntaxError:
         return unexpected_token(self._input, self._token)
 
-    # def _expect(self, value: str) -> None:
-    #     self._no_end()
+    def _expect(self, value: str) -> None:
+        self._no_end()
 
-    #     if not self._is(value):
-    #         raise self._unexpected()
+        if not self._is(value):
+            raise self._unexpected()
 
     def _next_token(self, init: bool = False) -> None:
         if init:

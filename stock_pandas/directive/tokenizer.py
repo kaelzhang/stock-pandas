@@ -1,9 +1,10 @@
-import re
 from typing import (
     Optional,
     Tuple,
     Iterator
 )
+import re
+from dataclasses import dataclass
 
 # To match:
 # - operators
@@ -13,7 +14,7 @@ from typing import (
 # - ,
 # - @
 # - CRLF
-REGEX_SPECIAL_CHARS = re.compile(r'[\\=<>/!+-*~@]+|[():,\r\n]', re.A)
+REGEX_SPECIAL_CHARS = re.compile(r'[\\=<>/!+*~@-]+|[():,\r\n]', re.A)
 
 STR_CARRIAGE_RETURN = '\n'
 STR_COLON = ':'
@@ -31,22 +32,12 @@ REGEX_NOT_WHITESPACE = re.compile(r'[^\s]', re.A)
 Loc = Tuple[int, int]
 
 
+@dataclass(frozen=True, slots=True)
 class Token:
-    __slots__ = (
-        'value', 'loc', 'special', 'EOF'
-    )
-
-    def __init__(
-        self,
-        loc: Loc,
-        value: Optional[str] = None,
-        special: bool = False,
-        EOF: bool = False
-    ):
-        self.value = value
-        self.loc = loc
-        self.special = special
-        self.EOF = EOF
+    loc: Loc
+    value: Optional[str] = None
+    special: bool = False
+    EOF: bool = False
 
 
 def create_normal_token(text: str, line: int, col: int) -> Optional[Token]:

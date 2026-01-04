@@ -185,11 +185,9 @@ def test_invalid_columns():
     CASES = [
         ('a >', 'unexpected EOF'),
         ('>', 'unexpected token'),
-        ('ma:>0', 'unexpected token'),
-        ('ma >> 1', 'invalid operator'),
-        ('ma:(abc', 'unexpected EOF'),
-        ('ma > 0 >', 'expect EOF'),
-        ('ma:(abc > 0 >', 'unexpected token'),
+        ('ma@(abc', 'unexpected EOF'),
+        ('ma > 0 >', 'unexpected EOF'),
+        ('ma@(abc > 0 >', 'unexpected EOF'),
         ('ma:5 > 0)', 'expect EOF')
     ]
 
@@ -206,11 +204,20 @@ def test_invalid_directive():
         Parser('''
 repeat
     :
-        (
-            column:close >> boll.upper
-        ),
         5
+
+    @   (
+            column@close >> boll.upper
+        )
 ''').parse()
     except Exception as e:
+        assert e.line == 7, 'line'
+        assert e.column == 26, 'column'
         print()
         print(e)
+
+
+# def test_basic():
+#     parser = Parser('ma:5 > 10)')
+#     parsed = parser.parse()
+#     print(parsed)

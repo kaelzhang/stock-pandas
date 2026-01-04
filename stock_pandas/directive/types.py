@@ -54,10 +54,10 @@ class Expression:
             else f'{self.operator}{self.operator}{self.right}'
         )
 
-        return stringified
+        return f'({stringified})'
 
         # return (
-        #     f'({stringified})'
+        #
         #     if self.root
         #     # We do not need to wrap the stringified directive
         #     # for top-level directives
@@ -161,7 +161,8 @@ class Operator(Generic[OF]):
 
 
 OperandType = Union[Command, Expression, float]
-PrimativeType = Union[int, float, bool]
+PrimativeArgType = Union[int, float]
+PrimativeType = Union[PrimativeArgType, bool]
 
 
 class CommandFormula(Protocol):
