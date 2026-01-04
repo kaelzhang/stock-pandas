@@ -27,7 +27,7 @@ from stock_pandas.directive.types import (
 )
 from .base import BUILTIN_COMMANDS
 
-from .args import (
+from .common import (
     arg_period,
     lookback_period
 )
@@ -122,11 +122,13 @@ def rsv(
     llv_series = llv(period, low_series)
     hhv_series = hhv(period, high_series)
 
-    v = (
-        (close_series - llv_series) / (hhv_series - llv_series)
-    ).fillna(0).astype('float64') * 100
+    v = (close_series - llv_series) / (hhv_series - llv_series)
 
-    return v.to_numpy()
+    return np.nan_to_num(
+        v,
+        nan=0.0, posinf=0.0, neginf=0.0
+    ).astype(np.float64) * 100
+
 
 series_rsv = ['high', 'low', 'close']
 
@@ -252,6 +254,7 @@ def init_to_float(raw_value: CommandArgInputType) -> float:
 
 arg_period_k = CommandArg(3, period_to_int)
 args_kdj_common = [
+    # period of rsv
     CommandArg(9, period_to_int),
     arg_period_k
 ]
@@ -273,18 +276,21 @@ BUILTIN_COMMANDS['kdj'] = CommandDefinition(
     sub_commands={
         'k': CommandPreset(
             formula=kdj_k,
+            lookback=lookback_period,
             args=args_k,
             series=series_rsv
         ),
 
         'd': CommandPreset(
             formula=kdj_d,
+            lookback=lookback_period,
             args=args_dj,
             series=series_rsv
         ),
 
         'j': CommandPreset(
             formula=kdj_j,
+            lookback=lookback_period,
             args=args_dj,
             series=series_rsv
         )
@@ -301,7 +307,7 @@ def rsi(period: int, close_series: ReturnType) -> ReturnType:
     https://en.wikipedia.org/wiki/Relative_strength_index
     """
 
-    delta = np.diff(close_series)
+    delta = np.diff(close_series, prepend=np.nan)
 
     # gain
     U = (np.absolute(delta) + delta) / 2.

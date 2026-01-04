@@ -373,7 +373,9 @@ class StockDataFrame(MetaDataFrame):
         if name in self._stock_columns_info_map:
             return name, self._fulfill_series(name)
 
-        array, period = directive.run(
+        lookback = directive.cumulative_lookback
+
+        array = directive.run(
             self,
             # create the whole series
             slice(None)
@@ -383,7 +385,7 @@ class StockDataFrame(MetaDataFrame):
             self._stock_columns_info_map[name] = ColumnInfo(
                 len(self),
                 directive,
-                period
+                lookback + 1
             )
 
             self.loc[:, name] = array

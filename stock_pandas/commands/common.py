@@ -17,3 +17,7 @@ arg_required = CommandArg()
 
 def lookback_period(period: int, *args) -> int:
     return period - 1
+
+
+def lookback_zero(*args) -> int:
+    return 0

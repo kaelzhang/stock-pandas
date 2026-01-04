@@ -128,11 +128,12 @@ class Command(Lookback):
     lookback: CommandLookback
 
     def __str__(self) -> str:
-        return (
+        stringify = (
             f'{self.name}:{join_args(self.args)}'
             if self.args
             else self.name
         )
+        return f'({stringify})'
 
     def _cumulative_lookback(self) -> int:
         base_lb = self.lookback(*self.args)

@@ -29,7 +29,6 @@ def DEFAULT_ARG_COERCE(x: PrimativeType) -> PrimativeType:
 @dataclass(frozen=True, slots=True)
 class Context:
     input: str
-    loc: Loc
     cache: DirectiveCache
     commands: Commands
 

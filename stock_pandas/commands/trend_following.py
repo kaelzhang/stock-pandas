@@ -2,16 +2,11 @@
 # Trend-following momentum indicators
 # ----------------------------------------------------
 
-from typing import TYPE_CHECKING
-
-from pandas import concat
+import numpy as np
 
 from stock_pandas.common import (
     period_to_int,
 )
-
-if TYPE_CHECKING:
-    from stock_pandas.dataframe import StockDataFrame  # pragma: no cover
 
 from stock_pandas.math.ma import (
     calc_ma,
@@ -26,8 +21,9 @@ from stock_pandas.directive.command import (
 from stock_pandas.directive.types import ReturnType
 from .base import BUILTIN_COMMANDS
 
-from .args import (
-    arg_period
+from .common import (
+    arg_period,
+    lookback_period
 )
 
 
@@ -35,7 +31,7 @@ from .args import (
 # ----------------------------------------------------
 
 
-def ma(df: 'StockDataFrame', s: slice, period: int, on: str) -> ReturnType:
+def ma(period: int, on: ReturnType) -> ReturnType:
     """Gets simple moving average
 
     Args:
@@ -49,49 +45,39 @@ def ma(df: 'StockDataFrame', s: slice, period: int, on: str) -> ReturnType:
         and the period offset the indicator needs
     """
 
-    return calc_ma(
-        df.exec(on)[s],
-        period
-    ), period
+    return calc_ma(on, period)
 
 
-args_ma = [
-    # parameter setting for `period`
-    arg_period,
-    # setting for `column`
-    CommandArg(
-        # The default value of the second parameter
-        'close',
-        # If the command use the default value,
-        # then it will skip validating
-    )
-]
+args_ma = [arg_period]
+series_ma = ['close']
 
 BUILTIN_COMMANDS['ma'] = CommandDefinition(
-    CommandPreset(ma, args_ma)
+    CommandPreset(
+        formula=ma,
+        lookback=lookback_period,
+        args=args_ma,
+        series=series_ma
+    )
 )
 
 
 # ema
 # ----------------------------------------------------
 
-def ema(
-    df: 'StockDataFrame',
-    s: slice,
-    period: int,
-    column: str
-) -> ReturnType:
+def ema(period: int, series: ReturnType) -> ReturnType:
     """Gets Exponential Moving Average
     """
 
-    return calc_ewma(
-        df.get_column(column)[s].to_numpy(),
-        period
-    ), period
+    return calc_ewma(series, period)
 
 
 BUILTIN_COMMANDS['ema'] = CommandDefinition(
-    CommandPreset(ema, args_ma)
+    CommandPreset(
+        formula=ema,
+        lookback=lookback_period,
+        args=args_ma,
+        series=series_ma
+    )
 )
 
 
@@ -99,45 +85,50 @@ BUILTIN_COMMANDS['ema'] = CommandDefinition(
 # ----------------------------------------------------
 
 def macd(
-    df: 'StockDataFrame',
-    s: slice,
     fast_period: int,
-    slow_period: int
+    slow_period: int,
+    series: ReturnType
 ) -> ReturnType:
-    fast = df.exec(f'ema:{fast_period},close', False)[s]
-    slow = df.exec(f'ema:{slow_period},close', False)[s]
+    fast = ema(fast_period, series)
+    slow = ema(slow_period, series)
 
-    return fast - slow, fast_period
+    return fast - slow
+
+def lookback_macd(fast_period: int, slow_period: int) -> int:
+    return max(fast_period, slow_period) - 1
 
 
 def macd_signal(
-    df: 'StockDataFrame',
-    s: slice,
     fast_period: int,
     slow_period: int,
-    signal_period: int
+    signal_period: int,
+    series: ReturnType
 ) -> ReturnType:
-    macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
+    macd_series = macd(fast_period, slow_period, series)
 
-    return calc_ewma(macd, signal_period), fast_period
+    return calc_ewma(macd_series, signal_period)
+
+def lookback_macd_signal(
+    fast_period: int, slow_period: int, signal_period: int
+) -> int:
+    return max(fast_period, slow_period) + signal_period - 2
 
 
 MACD_HISTOGRAM_TIMES = 2.0
 
 
 def macd_histogram(
-    df: 'StockDataFrame',
-    s: slice,
     fast_period: int,
     slow_period: int,
-    signal_period: int
+    signal_period: int,
+    series: ReturnType
 ) -> ReturnType:
-    macd = df.exec(f'macd:{fast_period},{slow_period}')[s]
-    macd_s = df.exec(
-        f'macd.signal:{fast_period},{slow_period},{signal_period}'
-    )[s]
+    macd_series = macd(fast_period, slow_period, series)
+    macd_signal_series = macd_signal(
+        fast_period, slow_period, signal_period, series
+    )
 
-    return MACD_HISTOGRAM_TIMES * (macd - macd_s), fast_period
+    return MACD_HISTOGRAM_TIMES * (macd_series - macd_signal_series)
 
 
 args_macd =[
@@ -154,8 +145,10 @@ args_macd_all = [
 
 BUILTIN_COMMANDS['macd'] = CommandDefinition(
     CommandPreset(
-        macd,
-        args_macd
+        formula=macd,
+        lookback=lookback_macd,
+        args=args_macd,
+        series=series_ma
     ),
     dict(
         signal=CommandPreset(macd_signal, args_macd_all),
@@ -178,33 +171,37 @@ BUILTIN_COMMANDS['macd'] = CommandDefinition(
 # ----------------------------------------------------
 
 def bbi(
-    df: 'StockDataFrame',
-    _: slice,
     a: int,
     b: int,
     c: int,
-    d: int
+    d: int,
+    close_series: ReturnType
 ) -> ReturnType:
     """Calculates BBI (Bull and Bear Index) which is the average of
     ma:3, ma:6, ma:12, ma:24 by default
     """
     return (
-        df.exec(f'ma:{a}')
-        + df.exec(f'ma:{b}')
-        + df.exec(f'ma:{c}')
-        + df.exec(f'ma:{d}')
-    ) / 4, max(a, b, c, d)
+        ma(a, close_series)
+        + ma(b, close_series)
+        + ma(c, close_series)
+        + ma(d, close_series)
+    ) / 4
+
+def lookback_bbi(a: int, b: int, c: int, d: int) -> int:
+    return max(a, b, c, d)
 
 
 BUILTIN_COMMANDS['bbi'] = CommandDefinition(
     CommandPreset(
-        bbi,
-        [
+        formula=bbi,
+        lookback=lookback_bbi,
+        args=[
             CommandArg(3, period_to_int),
             CommandArg(6, period_to_int),
             CommandArg(12, period_to_int),
             CommandArg(24, period_to_int)
-        ]
+        ],
+        series=['close']
     )
 )
 
@@ -213,26 +210,39 @@ BUILTIN_COMMANDS['bbi'] = CommandDefinition(
 # Ref: https://www.investopedia.com/terms/a/atr.asp
 # ----------------------------------------------------
 
-def atr(df: 'StockDataFrame', s: slice, period: int) -> ReturnType:
+def atr(
+    period: int,
+    high: ReturnType,
+    low: ReturnType,
+    close: ReturnType
+) -> ReturnType:
     """Calculates TR (True Range)
     """
 
-    prev_close = df.get_column('close')[s].shift(1)
-    high = df.get_column('high')[s]
-    low = df.get_column('low')[s]
+    prev_close = np.roll(close, 1)
+    prev_close[0] = np.nan
 
     # True range
-    tr = concat([
-        (high - low).abs(),
-        (high - prev_close).abs(),
-        (low - prev_close).abs(),
-    ], axis=1).max(axis=1).to_numpy()
+    tr = np.maximum.reduce([
+        np.absolute(high - low),
+        np.absolute(high - prev_close),
+        np.absolute(low - prev_close),
+    ])
 
-    return calc_ma(tr, period), period + 1
+    return calc_ma(tr, period)
+
+
+def lookback_atr(period: int) -> int:
+    return period
 
 
 BUILTIN_COMMANDS['atr'] = CommandDefinition(
-    CommandPreset(atr, [
-        CommandArg(14, period_to_int)
-    ])
+    CommandPreset(
+        formula=atr,
+        lookback=lookback_atr,
+        args=[
+            CommandArg(14, period_to_int)
+        ],
+        series=['high', 'low', 'close']
+    )
 )

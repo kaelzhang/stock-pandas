@@ -4,10 +4,10 @@ from .base import (
 
 
 from . import (
-    # trend_following,
+    trend_following,
     over_bought_or_sold,
-    # support_and_resistance,
-    # tools
+    support_and_resistance,
+    tools
 )
 
 

@@ -218,6 +218,7 @@ repeat
 
 
 # def test_basic():
-#     parser = Parser('rsi')
+#     parser = Parser('rsi:5,close')
 #     parsed = parser.parse()
 #     print(parsed)
+#     print(str(parsed))

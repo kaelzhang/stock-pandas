@@ -88,12 +88,12 @@ def test_column(stock):
 
 
 def test_boll(stock):
-    assert stock['column:low < boll.lower']['2020-02-03']
-    assert stock['column:open > boll.u']['2020-01-14']
-    assert stock['column:close > boll']['2020-02-05']
+    assert stock['low < boll.lower']['2020-02-03']
+    assert stock['open > boll.u']['2020-01-14']
+    assert stock['close > boll']['2020-02-05']
 
     boll = stock['boll.upper']
-    maboll = stock['ma:2,boll.upper']
+    maboll = stock['ma:2@boll.upper']
     assert maboll.iloc[-1] == (boll.iloc[-1] + boll.iloc[-2]) / 2
 
 
@@ -141,8 +141,8 @@ def test_rsi(stock):
 
 
 def test_bbi(stock):
-    assert stock['repeat:(bbi < column:close),8']['2020-02-13']
-    assert not stock['repeat:(bbi < column:close),9']['2020-02-13']
+    assert stock['repeat:8@(bbi < close)']['2020-02-13']
+    assert not stock['repeat:9@(bbi < close)']['2020-02-13']
 
 
 def test_kdj(stock):
@@ -155,14 +155,14 @@ def test_kdj(stock):
 
 
 def test_change(stock):
-    change = stock['change:(column:close)']
+    change = stock['change@close']
 
     assert to_fixed(change.iloc[-1]) == '-0.0313'
     assert to_fixed(change.iloc[-2]) == '-0.0256'
 
     assert np.isnan(change.iloc[0])
 
-    boll_change3 = stock['change:boll,3']
+    boll_change3 = stock['change:3@(boll)']
 
     assert to_fixed(boll_change3.iloc[-1]) == '-0.0030'
 

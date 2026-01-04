@@ -23,7 +23,6 @@ def parse(
     directive = ast.create(
         Context(
             input=directive_str,
-            loc=ast.loc,
             cache=cache,
             commands=commands
         )

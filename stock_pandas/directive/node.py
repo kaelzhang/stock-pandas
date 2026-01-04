@@ -82,6 +82,23 @@ class CommandNode:
     series: List[SeriesArgumentNode]
     sub: Optional[ScalarNode[str]] = None
 
+    def _empty_command(self, context: Context) -> Optional[Command]:
+        if (
+            self.sub is not None
+            or self.args
+            or self.series
+        ):
+            return None
+
+        command_def = context.commands.get('column').preset
+        return Command(
+            name=self.name,
+            args=[],
+            series=[self.name],
+            formula=command_def.formula,
+            lookback=command_def.lookback
+        )
+
     def create(
         self,
         context: Context
@@ -91,6 +108,10 @@ class CommandNode:
         command_def = commands.get(main_name)
 
         if command_def is None:
+            pure_command = self._empty_command(context)
+            if pure_command is not None:
+                return pure_command
+
             raise DirectiveValueError(
                 context.input,
                 f'unknown command "{main_name}"',
@@ -127,7 +148,7 @@ class CommandNode:
             raise DirectiveValueError(
                 context.input,
                 f'command "{name}" accepts max {max_length} args',
-                context.loc
+                self.loc
             )
 
         coerced = []
@@ -142,7 +163,7 @@ class CommandNode:
                 value = arg_node.create(context)
             else:
                 # If the arg does not exist, use the command loc
-                loc = context.loc
+                loc = self.loc
                 value = None
 
             if value is None:
@@ -186,7 +207,7 @@ class CommandNode:
             raise DirectiveValueError(
                 context.input,
                 f'command "{name}" accepts max {max_length} series',
-                context.loc
+                self.loc
             )
 
         coerced = []
@@ -198,6 +219,13 @@ class CommandNode:
                     value = default
             else:
                 value = default
+
+            if value is None:
+                raise DirectiveValueError(
+                    context.input,
+                    f'series[{index}] is required for command "{name}"',
+                    self.loc
+                )
 
             coerced.append(value)
 
