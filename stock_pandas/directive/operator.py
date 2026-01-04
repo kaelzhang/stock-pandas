@@ -15,7 +15,8 @@ from numpy.typing import NDArray
 
 
 ReturnType = NDArray[Any]
-OperatorArgType = Union[float, ReturnType]
+NumberType = Union[int, float]
+OperatorArgType = Union[NumberType, ReturnType]
 
 OperatorFormula = Callable[[OperatorArgType, OperatorArgType], ReturnType]
 UnaryOperatorFormula = Callable[[ReturnType], ReturnType]

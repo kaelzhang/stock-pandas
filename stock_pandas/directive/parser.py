@@ -373,6 +373,16 @@ class Parser:
                     )
                 )
             )
+        elif not self._token.special:
+            args.append(
+                ArgumentNode(
+                    loc=loc,
+                    value=ScalarNode[str](
+                        loc=loc,
+                        value=self._token.value
+                    )
+                )
+            )
 
         if self._is(STR_COMMA):
             if number is None:

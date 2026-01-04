@@ -18,6 +18,7 @@ from .operator import (
     OperatorFormula,
     UnaryOperatorFormula,
     ReturnType,
+    NumberType,
     OF
 )
 
@@ -30,7 +31,7 @@ def _run_expression(
     df: StockDataFrame,
     s: slice
 ) -> OperatorArgType:
-    if isinstance(expression, float):
+    if isinstance(expression, (float, int)):
         return expression
 
     return expression.run(df, s)
@@ -80,9 +81,9 @@ class Expression:
         s: slice
     ) -> ReturnType:
         if self.left is None:
-            return self.operator.formula(_run_expression(self.right, df, s))
+            return self.operator(_run_expression(self.right, df, s))
 
-        return self.operator.formula(
+        return self.operator(
             _run_expression(self.left, df, s),
             _run_expression(self.right, df, s)
         )
@@ -91,7 +92,7 @@ class Expression:
 @dataclass(frozen=True, slots=True)
 class UnaryExpression:
     operator: UnaryOperatorFormula
-    expression: Expression
+    expression: Directive
 
     def __str__(self) -> str:
         return f'{self.operator}{self.expression}'
@@ -101,7 +102,7 @@ class UnaryExpression:
         return self.expression.cumulative_lookback()
 
     def run(self, df: StockDataFrame, s: slice) -> ReturnType:
-        ...
+        return self.operator(self.expression.run(df, s))
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,7 +113,7 @@ class Command:
     """
 
     name: str
-    params: List[CommandParamType]
+    args: List[PrimativeType]
     series: List[CommandSeriesType]
     formula: CommandFormula
     lookback: CommandLookback
@@ -126,7 +127,7 @@ class Command:
 
     @property
     def cumulative_lookback(self) -> int:
-        base_lb = self.lookback(*self.params)
+        base_lb = self.lookback(*self.args)
 
         series_lb = max(
             series.cumulative_lookback
@@ -143,11 +144,15 @@ class Command:
         s: slice
     ) -> ReturnType:
         arrays = [
-            series.run(df, s)
+            (
+                df.get_column(series)[s].to_numpy()
+                if isinstance(series, str)
+                else series.run(df, s)
+            )
             for series in self.series
         ]
 
-        return self.formula(*self.params, *arrays)
+        return self.formula(*self.args, *arrays)
 
 
 @dataclass(frozen=True, slots=True)
@@ -159,10 +164,9 @@ class Operator(Generic[OF]):
         return self.name
 
 
-NumberType = Union[int, float]
 OperandType = Union[Command, Expression, UnaryExpression, NumberType]
-CommandParamType = Union[NumberType, bool]
-PrimativeType = Union[CommandParamType, str]
+CommandArgInputType = Union[NumberType, str]
+PrimativeType = Union[CommandArgInputType, bool]
 
 
 class CommandFormula(Protocol):
@@ -170,14 +174,14 @@ class CommandFormula(Protocol):
         self,
         # df: 'StockDataFrame',
         # s: slice,
-        *args: Union[CommandParamType, ReturnType]
+        *args: Union[PrimativeType, ReturnType]
     ) -> ReturnType: ...
 
 
 class CommandLookback(Protocol):
     def __call__(
         self,
-        *args: CommandParamType
+        *args: PrimativeType
     ) -> int: ...
 
 

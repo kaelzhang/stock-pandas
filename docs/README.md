@@ -958,7 +958,7 @@ Since `4.0.0`, stock-pandas uses structured classes instead of tuples and dicts 
 from stock_pandas import (
     StockDataFrame,
     CommandPreset,
-    CommandParamType,
+    CommandArgType,
     CommandArg,
     CommandDefinition,
     ReturnType
@@ -990,7 +990,7 @@ For a simple indicator, such as simple moving average, you could check the imple
 
 - **df** `StockDataFrame` the first argument of `formula` is the stock dataframe itself
 - **s** `slice` sometimes, we don't need to calculate the whole dataframe but only part of it. This argument is passed into the formula by `stock_pandas` and should not be changed manually.
-- **args** `Tuple[CommandParamType]` the args of the indicator which is defined by the `args` list
+- **args** `Tuple[CommandArgType]` the args of the indicator which is defined by the `args` list
 
 The formula returns `ReturnType`, which is `Tuple[ndarray, int]`:
 - The first item is the calculated result as a numpy ndarray.
@@ -1007,8 +1007,8 @@ CommandArg(
 )
 ```
 
-- **default** `Optional[CommandParamType]`: The default value for the argument. `None` indicates that it is a **required** argument.
-- **coerce** `Callable[[CommandParamType], CommandParamType]`: A raisable callable that validates the input, coerces the type, and returns the validated value. If a default value is provided and the user doesn't specify a value, the coerce function will be skipped.
+- **default** `Optional[CommandArgType]`: The default value for the argument. `None` indicates that it is a **required** argument.
+- **coerce** `Callable[[CommandArgType], CommandArgType]`: A raisable callable that validates the input, coerces the type, and returns the validated value. If a default value is provided and the user doesn't specify a value, the coerce function will be skipped.
 
 **Example:**
 

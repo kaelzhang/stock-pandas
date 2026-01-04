@@ -17,7 +17,8 @@ from .types import (
     UnaryExpression,
     Command,
     Operator,
-    CommandParamType,
+    PrimativeType,
+    CommandArgInputType,
     CommandSeriesType,
     NumberType
 )
@@ -104,7 +105,7 @@ class CommandNode:
 
         return Command(
             name=name,
-            params=args,
+            args=args,
             series=series,
             formula=preset.formula,
             lookback=preset.lookback
@@ -115,7 +116,7 @@ class CommandNode:
         name: str,
         preset: CommandPreset,
         context: Context
-    ) -> List[CommandParamType]:
+    ) -> List[PrimativeType]:
         preset_args = preset.args
         args = self.args
 
@@ -125,7 +126,7 @@ class CommandNode:
         if args_length > max_length:
             raise DirectiveValueError(
                 context.input,
-                f'command "{name}" accepts max {max_length} params',
+                f'command "{name}" accepts max {max_length} args',
                 context.loc
             )
 
@@ -208,7 +209,7 @@ class ArgumentNode:
     loc: Loc
     # command:,2
     # -> [None, 2]
-    value: Optional[ScalarNode[NumberType]]
+    value: Optional[ScalarNode[CommandArgInputType]]
 
     def create(self, context: Context):
         if self.value is None:

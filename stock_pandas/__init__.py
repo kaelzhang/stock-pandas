@@ -12,7 +12,7 @@ from .directive.command import (
 )
 from .directive.types import (
     ReturnType,
-    CommandParamType,
+    PrimativeType,
     NumberType
 )
 from .directive.cache import DirectiveCache

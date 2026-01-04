@@ -8,22 +8,21 @@ from typing import (
     TypeVar,
     Generic
 )
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from stock_pandas.exceptions import DirectiveValueError
 
 from .cache import DirectiveCache
 from .tokenizer import Loc
 from .types import (
-    CommandParamType,
     PrimativeType,
-    NumberType,
+    CommandArgInputType,
     CommandFormula,
     CommandLookback
 )
 
 
-def DEFAULT_ARG_COERCE(x: NumberType) -> CommandParamType:
+def DEFAULT_ARG_COERCE(x: PrimativeType) -> PrimativeType:
     return x
 
 
@@ -41,12 +40,12 @@ class CommandArg:
     The definition of a command argument
 
     Args:
-        default (Optional[CommandParamType] = None): The default value for the argument. `None` indicates that it is NOT an optional argument
-        coerce (Optional[Callable[..., CommandParamType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
+        default (Optional[PrimativeType] = None): The default value for the argument. `None` indicates that it is NOT an optional argument
+        coerce (Optional[Callable[..., PrimativeType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
     """
 
-    default: Optional[CommandParamType] = None
-    coerce: Callable[[NumberType], CommandParamType] = DEFAULT_ARG_COERCE
+    default: Optional[PrimativeType] = None
+    coerce: Callable[[CommandArgInputType], PrimativeType] = DEFAULT_ARG_COERCE
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,8 +60,8 @@ class CommandPreset:
 
     formula: CommandFormula
     lookback: CommandLookback
-    args: List[CommandArg]
-    series: List[str]
+    args: List[CommandArg] = field(default_factory=list)
+    series: List[str] = field(default_factory=list)
 
 
 SubCommands = Dict[

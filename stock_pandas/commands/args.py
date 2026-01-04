@@ -9,7 +9,11 @@ from stock_pandas.directive.command import (
 
 
 arg_period = CommandArg(coerce=period_to_int)
-arg_column_high = CommandArg('high', column_enums)
-arg_column_low = CommandArg('low', column_enums)
-arg_column_close = CommandArg('close', column_enums)
+# arg_column_high = CommandArg('high', column_enums)
+# arg_column_low = CommandArg('low', column_enums)
+# arg_column_close = CommandArg('close', column_enums)
 arg_required = CommandArg()
+
+
+def lookback_period(period: int, *args) -> int:
+    return period - 1

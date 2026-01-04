@@ -1,6 +1,7 @@
 #
 # Indicators to show overbought or oversold position
 # ----------------------------------------------------
+from asyncio import Lock
 from functools import partial
 from typing import (
     TYPE_CHECKING, Iterator
@@ -30,8 +31,9 @@ from .base import BUILTIN_COMMANDS
 
 from .args import (
     arg_period,
-    arg_column_high,
-    arg_column_low,
+    lookback_period,
+    # arg_column_high,
+    # arg_column_low,
 )
 
 
@@ -40,19 +42,13 @@ from .args import (
 # ----------------------------------------------------
 
 def llv(
-    df: 'StockDataFrame',
-    s: slice,
     period: int,
-    column: str
+    column: ReturnType
 ) -> ReturnType:
     """Gets LLV (Lowest of Low Value)
     """
 
-    return rolling_calc(
-        df.get_column(column)[s].to_numpy(),
-        period,
-        min
-    ), period
+    return rolling_calc(column, period, min)
 
 
 preset_llv = CommandPreset(llv, [
@@ -63,25 +59,23 @@ BUILTIN_COMMANDS['llv'] = CommandDefinition(preset_llv)
 
 
 def hhv(
-    df: 'StockDataFrame',
-    s: slice,
     period: int,
-    column: str
+    column: ReturnType
 ) -> ReturnType:
     """Gets HHV (Highest of High Value)
     """
 
-    return rolling_calc(
-        df.get_column(column)[s].to_numpy(),
-        period,
-        max
-    ), period
+    return rolling_calc(column, period, max)
 
 
-preset_hhv = CommandPreset(hhv, [
-    arg_period,
-    arg_column_high
-])
+preset_hhv = CommandPreset(
+    formula=hhv,
+    lookback=lookback_period,
+    args=[
+        arg_period
+    ],
+    series=['high']
+)
 BUILTIN_COMMANDS['hhv'] = CommandDefinition(preset_hhv)
 
 
@@ -106,12 +100,10 @@ def donchian(
 
 BUILTIN_COMMANDS['donchian'] = CommandDefinition(
     CommandPreset(
-        donchian,
-        [
-            arg_period,
-            arg_column_high,
-            arg_column_low
-        ]
+        formula=donchian,
+        lookback=lookback_period,
+        args=[arg_period],
+        series=['high', 'low']
     ),
     dict(
         upper=preset_hhv,
