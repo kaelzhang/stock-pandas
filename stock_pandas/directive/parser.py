@@ -41,6 +41,7 @@ from .operator import (
 from .node import (
     ExpressionNode,
     UnaryExpressionNode,
+    ExpressionNodeTypes,
     CommandNode,
     ArgumentNode,
     OperatorNode,
@@ -72,8 +73,6 @@ OPERATOR_PRIORITY: OperatorPriority = [
     LOGICAL_OPERATORS
 ]
 
-ExpressionNodeTypes = Union[ExpressionNode, UnaryExpressionNode, ScalarNode]
-
 
 class Parser:
     _input: str
@@ -82,18 +81,16 @@ class Parser:
 
     def __init__(self, directive_str: str) -> None:
         self._input = directive_str
+        self._tokens = Tokenizer(self._input)
+        self._next_token()
 
     def parse(self) -> ExpressionNode:
-        self._tokens = Tokenizer(self._input)
 
-        self._next_token()
         directive = self._expect_directive()
 
         self._expect_eof()
 
         return directive
-
-        # return RootNode.from_node(directive)
 
     # An _expect_<type> method
     # - should NOT next_token at the begining
@@ -162,22 +159,6 @@ class Parser:
             name=value,
             formula=formula
         )
-
-    # def _expect_logical_expression(self) -> ExpressionNode:
-    #     left = self._expect_bitwise_or_expression()
-
-    #     while (
-    #         (operator := self._detect_operator(LOGICAL_OPERATORS))
-    #         and operator is not None
-    #     ):
-    #         right = self._expect_bitwise_or_expression()
-    #         left = ExpressionNode(
-    #             loc=left.loc,
-    #             operator=operator,
-    #             right=right
-    #         )
-
-    #     return left
 
     def _expect_expression(
         self,
@@ -253,17 +234,13 @@ class Parser:
             expression=right
         )
 
-    def _expect_primary_directive(self) -> ExpressionNode:
+    def _expect_primary_directive(self) -> ExpressionNodeTypes:
         if self._is(STR_PARAN_L):
             self._next_token()
-            loc = self._token.loc
             directive = self._expect_directive()
             self._expect(STR_PARAN_R)
             self._next_token()
-            return ExpressionNode(
-                loc=loc,
-                directive=directive
-            )
+            return directive
 
         return self._expect_command()
 

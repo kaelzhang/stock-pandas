@@ -3,6 +3,7 @@ from typing import (
     Optional,
     Generic,
     List,
+    Union,
     # TypeVar
     # Tuple
 )
@@ -17,8 +18,7 @@ from stock_pandas.common import (
 from .types import (
     Expression,
     Command,
-    Operator,
-    UnaryOperator
+    Operator
 )
 from .operator import (
     OperatorFormula,
@@ -35,9 +35,9 @@ from .command import (
 @dataclass(frozen=True, slots=True)
 class ExpressionNode:
     loc: Loc
-    left: ExpressionNode
-    operator: Optional[OperatorNode] = None
-    right: Optional[ExpressionNode] = None
+    left: ExpressionNodeTypes
+    operator: Optional[OperatorNode[OperatorFormula]] = None
+    right: Optional[ExpressionNodeTypes] = None
 
     # def create(
     #     self,
@@ -61,7 +61,7 @@ class ExpressionNode:
 @dataclass(frozen=True, slots=True)
 class UnaryExpressionNode:
     loc: Loc
-    operator: OperatorNode
+    operator: OperatorNode[UnaryOperatorFormula]
     expression: ExpressionNode
 
     def create(
@@ -76,7 +76,7 @@ class CommandNode:
     loc: Loc
     name: ScalarNode
     args: List[ArgumentNode]
-    series: List[SeriesNode]
+    series: List[SeriesArgumentNode]
     sub: Optional[ScalarNode] = None
 
     def create(
@@ -168,7 +168,16 @@ class CommandNode:
 @dataclass(frozen=True, slots=True)
 class ArgumentNode:
     loc: Loc
-    value: ArgumentValueNode
+    value: ScalarNode
+
+    def create(self, context: Context):
+        return self.value.create(context)
+
+
+@dataclass(frozen=True, slots=True)
+class SeriesArgumentNode:
+    loc: Loc
+    value: ExpressionNodeTypes
 
     def create(self, context: Context):
         return self.value.create(context)
@@ -195,6 +204,12 @@ class OperatorNode(Generic[OF]):
 #         return UnaryOperator(self.name, UNARY_OPERATORS.get(self.name))
 
 
+ExpressionNodeTypes = Union[
+    ExpressionNode,
+    UnaryExpressionNode,
+    ScalarNode,
+    CommandNode
+]
 
 # ArgumentValueNode = Union[DirectiveNode, ScalarNode]
 # ExpressionNode = Union[ScalarNode, CommandNode]
