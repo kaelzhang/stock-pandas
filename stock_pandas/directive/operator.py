@@ -28,7 +28,7 @@ type OperatorMap[OF] = Dict[
     Tuple[
         # Formula
         OF,
-        # Priority, the smaller the higher
+        # Priority, larger the higher
         int
     ]
 ]
@@ -49,8 +49,8 @@ def logical_and(
 
 
 LOGICAL_OPERATORS: OperatorMap[OperatorFormula] = {
-    '||': (logical_or, 9),
-    '&&': (logical_and, 9)
+    '||': (logical_or, 0),
+    '&&': (logical_and, 0)
 }
 
 
@@ -62,7 +62,7 @@ def bitwise_or(
 
 
 BITWISE_OR_OPERATORS: OperatorMap[OperatorFormula] = {
-    '|': (bitwise_or, 8)
+    '|': (bitwise_or, 1)
 }
 
 
@@ -74,7 +74,7 @@ def bitwise_xor(
 
 
 BITWISE_XOR_OPERATORS: OperatorMap[OperatorFormula] = {
-    '^': (bitwise_xor, 7),
+    '^': (bitwise_xor, 2),
 }
 
 
@@ -86,7 +86,7 @@ def bitwise_and(
 
 
 BITWISE_AND_OPERATORS: OperatorMap[OperatorFormula] = {
-    '&': (bitwise_and, 6),
+    '&': (bitwise_and, 3),
 }
 
 
@@ -119,10 +119,10 @@ def larger_than(
 
 
 RELATIONAL_OPERATORS: OperatorMap[OperatorFormula] = {
-    '<': (less_than, 5),
-    '<=': (less_than_or_equal, 5),
-    '>=': (larger_than_or_equal, 5),
-    '>': (larger_than, 5),
+    '<': (less_than, 4),
+    '<=': (less_than_or_equal, 4),
+    '>=': (larger_than_or_equal, 4),
+    '>': (larger_than, 4),
 }
 
 
@@ -141,8 +141,8 @@ def not_equal(
 
 
 EQUALITY_OPERATORS: OperatorMap[OperatorFormula] = {
-    '==': (equal, 4),
-    '!=': (not_equal, 4),
+    '==': (equal, 5),
+    '!=': (not_equal, 5),
 }
 
 
@@ -171,9 +171,9 @@ def cross_down(
 
 
 STYLE_OPERATORS: OperatorMap[OperatorFormula] = {
-    '//': (cross_up, 3),
-    '\\': (cross_down, 3),
-    '><': (cross, 3)
+    '//': (cross_up, 6),
+    '\\': (cross_down, 6),
+    '><': (cross, 6)
 }
 
 
@@ -192,8 +192,8 @@ def subtraction(
 
 
 ADDITION_OPERATORS: OperatorMap[OperatorFormula] = {
-    '+': (addition, 2),
-    '-': (subtraction, 2)
+    '+': (addition, 7),
+    '-': (subtraction, 7)
 }
 
 
@@ -212,8 +212,8 @@ def division(
 
 
 MULTIPLICATION_OPERATORS: OperatorMap[OperatorFormula] = {
-    '*': (multiplication, 1),
-    '/': (division, 1)
+    '*': (multiplication, 8),
+    '/': (division, 8)
 }
 
 
@@ -233,6 +233,6 @@ def not_operator(
 # - directive
 # ~ directive
 UNARY_OPERATORS: OperatorMap[UnaryOperatorFormula] = {
-    '-': (minus, 0),
-    '~': (not_operator, 0)
+    '-': (minus, 9),
+    '~': (not_operator, 9)
 }

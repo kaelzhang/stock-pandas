@@ -71,21 +71,31 @@ class Expression(Lookback):
     # - __str__ for user method invocation
     # - __repr__ for internal debugging
     def _stringify(self) -> str:
-        stringified = (
-            f'{self.operator}{self.right}'
-            if self.right is None
-            else f'{self.operator}{self.operator}{self.right}'
+        left_str = (
+            f'({str(self.left)})'
+            if (
+                isinstance(self.left, Expression)
+                and self.left.operator.priority < self.operator.priority
+
+            )
+            else str(self.left)
         )
 
-        return f'({stringified})'
+        right_str = (
+            f'({str(self.right)})'
+            if (
+                isinstance(self.right, Expression)
+                # If the right operator has the same priority,
+                # we still need to wrap the right expression in parentheses,
+                # because two operators with the same priority
+                # are left-associative
+                and self.right.operator.priority <= self.operator.priority
 
-        # return (
-        #
-        #     if self.root
-        #     # We do not need to wrap the stringified directive
-        #     # for top-level directives
-        #     else stringified
-        # )
+            )
+            else str(self.right)
+        )
+
+        return f'{left_str}{self.operator}{right_str}'
 
     def _cumulative_lookback(self) -> int:
         right_lb = _get_cumulative_lookback(self.right)
@@ -112,8 +122,11 @@ class UnaryExpression(Lookback):
     operator: Operator[UnaryOperatorFormula]
     expression: Directive
 
-    def __str__(self) -> str:
-        return f'{self.operator}{self.expression}'
+    def _stringify(self) -> str:
+        if isinstance(self.expression, Command):
+            return f'{self.operator}{self.expression}'
+
+        return f'{self.operator}({self.expression})'
 
     def _cumulative_lookback(self) -> int:
         return self.expression.cumulative_lookback
@@ -168,7 +181,7 @@ class Command(Lookback):
                 EMPTY if arg == arg_def.default else arg
             )
 
-        if not to_join:
+        if not any(to_join):
             return EMPTY
 
         return prefix + join_args(to_join)

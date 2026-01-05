@@ -2,6 +2,9 @@ import pytest
 
 from stock_pandas.directive.parser import Parser
 from stock_pandas.exceptions import DirectiveSyntaxError
+from stock_pandas.directive.parse import parse
+from stock_pandas.commands import BUILTIN_COMMANDS
+from stock_pandas.directive.cache import DirectiveCache
 
 
 # TYPE_DIRECTIVE = 1
@@ -217,8 +220,16 @@ repeat
         print(e)
 
 
-# def test_basic():
-#     parser = Parser('close + open * high')
-#     parsed = parser.parse()
-#     print(parsed)
-#     print(str(parsed))
+def test_stringify():
+    cache = DirectiveCache()
+    commands = BUILTIN_COMMANDS
+
+    cases = [
+        ('close + open * high', 'close+open*high', 'operator priority'),
+        ('boll:20@close', 'boll', 'command default value'),
+        ('close + - close', 'close+-close', 'unary operator'),
+    ]
+
+    for i, (input, stringified, desc) in enumerate(cases):
+        parsed = parse(input, cache, commands)
+        assert str(parsed) == stringified, f'{i}: {desc}'

@@ -270,7 +270,6 @@ class Parser:
             )
 
         right = self._expect_primary_directive()
-        self._next_token()
 
         return UnaryExpressionNode(
             loc=loc,
