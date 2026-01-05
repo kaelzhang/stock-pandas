@@ -1,15 +1,10 @@
-from functools import partial
-
 import pytest
 
 from stock_pandas import (
     StockDataFrame,
-    CommandPreset,
-    CommandDefinition,
-    CommandArg
+    CommandDefinition
 )
 from stock_pandas.commands.base import BUILTIN_COMMANDS
-from stock_pandas.commands.over_bought_or_sold import kdj_j
 
 from .common import (
     get_tencent
@@ -17,15 +12,6 @@ from .common import (
 
 
 sub_commands = BUILTIN_COMMANDS['kdj'].sub_commands.copy()
-
-command = sub_commands['j'] = CommandPreset(
-    partial(kdj_j, 'kdj2'),
-    [
-        CommandArg(default)
-        for default in [9, 3, 3, 50.]
-    ]
-)
-
 
 StockDataFrame.define_command('kdj2', CommandDefinition(
     sub_commands=sub_commands

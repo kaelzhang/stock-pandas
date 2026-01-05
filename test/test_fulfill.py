@@ -24,10 +24,10 @@ def test_fulfill(tencent: DataFrame):
 
     stock = stock.append(tencent.iloc[40])
 
-    assert isnan(stock.iloc[40]['ma:20@close'])
+    assert isnan(stock.iloc[40]['ma:20'])
 
     stock = stock.fulfill()
 
     row_41 = stock.iloc[40]
 
-    assert row_41['ma:20@close'] == stock['ma:20'].iloc[40]
+    assert row_41['ma:20'] == stock['ma:20'].iloc[40]

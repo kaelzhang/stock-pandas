@@ -23,7 +23,7 @@ def test_cum_append_feat_indicator():
     assert ma == stock.iloc[-2:]['close'].sum() / 2
 
     stock = stock.cum_append(tencent.iloc[19:20])
-    assert stock._stock_columns_info_map['ma:2,close'].size == len(stock) - 1
+    assert stock._stock_columns_info_map['ma:2'].size == len(stock) - 1
 
     new_ma = stock['ma:2'].iloc[-1]
 
@@ -34,15 +34,15 @@ def test_cum_append_feat_indicator():
         time_frame=TimeFrame.m15
     )
 
-    assert stock._stock_columns_info_map['ma:2,close'].size == len(stock)
+    assert stock._stock_columns_info_map['ma:2'].size == len(stock)
 
     stock = stock.cum_append(tencent.iloc[20:21])
-    assert stock._stock_columns_info_map['ma:2,close'].size == len(stock) - 1
+    assert stock._stock_columns_info_map['ma:2'].size == len(stock) - 1
 
     stock = stock.cumulate()
 
     # Time frame changed, so info map should not be inherited
-    assert 'ma:2,close' not in stock._stock_columns_info_map
+    assert 'ma:2' not in stock._stock_columns_info_map
 
 
 def test_indexing():

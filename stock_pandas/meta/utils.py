@@ -18,7 +18,7 @@ from stock_pandas.properties import (
 )
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class ColumnInfo:
     size: int
     directive: Directive

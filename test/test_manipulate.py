@@ -18,7 +18,9 @@ def test_drop(stock: StockDataFrame):
 
     name = stock.directive_stringify('boll')
 
-    assert str(stock._stock_columns_info_map[name]) == '<ColumnInfo boll:20,close, size:100, period:20>'  # noqa: E501
+    column_info_str = str(stock._stock_columns_info_map[name])
+    assert 'size=100' in column_info_str
+    assert 'period=20' in column_info_str
 
     last_boll = stock.iloc[-1][name]
     origin_last = stock.iloc[-1]

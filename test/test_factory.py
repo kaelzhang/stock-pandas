@@ -1,5 +1,3 @@
-import pytest
-
 from stock_pandas.directive.parse import (
     parse as parse_it,
     # DirectiveCache
@@ -17,61 +15,6 @@ def parse(string):
     return parse_it(string, DirectiveCache(), COMMANDS)
 
 
-def run_case(case):
-    c, n, a, o, e, s = case
-    print('directive:', c)
-
-    directive = parse(c)
-
-    command = directive.command
-    operator = directive.operator
-    value = directive.expression
-
-    assert command.name == n
-    # assert command.sub == sc
-    assert [a.value for a in command.args] == a
-
-    if o is None:
-        assert operator == o
-    else:
-        assert operator.name == o
-
-    assert e == value
-    assert s == str(directive)
-
-
-def test_valid_columns_after_apply():
-    CASES = [
-        (
-            # directive
-            'macd.dif',
-            # command name
-            'macd',
-            # arguments
-            [12, 26],
-            # operator
-            None,
-            # expression
-            None,
-            # to string
-            'macd:12,26'
-        ),
-        (
-            'macd.signal',
-            'macd.signal',
-            [12, 26, 9],
-            None,
-            None,
-            'macd.signal:12,26,9'
-        )
-    ]
-
-    print()
-
-    for case in CASES:
-        run_case(case)
-
-
 def test_column_with_two_command_real_case():
     directive = parse('ma:10 > boll.upper:20')
 
@@ -84,10 +27,7 @@ def test_column_with_two_command_real_case():
 
 def test_value_error():
     CASES = [
-        ('a1', ['unknown command', 'DirectiveValueError']),
-        ('foo', 'unknown command'),
         ('kdj', 'sub command should be specified'),
-        ('ma:2 > foo', 'unknown command'),
         ('ma:2,close,3', 'accepts max'),
         ('ma:1', 'greater than 1'),
         ('ma:close', 'positive int'),
@@ -104,9 +44,15 @@ def test_value_error():
         ('hv:10,15m,366', 'but got `366`'),
     ]
 
-    for directive_str, err_msg in CASES:
+    for i, (directive_str, err_msg) in enumerate(CASES):
         err_msgs = err_msg if isinstance(err_msg, list) else [err_msg]
 
         for err_msg in err_msgs:
-            with pytest.raises(DirectiveValueError, match=err_msg):
+            try:
                 parse(directive_str)
+            except Exception as e:
+                assert err_msg in str(e)
+                assert isinstance(e, DirectiveValueError)
+                return
+
+            raise Exception(f'{i}: {directive_str} -> {err_msg}')

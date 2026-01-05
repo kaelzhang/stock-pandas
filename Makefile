@@ -1,6 +1,6 @@
 files = stock_pandas test *.py
-# test_files = *
-test_files = parser
+test_files = *
+# test_files = factory
 # test_files = commands
 # test_files = cum_append
 

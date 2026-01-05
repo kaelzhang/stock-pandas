@@ -4,8 +4,7 @@ import pytest
 import pandas as pd
 
 from stock_pandas import (
-    StockDataFrame,
-    DirectiveValueError
+    StockDataFrame
 )
 
 from .common import (
@@ -22,7 +21,8 @@ def stock():
 
 
 def test_directive_stringify(stock: StockDataFrame):
-    assert StockDataFrame.directive_stringify('boll') == 'boll:20,close'
+    assert StockDataFrame.directive_stringify('boll') == 'boll'
+    assert StockDataFrame.directive_stringify('boll:30@close') == 'boll:30'
 
 
 def test_get_column(stock):
@@ -33,17 +33,22 @@ def test_get_column(stock):
         'low': 'Low'
     })
 
+    message = 'column "close" not found'
+
     with pytest.raises(
         KeyError,
-        match='column "close" not found'
+        match=message
     ):
         stock.get_column('close')
 
     with pytest.raises(
-        DirectiveValueError,
-        match='unknown command "close"'
+        KeyError,
+        match=message
     ):
         stock['ma:20']
+
+    # It is ok to specify the close column
+    stock['ma:20@Close']
 
     stock.alias('close', 'Close')
 
@@ -55,7 +60,7 @@ def test_copy(stock):
     stock['ma:2']
 
     def ma_size(stock):
-        return stock._stock_columns_info_map.get('ma:2,close').size
+        return stock._stock_columns_info_map.get('ma:2').size
 
     assert ma_size(stock) == ma_size(stock.copy())
 
