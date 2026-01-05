@@ -158,17 +158,20 @@ class Parser:
             return None
 
         value = self._token.value
-        formula = operators.get(value)
+        operator = operators.get(value)
 
-        if formula is None:
+        if operator is None:
             return None
 
         self._next_token()
 
+        formula, priority = operator
+
         return OperatorNode[OF](
             loc=self._token.loc,
             name=value,
-            formula=formula
+            formula=formula,
+            priority=priority
         )
 
     # `xxx_expression` in "syntax.ebnf"

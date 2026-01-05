@@ -218,7 +218,7 @@ repeat
 
 
 # def test_basic():
-#     parser = Parser('repeat:8@(bbi < close)')
+#     parser = Parser('close + open * high')
 #     parsed = parser.parse()
 #     print(parsed)
 #     print(str(parsed))

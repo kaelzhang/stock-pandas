@@ -126,7 +126,8 @@ class CommandNode:
             args=args,
             series=series,
             formula=preset.formula,
-            lookback=preset.lookback
+            lookback=preset.lookback,
+            preset=preset
         )
 
     def _coerce_args(
@@ -260,11 +261,13 @@ class OperatorNode(Generic[OF]):
     loc: Loc
     name: str
     formula: OF
+    priority: int
 
     def create(self, _: Context) -> Operator:
         return Operator[OF](
             name=self.name,
-            formula=self.formula
+            formula=self.formula,
+            priority=self.priority
         )
 
 

@@ -1,11 +1,12 @@
 from __future__ import annotations
 from typing import (
-    # Optional,
+    Optional,
     Union,
     List,
     TYPE_CHECKING,
     Protocol,
-    Generic
+    Generic,
+    Callable
 )
 from dataclasses import dataclass, field
 
@@ -126,6 +127,7 @@ class Command(Lookback):
     series: List[CommandSeriesType]
     formula: CommandFormula
     lookback: CommandLookback
+    preset: CommandPreset
 
     def __str__(self) -> str:
         stringify = (
@@ -168,6 +170,7 @@ class Command(Lookback):
 class Operator(Generic[OF]):
     name: str
     formula: OF
+    priority: int
 
     def __str__(self) -> str:
         return self.name
@@ -192,6 +195,39 @@ class CommandLookback(Protocol):
         self,
         *args: PrimativeType
     ) -> int: ...
+
+
+def DEFAULT_ARG_COERCE(x: PrimativeType) -> PrimativeType:
+    return x
+
+@dataclass(frozen=True, slots=True)
+class CommandArg:
+    """
+    The definition of a command argument
+
+    Args:
+        default (Optional[PrimativeType] = None): The default value for the argument. `None` indicates that it is NOT an optional argument
+        coerce (Optional[Callable[..., PrimativeType]]): The function to coerce the argument to the correct type and value range. The function is throwable.
+    """
+
+    default: Optional[PrimativeType] = None
+    coerce: Callable[[CommandArgInputType], PrimativeType] = DEFAULT_ARG_COERCE
+
+
+@dataclass(frozen=True, slots=True)
+class CommandPreset:
+    """
+    A command preset defines the formula and arguments for a command
+
+    Args:
+        formula (CommandFormula): The formula of the command
+        args (List[CommandArg]): The arguments of the command
+    """
+
+    formula: CommandFormula
+    lookback: CommandLookback
+    args: List[CommandArg] = field(default_factory=list)
+    series: List[str] = field(default_factory=list)
 
 
 Directive = Union[Expression, UnaryExpression, Command]
