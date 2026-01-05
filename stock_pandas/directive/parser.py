@@ -260,10 +260,11 @@ class Parser:
 
         if number is not None:
             if unary == STR_TILDE:
-                return self._unexpected()
+                # The number should be the unexpected token
+                self._look_back()
+                raise self._unexpected()
 
             # Then there is a minus sign
-            self._next_token()
             return ScalarNode[NumberType](
                 loc=loc,
                 value= - number

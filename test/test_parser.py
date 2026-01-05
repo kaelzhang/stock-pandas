@@ -2,9 +2,8 @@ import pytest
 
 from stock_pandas.directive.parser import Parser
 from stock_pandas.exceptions import DirectiveSyntaxError
-from stock_pandas.directive.parse import parse
-from stock_pandas.commands import BUILTIN_COMMANDS
-from stock_pandas.directive.cache import DirectiveCache
+
+from .common import parse
 
 
 # TYPE_DIRECTIVE = 1
@@ -191,7 +190,8 @@ def test_invalid_columns():
         ('ma@(abc', 'unexpected EOF'),
         ('ma > 0 >', 'unexpected EOF'),
         ('ma@(abc > 0 >', 'unexpected EOF'),
-        ('ma:5 > 0)', 'expect EOF')
+        ('ma:5 > 0)', 'expect EOF'),
+        ('boll > ~1', 'unexpected token "1"')
     ]
 
     def parse(input):
@@ -221,15 +221,23 @@ repeat
 
 
 def test_stringify():
-    cache = DirectiveCache()
-    commands = BUILTIN_COMMANDS
-
     cases = [
         ('close + open * high', 'close+open*high', 'operator priority'),
         ('boll:20@close', 'boll', 'command default value'),
         ('close + - close', 'close+-close', 'unary operator'),
+        ('boll:-close', 'boll-close', 'unclosed command'),
+        ('boll > -1', 'boll>-1', 'negative number'),
+        ('3 * (high - low)', '3*(high-low)', 'wrapped directive'),
+        ('boll:30,', 'boll:30', 'command args end fast, but it is ok'),
+        ('kdj.j:,4', 'kdj.j:,4', 'default argument'),
+        ('kdj.j:@,high', 'kdj.j@,high', 'default series argument')
     ]
 
     for i, (input, stringified, desc) in enumerate(cases):
-        parsed = parse(input, cache, commands)
+        parsed = parse(input)
         assert str(parsed) == stringified, f'{i}: {desc}'
+
+
+# def test_unexpected_token():
+#     parsed = parse('boll > ~1')
+#     print(parsed)

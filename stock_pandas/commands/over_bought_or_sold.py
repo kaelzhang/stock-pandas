@@ -238,7 +238,7 @@ def init_to_float(raw_value: CommandArgInputType) -> float:
 
     if value < 0. or value > 100.:
         raise ValueError(
-            f'init_value must be in between 0 and 100, but got `{value}`'
+            f'init_value must be in between 0 and 100, but got `{raw_value}`'
         )
 
     return value

@@ -25,6 +25,13 @@ def test_directive_stringify(stock: StockDataFrame):
     assert StockDataFrame.directive_stringify('boll:30@close') == 'boll:30'
 
 
+def test_exec(stock):
+    result = stock.exec('close')
+    close = stock['close'].to_numpy()
+
+    assert np.all(result == close)
+
+
 def test_get_column(stock):
     stock = stock.rename(columns={
         'open': 'Open',

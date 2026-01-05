@@ -78,7 +78,7 @@ class CommandDefinition:
             if self.sub_commands is None:
                 raise DirectiveValueError(
                     context.input,
-                    f'command "{main_name}" has no sub commands',
+                    f'command "{main_name}" supports no sub commands',
                     main.loc
                 )
 

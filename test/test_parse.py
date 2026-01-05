@@ -17,20 +17,22 @@ def test_column_with_two_command_real_case():
 def test_value_error():
     CASES = [
         ('kdj', 'sub command should be specified'),
-        ('ma:2,close,3', 'accepts max'),
+        ('ma:2,3@close', 'accepts max'),
         ('ma:1', 'greater than 1'),
         ('ma:close', 'positive int'),
         ('ma', 'is required'),
         ('ma.nosub', 'no sub'),
         ('macd.unknown', 'unknown sub'),
         ('style:cartoon', 'should be either'),
-        ('increase:close,5,3', 'direction'),
+        ('increase:5,3@close', 'direction'),
         ('kdj.j:9,3,3,a', 'a float'),
         ('kdj.j:9,3,3,200', 'in between'),
         ('hv:10,invalid', '`invalid` is not a valid time frame'),
         ('hv:10,15m,invalid', '`invalid` is not a valid trading days'),
         ('hv:10,15m,0', 'but got `0`'),
         ('hv:10,15m,366', 'but got `366`'),
+        ('kdj.j:9,3,3,invalid', 'must be a float'),
+        ('kdj.j:9,3,3,1000', 'between 0 and 100')
     ]
 
     for i, (directive_str, err_msg) in enumerate(CASES):
@@ -42,6 +44,6 @@ def test_value_error():
             except Exception as e:
                 assert err_msg in str(e)
                 assert isinstance(e, DirectiveValueError)
-                return
+                continue
 
             raise Exception(f'{i}: {directive_str} -> {err_msg}')

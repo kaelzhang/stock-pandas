@@ -181,7 +181,10 @@ class Command(Lookback):
                 EMPTY if arg == arg_def.default else arg
             )
 
-        if not any(to_join):
+        while to_join and to_join[-1] == EMPTY:
+            to_join.pop()
+
+        if not to_join:
             return EMPTY
 
         return prefix + join_args(to_join)
