@@ -218,7 +218,10 @@ class Command(Lookback):
         return self.preset.formula(*self.args, *arrays)
 
 
-@dataclass(frozen=True, slots=True)
+# TODO:
+# In Python 3.10, we can't use slots=True with Generic,
+# add slots=True if we drop support for Python 3.10 in the future
+@dataclass(frozen=True)
 class Operator(Generic[OF]):
     name: str
     formula: OF = field(repr=False)

@@ -257,7 +257,10 @@ class SeriesArgumentNode:
         return self.value.create(context)
 
 
-@dataclass(frozen=True, slots=True)
+# TODO:
+# In Python 3.10, we can't use slots=True with Generic,
+# add slots=True if we drop support for Python 3.10 in the future
+@dataclass(frozen=True)
 class OperatorNode(Generic[OF]):
     loc: Loc
     name: str
