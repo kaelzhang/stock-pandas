@@ -25,6 +25,8 @@ STR_PARAN_R = ')'
 STR_MINUS = '-'
 STR_TILDE = '~'
 
+UNARY_OPERATORS = (STR_MINUS, STR_TILDE)
+
 STR_AT = '@'
 
 REGEX_NOT_WHITESPACE = re.compile(r'[^\s]', re.A)
@@ -98,7 +100,33 @@ class Tokenizer:
 
     def _next(self) -> Token:
         token = self._saved_token
+
+        # self._saved_token is always a special token
         if token:
+            length = len(token.value)
+
+            # "kdj +- close" -> "kdj + - close",
+            # "+-" should be treated as two operators
+            if (
+                length > 1
+                and (unary := token.value[-1]) in UNARY_OPERATORS
+            ):
+                token = Token(
+                    token.loc,
+                    token.value[:-1],
+                    True
+                )
+
+                line, col = token.loc
+
+                self._saved_token = Token(
+                    (line, col + length - 1),
+                    unary,
+                    True
+                )
+
+                return token
+
             self._saved_token = None
             return token
 
@@ -144,17 +172,16 @@ class Tokenizer:
 
             return normal_token if normal_token else self._next()
 
-        else:
-            special_token = Token(
-                (line, col + special_start - pos),
-                special_text,
-                True
-            )
+        special_token = Token(
+            (line, col + special_start - pos),
+            special_text,
+            True
+        )
 
-            normal_token = create_normal_token(text, line, col)
+        normal_token = create_normal_token(text, line, col)
 
-            if normal_token:
-                self._saved_token = special_token
-                return normal_token
-            else:
-                return special_token
+        if normal_token:
+            self._saved_token = special_token
+            return normal_token
+
+        return special_token

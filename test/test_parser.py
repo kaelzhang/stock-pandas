@@ -75,7 +75,9 @@ def test_stringify():
             'logical operator'
         ),
         ('(kdj.j)&(kdj.d)', 'kdj.j&kdj.d', 'unnecessary ()'),
-        ('- a * ((b + c) > 0)', '-a*(b+c>0)', 'operator priority')
+        ('- a * ((b + c) > 0)', '-a*(b+c>0)', 'operator priority'),
+        ('a +- b', 'a+-b', 'special operator case'),
+        ('a +~ b', 'a+~b', 'special operator case'),
     ]
 
     for i, (input, stringified, desc) in enumerate(cases):
@@ -107,8 +109,3 @@ def test_edge_command_cases():
 
     parsed = parse('nonexists2:high')
     assert str(parsed) == 'nonexists2:high', 'nonexists2'
-
-
-# def test_aaa():
-#     parsed = parse('(kdj.j) & (kdj.d)')
-#     print(parsed)
