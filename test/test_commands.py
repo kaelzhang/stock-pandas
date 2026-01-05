@@ -59,6 +59,21 @@ def test_append(stock):
 def test_operators(stock):
     assert stock['(kdj.j > 100) | (kdj.j <= 100)'].to_numpy().all()
     assert stock['(kdj.j > 100) ^ (kdj.j <= 100)'].to_numpy().all()
+    assert stock['(kdj.j < 200) & (kdj.j > -100)'].to_numpy().all()
+    assert stock['kdj.j + 1 != kdj.j'].to_numpy().all()
+    assert stock['kdj.j == kdj.j'].to_numpy().all()
+    assert stock['(kdj.j - kdj.j) == 0'].to_numpy().all()
+    assert stock['(kdj.j + - kdj.j) == 0'].to_numpy().all()
+
+    assert np.array_equal(
+        stock['kdj.j'].to_numpy() * 2,
+        stock['kdj.j * 2'].to_numpy()
+    )
+
+    assert np.array_equal(
+        stock['kdj.j'].to_numpy() / 2,
+        stock['kdj.j / 2'].to_numpy()
+    )
 
 
 def test_cross(stock):

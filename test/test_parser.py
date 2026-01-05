@@ -74,7 +74,8 @@ def test_stringify():
             'kdj.j>100|kdj.j<=100',
             'logical operator'
         ),
-        ('(kdj.j)&(kdj.d)', 'kdj.j&kdj.d', 'unnecessary ()')
+        ('(kdj.j)&(kdj.d)', 'kdj.j&kdj.d', 'unnecessary ()'),
+        ('- a * ((b + c) > 0)', '-a*(b+c>0)', 'operator priority')
     ]
 
     for i, (input, stringified, desc) in enumerate(cases):
