@@ -12,6 +12,8 @@ arg_required = CommandArg()
 def lookback_period(period: int, *args) -> int:
     return period - 1
 
+def lookback_a_lot(period: int, *args) -> int:
+    return period * 3
 
 def create_series_args(series: List[str]) -> List[CommandArg]:
     return [CommandArg(default) for default in series]

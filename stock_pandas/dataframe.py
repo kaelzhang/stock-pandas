@@ -149,7 +149,7 @@ class StockDataFrame(MetaDataFrame):
     # Public Methods of stock-pandas
     # --------------------------------------------------------------------
 
-    def get_column(self, name: str) -> Series:
+    def get_column(self, name: str, /) -> Series:
         """
         Gets the column directly from dataframe by key.
 
@@ -385,7 +385,7 @@ class StockDataFrame(MetaDataFrame):
             self._stock_columns_info_map[name] = ColumnInfo(
                 len(self),
                 directive,
-                lookback + 1
+                lookback
             )
 
             self.loc[:, name] = array
@@ -409,7 +409,7 @@ class StockDataFrame(MetaDataFrame):
 
         # Sometimes, there is not enough items to calculate
         calc_delta = max(
-            neg_delta - column_info.period + 1,
+            neg_delta - column_info.lookback,
             - size
         )
 
@@ -436,8 +436,10 @@ class StockDataFrame(MetaDataFrame):
         return array
 
     def _is_normal_column(self, column_name: str) -> bool:
-        return column_name in self.columns and \
-            column_name not in self._stock_columns_info_map
+        return (
+            column_name in self.columns
+            and column_name not in self._stock_columns_info_map
+        )
 
     def _calc(self, directive_str: str) -> NDArrayAny:
         directive = self._parse_directive(directive_str)

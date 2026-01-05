@@ -22,13 +22,13 @@ from stock_pandas.properties import (
 class ColumnInfo:
     size: int
     directive: Directive
-    period: int
+    lookback: int
 
     def __deepcopy__(self, _) -> 'ColumnInfo':
         return ColumnInfo(
             self.size,
             self.directive,
-            self.period
+            self.lookback
         )
 
     def update(self, size: int) -> 'ColumnInfo':
@@ -38,7 +38,7 @@ class ColumnInfo:
         return ColumnInfo(
             size,
             self.directive,
-            self.period
+            self.lookback
         )
 
 

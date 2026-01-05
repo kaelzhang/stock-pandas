@@ -43,7 +43,7 @@ def test_append(stock):
 
         if all_kdj_j.iloc[-1] < 0:
             # Test operator
-            assert current['kdj.j<=0'].iloc[-1]
+            assert current['kdj.j<=0'].iloc[-1], current['kdj.j<=0']
             assert current['kdj.j <0'].iloc[-1]
             assert not current['kdj.j == 0'].iloc[-1]
 

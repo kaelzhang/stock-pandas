@@ -14,6 +14,12 @@ from pandas import (
 
 from stock_pandas import StockDataFrame
 
+from stock_pandas.directive.parse import (
+    parse as parse_it
+)
+from stock_pandas.commands.base import BUILTIN_COMMANDS
+from stock_pandas.directive.cache import DirectiveCache
+
 
 simple_list = [2, 3, 4, 5, 6, 7]
 names = 'abcdef'
@@ -94,3 +100,9 @@ def get_last(series):
 
 def to_fixed(n: float, precision: int = 4):
     return format(n, f'.{precision}f')
+
+
+COMMANDS = BUILTIN_COMMANDS.copy()
+
+def parse(string):
+    return parse_it(string, DirectiveCache(), COMMANDS)

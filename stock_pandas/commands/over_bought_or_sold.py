@@ -28,6 +28,7 @@ from .base import BUILTIN_COMMANDS
 from .common import (
     arg_period,
     lookback_period,
+    lookback_a_lot,
     create_series_args,
     series_close
 )
@@ -174,9 +175,6 @@ def ewma(
 
 
 def kdj_k(
-    # base: str,
-    # df: 'StockDataFrame',
-    # s: slice,
     period_rsv: int,
     period_k: int,
     init: float,
@@ -193,9 +191,6 @@ def kdj_k(
 
 
 def kdj_d(
-    # base: str,
-    # df: 'StockDataFrame',
-    # s: slice,
     period_rsv: int,
     period_k: int,
     period_d: int,
@@ -213,9 +208,6 @@ def kdj_d(
 
 
 def kdj_j(
-    # base: str,
-    # df: 'StockDataFrame',
-    # s: slice,
     period_rsv: int,
     period_k: int,
     period_d: int,
@@ -276,21 +268,22 @@ BUILTIN_COMMANDS['kdj'] = CommandDefinition(
     sub_commands={
         'k': CommandPreset(
             formula=kdj_k,
-            lookback=lookback_period,
+            # KDJ needs more lookback to warm up ewma
+            lookback=lookback_a_lot,
             args=args_k,
             series=series_rsv
         ),
 
         'd': CommandPreset(
             formula=kdj_d,
-            lookback=lookback_period,
+            lookback=lookback_a_lot,
             args=args_dj,
             series=series_rsv
         ),
 
         'j': CommandPreset(
             formula=kdj_j,
-            lookback=lookback_period,
+            lookback=lookback_a_lot,
             args=args_dj,
             series=series_rsv
         )

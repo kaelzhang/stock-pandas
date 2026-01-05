@@ -20,7 +20,7 @@ def test_drop(stock: StockDataFrame):
 
     column_info_str = str(stock._stock_columns_info_map[name])
     assert 'size=100' in column_info_str
-    assert 'period=20' in column_info_str
+    assert 'lookback=19' in column_info_str
 
     last_boll = stock.iloc[-1][name]
     origin_last = stock.iloc[-1]

@@ -1,18 +1,7 @@
-from stock_pandas.directive.parse import (
-    parse as parse_it,
-    # DirectiveCache
-)
-from stock_pandas.commands.base import BUILTIN_COMMANDS
-from stock_pandas import (
-    DirectiveValueError,
-    DirectiveCache
-)
 
+from stock_pandas import DirectiveValueError
 
-COMMANDS = BUILTIN_COMMANDS.copy()
-
-def parse(string):
-    return parse_it(string, DirectiveCache(), COMMANDS)
+from .common import parse
 
 
 def test_column_with_two_command_real_case():
