@@ -1,21 +1,6 @@
-// Example:
-// ✅ 1. ( close < boll.lower ) & ( kdj.j < 0 )
-// ✅ 2. ( close ) > boll.lower
-// ✅ 3. - (boll.upper - close) < close
-// ✅ 4. - boll.upper < close
-// ✅ 5. - boll
-// ✅ 6. - bbw / 4 * ma:20 + 2 * ma:20
-// ✅ 7. - bbw / 4 * ( ma:20 + - 2 * ma:20 ) < close
-
-
-// Top level: lowest priority operators:
-// Logical operators: '||' | '&&'
-// -> bool series
-directive ::= bitwise_or_expression ( logical_operator bitwise_or_expression )*
-
 // Bitwise OR operator: '|' (lowest priority)
 // -> bool series
-bitwise_or_expression ::= bitwise_xor_expression ( bitwise_or_operator bitwise_xor_expression )*
+directive ::= bitwise_xor_expression ( bitwise_or_operator bitwise_xor_expression )*
 
 // Bitwise XOR operator: '^'
 // -> bool series
@@ -56,7 +41,6 @@ wrapped_directive ::= "(" directive ")"
 
 // Priority from lowest to highest
 // ----------------------------------------------------------------
-logical_operator ::= '||' | '&&'
 
 // Bitwise operators (priority: | < ^ < &)
 bitwise_or_operator ::= '|'

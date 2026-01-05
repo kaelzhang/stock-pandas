@@ -95,7 +95,6 @@ class Parser:
         self._next_token(True)
 
     def parse(self) -> ExpressionNode:
-
         directive = self._expect_directive()
 
         self._expect_eof()
@@ -183,13 +182,21 @@ class Parser:
             return self._expect_primary_expression()
 
         operators = operator_priority.pop()
-        left = self._expect_expression(operator_priority.copy())
+
+        # We must copy the priority so that to align
+        # the ebnf syntax design,
+        # that we only allow expression of higher operator priority
+        # on the right side of a lower-priority operator
+        copied_priority = operator_priority.copy()
+
+        left = self._expect_expression(operator_priority)
 
         while (
-            (operator := self._detect_operator(operators))
-            and operator is not None
-        ):
-            right = self._expect_expression(OPERATOR_PRIORITY.copy())
+            operator := self._detect_operator(operators)
+        ) is not None:
+            # The priorities of each `copied_priority`
+            # is higher than `operators`
+            right = self._expect_expression(copied_priority)
             left = ExpressionNode(
                 loc=left.loc,
                 left=left,

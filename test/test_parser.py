@@ -15,183 +15,6 @@ from .common import (
 )
 
 
-# TYPE_DIRECTIVE = 1
-# TYPE_COMMAND = 2
-# TYPE_OPERATOR = 3
-# TYPE_ARGUMENT = 4
-# TYPE_SCALAR = 5
-
-
-# def convert(result):
-#     if result is None:
-#         return
-
-#     if isinstance(result, list):
-#         return [convert(x) for x in result]
-
-#     label = result.label
-#     data = result.data
-
-#     if label in [
-#         TYPE_OPERATOR,
-#         TYPE_SCALAR
-#     ]:
-#         return data[0]
-
-#     return label, tuple([
-#         convert(x) for x in data
-#     ])
-
-
-# def test_basic():
-#     increase = 'increase:(ma:20,close),3'
-#     increase_structure = (
-#         TYPE_DIRECTIVE,
-#         (
-#             (
-#                 TYPE_COMMAND, (
-#                     'increase',
-#                     None,
-#                     [
-#                         (
-#                             TYPE_ARGUMENT,
-#                             ((
-#                                 TYPE_DIRECTIVE,
-#                                 (
-#                                     (
-#                                         TYPE_COMMAND,
-#                                         (
-#                                             'ma',
-#                                             None,
-#                                             [
-#                                                 (
-#                                                     TYPE_ARGUMENT,
-#                                                     ('20',)
-#                                                 ),
-#                                                 (
-#                                                     TYPE_ARGUMENT,
-#                                                     ('close',)
-#                                                 )
-#                                             ]
-#                                         )
-#                                     ),
-#                                     None,
-#                                     None
-#                                 )
-#                             ),)
-#                         ),
-#                         (
-#                             TYPE_ARGUMENT,
-#                             ('3',)
-#                         )
-#                     ]
-#                 )
-#             ),
-#             None,
-#             None
-#         )
-#     )
-
-#     FORMS = [
-#         (
-#             increase,
-#             increase_structure
-#         ),
-#         ("""
-#         increase :
-#             (
-#                 ma:
-#                     20,
-#                     close
-#             ),
-#             3
-#         """, increase_structure),
-#         (
-#             'repeat.haha : (kdj.j < 0), 5',
-#             (
-#                 TYPE_DIRECTIVE,
-#                 (
-#                     (
-#                         TYPE_COMMAND,
-#                         (
-#                             'repeat',
-#                             'haha',
-#                             [
-#                                 (
-#                                     TYPE_ARGUMENT,
-#                                     ((
-#                                         TYPE_DIRECTIVE,
-#                                         (
-#                                             (
-#                                                 TYPE_COMMAND,
-#                                                 (
-#                                                     'kdj',
-#                                                     'j',
-#                                                     []
-#                                                 )
-#                                             ),
-#                                             '<',
-#                                             0.0
-#                                         )
-#                                     ),)
-#                                 ),
-
-#                                 (
-#                                     TYPE_ARGUMENT,
-#                                     ('5',)
-#                                 )
-#                             ]
-#                         )
-#                     ),
-#                     None,
-#                     None
-#                 )
-#             )
-#         ),
-#         (
-#             'ma:5 \\ ma:10',
-#             (
-#                 TYPE_DIRECTIVE,
-#                 (
-#                     (
-#                         TYPE_COMMAND,
-#                         (
-#                             'ma',
-#                             None,
-#                             [
-#                                 (
-#                                     TYPE_ARGUMENT,
-#                                     ('5',)
-#                                 )
-#                             ]
-#                         )
-#                     ),
-#                     '\\',
-#                     (
-#                         TYPE_COMMAND,
-#                         (
-#                             'ma',
-#                             None,
-#                             [
-#                                 (
-#                                     TYPE_ARGUMENT,
-#                                     ('10',)
-#                                 )
-#                             ]
-#                         )
-#                     )
-#                 )
-#             )
-#         )
-#     ]
-
-#     for input, expect in FORMS:
-#         parser = Parser(input)
-#         parsed = parser.parse()
-
-#         assert convert(parsed) == expect
-
-
 def test_invalid_columns():
     CASES = [
         ('a >', 'unexpected EOF'),
@@ -240,7 +63,18 @@ def test_stringify():
         ('boll:30,', 'boll:30', 'command args end fast, but it is ok'),
         ('kdj.j:,4', 'kdj.j:,4', 'default argument'),
         ('kdj.j:@,high', 'kdj.j@,high', 'default series argument'),
-        ('~ ( kdj.j < 0 )', '~(kdj.j<0)', 'unary expression')
+        ('~ ( kdj.j < 0 )', '~(kdj.j<0)', 'unary expression'),
+        (
+            '(kdj.j > 100) | (kdj.j <= 100)',
+            'kdj.j>100|kdj.j<=100',
+            'logical operator'
+        ),
+        (
+            'kdj.j > 100 | kdj.j <= 100',
+            'kdj.j>100|kdj.j<=100',
+            'logical operator'
+        ),
+        ('(kdj.j)&(kdj.d)', 'kdj.j&kdj.d', 'unnecessary ()')
     ]
 
     for i, (input, stringified, desc) in enumerate(cases):
@@ -272,3 +106,8 @@ def test_edge_command_cases():
 
     parsed = parse('nonexists2:high')
     assert str(parsed) == 'nonexists2:high', 'nonexists2'
+
+
+# def test_aaa():
+#     parsed = parse('(kdj.j) & (kdj.d)')
+#     print(parsed)

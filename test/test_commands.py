@@ -56,6 +56,11 @@ def test_append(stock):
     assert str(current.iloc[-1].name) == '2020-02-24 00:00:00'
 
 
+def test_operators(stock):
+    assert stock['(kdj.j > 100) | (kdj.j <= 100)'].to_numpy().all()
+    assert stock['(kdj.j > 100) ^ (kdj.j <= 100)'].to_numpy().all()
+
+
 def test_cross(stock):
     assert stock['ma:10 >< ma:5']['2020-02-21']
     assert stock['ma:10 // ma:5']['2020-02-21']
