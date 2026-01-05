@@ -81,6 +81,10 @@ class CommandNode:
 
     def _empty_command(self, _: Context) -> Optional[Command]:
         if (
+            # TODO:
+            # What if a column is just something like
+            # - "foo.bar"
+            # - "foo.bar:10"
             self.sub is not None
             or self.args
             or self.series
@@ -104,9 +108,9 @@ class CommandNode:
         command_def = commands.get(main_name)
 
         if command_def is None:
-            pure_command = self._empty_command(context)
-            if pure_command is not None:
-                return pure_command
+            potential_column = self._empty_command(context)
+            if potential_column is not None:
+                return potential_column
 
             raise DirectiveValueError(
                 context.input,

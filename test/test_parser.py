@@ -1,9 +1,18 @@
 import pytest
 
+from stock_pandas import (
+    CommandDefinition,
+    CommandPreset,
+    CommandArg
+)
+
 from stock_pandas.directive.parser import Parser
 from stock_pandas.exceptions import DirectiveSyntaxError
 
-from .common import parse
+from .common import (
+    parse,
+    COMMANDS
+)
 
 
 # TYPE_DIRECTIVE = 1
@@ -230,7 +239,8 @@ def test_stringify():
         ('3 * (high - low)', '3*(high-low)', 'wrapped directive'),
         ('boll:30,', 'boll:30', 'command args end fast, but it is ok'),
         ('kdj.j:,4', 'kdj.j:,4', 'default argument'),
-        ('kdj.j:@,high', 'kdj.j@,high', 'default series argument')
+        ('kdj.j:@,high', 'kdj.j@,high', 'default series argument'),
+        ('~ ( kdj.j < 0 )', '~(kdj.j<0)', 'unary expression')
     ]
 
     for i, (input, stringified, desc) in enumerate(cases):
@@ -238,6 +248,27 @@ def test_stringify():
         assert str(parsed) == stringified, f'{i}: {desc}'
 
 
-# def test_unexpected_token():
-#     parsed = parse('boll > ~1')
-#     print(parsed)
+def test_edge_command_cases():
+    COMMANDS['nonexists'] = CommandDefinition(
+        CommandPreset(
+            formula=lambda: None,
+            lookback=lambda *_: 0,
+            args=[],
+            series=[]
+        )
+    )
+
+    parsed = parse('nonexists:')
+    assert str(parsed) == 'nonexists', 'nonexists'
+
+    COMMANDS['nonexists2'] = CommandDefinition(
+        CommandPreset(
+            formula=lambda: None,
+            lookback=lambda *_: 0,
+            args=[CommandArg(default=None)],
+            series=[]
+        )
+    )
+
+    parsed = parse('nonexists2:high')
+    assert str(parsed) == 'nonexists2:high', 'nonexists2'

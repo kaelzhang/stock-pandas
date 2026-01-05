@@ -98,13 +98,10 @@ class Expression(Lookback):
         return f'{left_str}{self.operator}{right_str}'
 
     def _cumulative_lookback(self) -> int:
-        right_lb = _get_cumulative_lookback(self.right)
-
-        if self.left is None:
-            return right_lb
-
-        left_lb = _get_cumulative_lookback(self.left)
-        return max(left_lb, right_lb)
+        return max(
+            _get_cumulative_lookback(self.right),
+            _get_cumulative_lookback(self.left)
+        )
 
     def run(
         self,
@@ -192,10 +189,13 @@ class Command(Lookback):
     def _cumulative_lookback(self) -> int:
         base_lb = self.preset.lookback(*self.args)
 
-        series_lb = max(
+        series_lbs = [
             _get_cumulative_lookback(series)
             for series in self.series
-        )
+        ]
+
+        # There might be no series lookback
+        series_lb = max(series_lbs) if series_lbs else 0
 
         # Since the current command calcuates based on the series,
         # the lookback increases

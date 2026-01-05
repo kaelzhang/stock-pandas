@@ -32,7 +32,10 @@ def test_value_error():
         ('hv:10,15m,0', 'but got `0`'),
         ('hv:10,15m,366', 'but got `366`'),
         ('kdj.j:9,3,3,invalid', 'must be a float'),
-        ('kdj.j:9,3,3,1000', 'between 0 and 100')
+        ('kdj.j:9,3,3,1000', 'between 0 and 100'),
+        ('invalid:a', 'unknown command'),
+        ('ma:2@foo,bar', 'accepts max 1'),
+        ('change:2', 'series[0] is required for command "change"')
     ]
 
     for i, (directive_str, err_msg) in enumerate(CASES):

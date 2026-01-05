@@ -34,24 +34,24 @@ type OperatorMap[OF] = Dict[
 ]
 
 
-def logical_or(
-    left: NDArrayAny,
-    right: NDArrayAny
-) -> NDArrayAny:
-    return left | right
+# def logical_or(
+#     left: NDArrayAny,
+#     right: NDArrayAny
+# ) -> NDArrayAny:
+#     return left | right
 
 
-def logical_and(
-    left: NDArrayAny,
-    right: NDArrayAny
-) -> NDArrayAny:
-    return left & right
+# def logical_and(
+#     left: NDArrayAny,
+#     right: NDArrayAny
+# ) -> NDArrayAny:
+#     return left & right
 
 
-LOGICAL_OPERATORS: OperatorMap[OperatorFormula] = {
-    '||': (logical_or, 0),
-    '&&': (logical_and, 0)
-}
+# LOGICAL_OPERATORS: OperatorMap[OperatorFormula] = {
+#     '||': (logical_or, 0),
+#     '&&': (logical_and, 0)
+# }
 
 
 def bitwise_or(
@@ -226,7 +226,7 @@ def minus(
 def not_operator(
     array: NDArrayAny
 ) -> NDArrayAny:
-    return ~ array
+    return ~ array.astype(bool)
 
 
 # + directive
