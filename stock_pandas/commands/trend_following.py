@@ -13,17 +13,19 @@ from stock_pandas.math.ma import (
     calc_ewma
 )
 
-from stock_pandas.directive.command import (
-    CommandDefinition,
+from stock_pandas.directive.command import CommandDefinition
+from stock_pandas.directive.types import (
+    ReturnType,
     CommandPreset,
     CommandArg
 )
-from stock_pandas.directive.types import ReturnType
 from .base import BUILTIN_COMMANDS
 
 from .common import (
     arg_period,
-    lookback_period
+    lookback_period,
+    series_close,
+    create_series_args
 )
 
 
@@ -49,14 +51,13 @@ def ma(period: int, on: ReturnType) -> ReturnType:
 
 
 args_ma = [arg_period]
-series_ma = ['close']
 
 BUILTIN_COMMANDS['ma'] = CommandDefinition(
     CommandPreset(
         formula=ma,
         lookback=lookback_period,
         args=args_ma,
-        series=series_ma
+        series=series_close
     )
 )
 
@@ -76,7 +77,7 @@ BUILTIN_COMMANDS['ema'] = CommandDefinition(
         formula=ema,
         lookback=lookback_period,
         args=args_ma,
-        series=series_ma
+        series=series_close
     )
 )
 
@@ -148,20 +149,20 @@ BUILTIN_COMMANDS['macd'] = CommandDefinition(
         formula=macd,
         lookback=lookback_macd,
         args=args_macd,
-        series=series_ma
+        series=series_close
     ),
     dict(
         signal=CommandPreset(
             formula=macd_signal,
             lookback=lookback_macd_signal,
             args=args_macd_all,
-            series=series_ma
+            series=series_close
         ),
         histogram=CommandPreset(
             formula=macd_histogram,
             lookback=lookback_macd_signal,
             args=args_macd_all,
-            series=series_ma
+            series=series_close
         )
     ),
     dict(
@@ -211,7 +212,7 @@ BUILTIN_COMMANDS['bbi'] = CommandDefinition(
             CommandArg(12, period_to_int),
             CommandArg(24, period_to_int)
         ],
-        series=['close']
+        series=series_close
     )
 )
 
@@ -253,6 +254,6 @@ BUILTIN_COMMANDS['atr'] = CommandDefinition(
         args=[
             CommandArg(14, period_to_int)
         ],
-        series=['high', 'low', 'close']
+        series=create_series_args(['high', 'low', 'close'])
     )
 )

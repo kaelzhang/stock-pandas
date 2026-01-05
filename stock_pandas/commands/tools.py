@@ -17,15 +17,19 @@ from stock_pandas.common import (
 
 from stock_pandas.directive.command import (
     CommandDefinition,
-    CommandPreset,
-    CommandArg,
     lookback_zero
 )
-from stock_pandas.directive.types import ReturnType
+from stock_pandas.directive.types import (
+    ReturnType,
+    CommandPreset,
+    CommandArg
+)
 from .base import BUILTIN_COMMANDS
 
 from .common import (
-    lookback_period
+    lookback_period,
+    create_series_args,
+    series_required
 )
 
 
@@ -74,7 +78,7 @@ BUILTIN_COMMANDS['increase'] = CommandDefinition(
             arg_repeat,
             CommandArg(1, to_direction)
         ],
-        series=[None]
+        series=series_required
     )
 )
 
@@ -99,7 +103,7 @@ BUILTIN_COMMANDS['style'] = CommandDefinition(
         args=[
             CommandArg(coerce=style_enums)
         ],
-        series=['open', 'close']
+        series=create_series_args(['open', 'close'])
     )
 )
 
@@ -125,7 +129,7 @@ BUILTIN_COMMANDS['repeat'] = CommandDefinition(
         formula=repeat,
         lookback=lookback_period,
         args=[arg_repeat],
-        series=[None]
+        series=series_required
     )
 )
 
@@ -151,6 +155,6 @@ BUILTIN_COMMANDS['change'] = CommandDefinition(
         formula=change,
         lookback=lookback_period,
         args=[CommandArg(2, period_to_int)],
-        series=[None]
+        series=series_required
     )
 )

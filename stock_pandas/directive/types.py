@@ -6,12 +6,14 @@ from typing import (
     TYPE_CHECKING,
     Protocol,
     Generic,
-    Callable
+    Callable,
+    Literal
 )
 from dataclasses import dataclass, field
 
 from stock_pandas.common import (
     join_args,
+    EMPTY
 )
 
 from .operator import (
@@ -48,9 +50,14 @@ def _get_cumulative_lookback(expression: OperandType) -> int:
 @dataclass
 class Lookback:
     cumulative_lookback: int = field(init=False)
+    _str: Optional[str] = field(init=False, repr=False)
+
+    def __str__(self) -> str:
+        return self._str
 
     def __post_init__(self):
         self.cumulative_lookback = self._cumulative_lookback()
+        self._str = self._stringify()
 
 
 @dataclass(slots=True)
@@ -63,7 +70,7 @@ class Expression(Lookback):
     # for better debugging experience
     # - __str__ for user method invocation
     # - __repr__ for internal debugging
-    def __str__(self) -> str:
+    def _stringify(self) -> str:
         stringified = (
             f'{self.operator}{self.right}'
             if self.right is None
@@ -115,6 +122,13 @@ class UnaryExpression(Lookback):
         return self.operator.formula(self.expression.run(df, s))
 
 
+
+_StringifyKey = Literal['args', 'series']
+_StringifyPrefix = Literal[':', '@']
+
+COMMAND_COLUMN_NAME = '__close__'
+
+
 @dataclass(slots=True)
 class Command(Lookback):
     """
@@ -125,20 +139,42 @@ class Command(Lookback):
     name: str
     args: List[PrimativeType]
     series: List[CommandSeriesType]
-    formula: CommandFormula
-    lookback: CommandLookback
     preset: CommandPreset
 
-    def __str__(self) -> str:
-        stringify = (
-            f'{self.name}:{join_args(self.args)}'
-            if self.args
-            else self.name
+    def _stringify(self) -> str:
+        if self.name == COMMAND_COLUMN_NAME:
+            return self.series[0]
+
+        return (
+            self.name
+            + self._stringify_args('args', ':')
+            + self._stringify_args('series', '@')
         )
-        return f'({stringify})'
+
+    def _stringify_args(
+        self,
+        key: _StringifyKey,
+        prefix: _StringifyPrefix
+    ) -> str:
+        args = getattr(self, key)
+
+        if not args:
+            return EMPTY
+
+        to_join = []
+        for i, arg_def in enumerate(getattr(self.preset, key)):
+            arg = args[i]
+            to_join.append(
+                EMPTY if arg == arg_def.default else arg
+            )
+
+        if not to_join:
+            return EMPTY
+
+        return prefix + join_args(to_join)
 
     def _cumulative_lookback(self) -> int:
-        base_lb = self.lookback(*self.args)
+        base_lb = self.preset.lookback(*self.args)
 
         series_lb = max(
             _get_cumulative_lookback(series)
@@ -163,13 +199,13 @@ class Command(Lookback):
             for series in self.series
         ]
 
-        return self.formula(*self.args, *arrays)
+        return self.preset.formula(*self.args, *arrays)
 
 
 @dataclass(frozen=True, slots=True)
 class Operator(Generic[OF]):
     name: str
-    formula: OF
+    formula: OF = field(repr=False)
     priority: int
 
     def __str__(self) -> str:
@@ -211,7 +247,10 @@ class CommandArg:
     """
 
     default: Optional[PrimativeType] = None
-    coerce: Callable[[CommandArgInputType], PrimativeType] = DEFAULT_ARG_COERCE
+    coerce: Callable[[CommandArgInputType], PrimativeType] = field(
+        default=DEFAULT_ARG_COERCE,
+        repr=False
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -224,10 +263,10 @@ class CommandPreset:
         args (List[CommandArg]): The arguments of the command
     """
 
-    formula: CommandFormula
-    lookback: CommandLookback
+    formula: CommandFormula = field(repr=False)
+    lookback: CommandLookback = field(repr=False)
     args: List[CommandArg] = field(default_factory=list)
-    series: List[str] = field(default_factory=list)
+    series: List[CommandArg] = field(default_factory=list)
 
 
 Directive = Union[Expression, UnaryExpression, Command]

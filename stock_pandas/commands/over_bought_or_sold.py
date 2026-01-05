@@ -16,20 +16,20 @@ from stock_pandas.math.ma import (
     calc_smma
 )
 
-from stock_pandas.directive.command import (
-    CommandDefinition,
-    CommandPreset,
-    CommandArg
-)
+from stock_pandas.directive.command import CommandDefinition
 from stock_pandas.directive.types import (
     ReturnType,
-    CommandArgInputType
+    CommandArgInputType,
+    CommandPreset,
+    CommandArg
 )
 from .base import BUILTIN_COMMANDS
 
 from .common import (
     arg_period,
-    lookback_period
+    lookback_period,
+    create_series_args,
+    series_close
 )
 
 
@@ -50,7 +50,7 @@ preset_llv = CommandPreset(
     formula=llv,
     lookback=lookback_period,
     args=[arg_period],
-    series=['low']
+    series=create_series_args(['low'])
 )
 BUILTIN_COMMANDS['llv'] = CommandDefinition(preset_llv)
 
@@ -69,7 +69,7 @@ preset_hhv = CommandPreset(
     formula=hhv,
     lookback=lookback_period,
     args=[arg_period],
-    series=['high']
+    series=create_series_args(['high'])
 )
 BUILTIN_COMMANDS['hhv'] = CommandDefinition(preset_hhv)
 
@@ -93,7 +93,7 @@ BUILTIN_COMMANDS['donchian'] = CommandDefinition(
         formula=donchian,
         lookback=lookback_period,
         args=[arg_period],
-        series=['high', 'low']
+        series=create_series_args(['high', 'low'])
     ),
     dict(
         upper=preset_hhv,
@@ -130,7 +130,7 @@ def rsv(
     ).astype(np.float64) * 100
 
 
-series_rsv = ['high', 'low', 'close']
+series_rsv = create_series_args(['high', 'low', 'close'])
 
 BUILTIN_COMMANDS['rsv'] = CommandDefinition(
     CommandPreset(
@@ -330,6 +330,6 @@ BUILTIN_COMMANDS['rsi'] = CommandDefinition(
         formula=rsi,
         lookback=lookback_rsi,
         args=[arg_period],
-        series=['close']
+        series=series_close
     )
 )

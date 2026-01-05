@@ -6,14 +6,14 @@ from .exceptions import (
 )
 
 from .directive.command import (
-    CommandPreset,
-    CommandArg,
     CommandDefinition
 )
 from .directive.types import (
     ReturnType,
     PrimativeType,
-    NumberType
+    NumberType,
+    CommandPreset,
+    CommandArg,
 )
 from .directive.cache import DirectiveCache
 

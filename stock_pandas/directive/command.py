@@ -15,7 +15,8 @@ from .tokenizer import Loc
 from .types import (
     PrimativeType,
     ReturnType,
-    CommandPreset
+    CommandPreset,
+    CommandArg
 )
 
 
@@ -115,7 +116,7 @@ class CommandDefinition:
 
 Commands = Dict[str, CommandDefinition]
 
-def column(series: ReturnType) -> ReturnType:
+def _column(series: ReturnType) -> ReturnType:
     """Gets the series of the column named `column`
     """
     return series
@@ -123,3 +124,11 @@ def column(series: ReturnType) -> ReturnType:
 
 def lookback_zero(*args) -> int:
     return 0
+
+
+COMMAND_COLUMN_PRESET = CommandPreset(
+    formula=_column,
+    lookback=lookback_zero,
+    args=[],
+    series=[CommandArg(default='close')]
+)

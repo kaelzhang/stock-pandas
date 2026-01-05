@@ -20,7 +20,8 @@ from .types import (
     PrimativeType,
     CommandArgInputType,
     CommandSeriesType,
-    NumberType
+    NumberType,
+    COMMAND_COLUMN_NAME
 )
 from .operator import (
     OperatorFormula,
@@ -32,8 +33,7 @@ from .command import (
     Context,
     ScalarNode,
     CommandPreset,
-    column,
-    lookback_zero
+    COMMAND_COLUMN_PRESET
 )
 
 
@@ -89,11 +89,10 @@ class CommandNode:
 
         name = self.name.value
         return Command(
-            name=name,
+            name=COMMAND_COLUMN_NAME,
             args=[],
             series=[name],
-            formula=column,
-            lookback=lookback_zero
+            preset=COMMAND_COLUMN_PRESET
         )
 
     def create(
@@ -125,8 +124,6 @@ class CommandNode:
             name=name,
             args=args,
             series=series,
-            formula=preset.formula,
-            lookback=preset.lookback,
             preset=preset
         )
 
@@ -210,13 +207,13 @@ class CommandNode:
 
         coerced = []
 
-        for index, default in enumerate(preset_series):
+        for index, series_def in enumerate(preset_series):
             if index < series_length:
                 value = series[index].create(context)
                 if value is None:
-                    value = default
+                    value = series_def.default
             else:
-                value = default
+                value = series_def.default
 
             if value is None:
                 raise DirectiveValueError(

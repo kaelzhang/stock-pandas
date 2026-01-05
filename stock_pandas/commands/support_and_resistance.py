@@ -12,12 +12,12 @@ from stock_pandas.common import (
     rolling_calc
 )
 
-from stock_pandas.directive.command import (
-    CommandDefinition,
+from stock_pandas.directive.command import CommandDefinition
+from stock_pandas.directive.types import (
+    ReturnType,
     CommandPreset,
-    CommandArg,
+    CommandArg
 )
-from stock_pandas.directive.types import ReturnType
 from stock_pandas.meta.time_frame import (
     timeFrames,
     TimeFrame
@@ -25,7 +25,8 @@ from stock_pandas.meta.time_frame import (
 
 from .base import BUILTIN_COMMANDS
 from .common import (
-    lookback_period
+    lookback_period,
+    series_close
 )
 from .trend_following import ma
 
@@ -78,27 +79,26 @@ args_boll_band = [
     arg_boll_period,
     CommandArg(2., times_to_float)
 ]
-series_boll = ['close']
 
 BUILTIN_COMMANDS['boll'] = CommandDefinition(
     CommandPreset(
         formula=boll,
         lookback=lookback_period,
         args=args_boll,
-        series=series_boll
+        series=series_close
     ),
     {
         'upper': CommandPreset(
             formula=partial[ReturnType](boll_band, True),
             lookback=lookback_period,
             args=args_boll_band,
-            series=series_boll
+            series=series_close
         ),
         'lower': CommandPreset(
             formula=partial[ReturnType](boll_band, False),
             lookback=lookback_period,
             args=args_boll_band,
-            series=series_boll
+            series=series_close
         )
     },
     {
@@ -129,7 +129,7 @@ BUILTIN_COMMANDS['bbw'] = CommandDefinition(
         formula=bbw,
         lookback=lookback_period,
         args=args_boll,
-        series=series_boll
+        series=series_close
     )
 )
 
@@ -196,6 +196,6 @@ BUILTIN_COMMANDS['hv'] = CommandDefinition(
             CommandArg(DAY_MINUTES, time_frame_to_minutes),
             CommandArg(252, trading_days_to_int)
         ],
-        series=['close']
+        series=series_close
     )
 )

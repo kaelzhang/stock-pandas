@@ -70,12 +70,12 @@ style_enums: ReturnStr = partial(create_enum, [
     'bearish'
 ], 'style')
 
-column_enums: ReturnStr = partial(create_enum, [
-    'open',
-    'high',
-    'low',
-    'close'
-], 'column')
+# column_enums: ReturnStr = partial(create_enum, [
+#     'open',
+#     'high',
+#     'low',
+#     'close'
+# ], 'column')
 
 
 def to_direction(value: int) -> int:
@@ -102,11 +102,13 @@ def compare_cross(
 
 
 ARGS_SEPARATOR = ','
+EMPTY = ''
 
 
-def join_args(args: List[Any]) -> str:
+def join_args(args: List[Optional[Any]]) -> str:
     return ARGS_SEPARATOR.join([
-        str(arg) for arg in args
+        str(arg) if arg is not None else EMPTY
+        for arg in args
     ])
 
 
