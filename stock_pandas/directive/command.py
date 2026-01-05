@@ -41,7 +41,7 @@ CommandAliases = Dict[
 PT = TypeVar('PT', bound=PrimativeType)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ScalarNode(Generic[PT]):
     loc: Loc
     value: PT

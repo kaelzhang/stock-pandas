@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import (
     Union,
     Callable,
@@ -23,7 +25,10 @@ OperatorFormula = Callable[[OperatorArgType, OperatorArgType], ReturnType]
 UnaryOperatorFormula = Callable[[ReturnType], ReturnType]
 
 OF = TypeVar('OF', OperatorFormula, UnaryOperatorFormula)
-type OperatorMap[OF] = Dict[
+
+# Python 3.10 compatible generic type alias
+# Using Generic instead of 'type' keyword (which requires Python 3.12+)
+OperatorMap = Dict[
     str,
     Tuple[
         # Formula
@@ -32,26 +37,6 @@ type OperatorMap[OF] = Dict[
         int
     ]
 ]
-
-
-# def logical_or(
-#     left: NDArrayAny,
-#     right: NDArrayAny
-# ) -> NDArrayAny:
-#     return left | right
-
-
-# def logical_and(
-#     left: NDArrayAny,
-#     right: NDArrayAny
-# ) -> NDArrayAny:
-#     return left & right
-
-
-# LOGICAL_OPERATORS: OperatorMap[OperatorFormula] = {
-#     '||': (logical_or, 0),
-#     '&&': (logical_and, 0)
-# }
 
 
 def bitwise_or(

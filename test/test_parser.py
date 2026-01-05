@@ -77,6 +77,7 @@ def test_stringify():
         ('(kdj.j)&(kdj.d)', 'kdj.j&kdj.d', 'unnecessary ()'),
         ('- a * ((b + c) > 0)', '-a*(b+c>0)', 'operator priority'),
         ('a +- b', 'a+-b', 'special operator case'),
+        ('a + - b', 'a+-b', 'special operator case'),
         ('a +~ b', 'a+~b', 'special operator case'),
     ]
 
