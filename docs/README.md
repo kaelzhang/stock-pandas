@@ -410,19 +410,7 @@ For more details and about how to get full control of everything, check the onli
 
 ## Syntax of `directive`
 
-```ebnf
-directive := command | command operator expression
-operator := '/' | '\' | '><' | '<' | '<=' | '==' | '>=' | '>'
-expression := float | command
-
-command := command_name | command_name : arguments
-command_name := main_command_name | main_command_name.sub_command_name
-main_command_name := alphabets
-sub_command_name := alphabets
-
-arguments := argument | argument , arguments
-argument := empty_string | string | ( directive )
-```
+See [here](stock_pandas/directive/syntax.ebnf) for details
 
 #### `directive` Example
 
@@ -443,8 +431,8 @@ stock['kdj.k // kdj.d']
 # 5-period simple moving average
 stock['ma:5']
 
-# 10-period simple moving average on open prices
-stock['ma:10,open']
+# 10-period simple moving average on (@) open prices
+stock['ma:10@open']
 
 # Dataframe of 5-period, 10-period, 30-period ma
 stock[[
@@ -464,11 +452,10 @@ stock['increase:(ma:20,close),3']
 # so we could even write directives like this:
 stock['''
 repeat
-    :
-        (
-            column:close > boll.upper
-        ),
-        5
+    :   5
+    @   (
+            close > boll.upper
+        )
 ''']
 ```
 
@@ -484,7 +471,7 @@ Actually, all parameters of a command are of string type, so the `int` here mean
 ### `ma`, simple Moving Averages
 
 ```
-ma:<period>,<on>
+ma:<period>@<on>
 ```
 
 Gets the `period`-period simple moving average on column named `column`.
@@ -500,17 +487,17 @@ So `stock-pandas` will use `ma` for simple moving average and `smma` for smoothe
 # which is equivalent to `stock['ma:5,close']`
 stock['ma:5']
 
-stock['ma:10,open']
+stock['ma:10@open']
 ```
 
 Advanced usage
 
 ```py
 # The 5-period moving average for the upper bollinger band
-stock['ma:5,(boll.upper:21,2)']
+stock['ma:5@(boll.upper:21,2)']
 
 # The change rate of the series above ↑
-stock['change:(ma:5,(boll.upper:21,2))']
+stock['change@(ma:5@(boll.upper:21,2))']
 ```
 
 ### `ema`, Exponential Moving Average
@@ -758,32 +745,31 @@ stock['hv:10,15m,365']
 
 ## Built-in Commands for Statistics
 
-### `column`
+### <s>`column`</s>
 
-```
-column:<name>
-```
-
-Just gets the series of a column. This command is designed to be used together with an operator to compare with another command or as a parameter of some statistics command.
-
-- **name** `str` the name of the column
+> Removed in 5.0.0
 
 ```py
 # A bool-type series indicates whether the current price is higher than the upper bollinger band
+
+# < 5.0.0
 stock['column:close > boll.upper']
+
+# Since 5.0.0, we could just do as follows
+stock['close > boll.upper']
 ```
 
 ### `increase`
 
 ```
-increase:<on>,<repeat>,<step>
+increase:<repeat>,<step>@<on>
 ```
 
 Gets a `bool`-type series each item of which is `True` if the value of indicator `on` increases in the last `period`-period.
 
-- **on** `str` the command name of an indicator on what the calculation should be based
 - **repeat?** `int=1`
 - **direction?** `1 | -1` the direction of "increase". `-1` means decreasing
+- **on** `str` the command name of an indicator on what the calculation should be based
 
 For example:
 
@@ -791,10 +777,10 @@ For example:
 # Which means whether the `ma:20,close` line
 # (a.k.a. 20-period simple moving average on column `'close'`)
 # has been increasing repeatedly for 3 times (maybe 3 days)
-stock['increase:(ma:20,close),3']
+stock['increase:3@(ma:20@close)']
 
 # If the close price has been decreasing repeatedly for 5 times (maybe 5 days)
-stock['increase:close,5,-1']
+stock['increase:5,-1@close']
 ```
 
 ### `style`
@@ -824,7 +810,7 @@ The `repeat` command first gets the result of directive `bool_directive`, and de
 
 ```py
 # Whether the bullish candlestick repeats for 3 periods (maybe 3 days)
-stock['repeat:(style:bullish),3']
+stock['repeat:3@(style:bullish)']
 ```
 
 ### `change`
