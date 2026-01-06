@@ -20,30 +20,16 @@ from numpy.typing import (
 
 import numpy as np
 
+from stock_pandas.backend import use_rust, is_rust_available
+
 NDArrayAny = NDArray[Any]
 
 # Import Rust implementations if available
-# Import here is deferred to avoid circular import
-_rs_llv = None
-_rs_hhv = None
-_rust_checked = False
-
-
-def _ensure_rust_imports():
-    """Lazy load Rust implementations to avoid circular imports."""
-    global _rs_llv, _rs_hhv, _rust_checked
-    if _rust_checked:
-        return
-    _rust_checked = True
-
-    from stock_pandas.backend import is_rust_available
-    if is_rust_available():
-        from stock_pandas_rs import (
-            calc_llv,
-            calc_hhv,
-        )
-        _rs_llv = calc_llv
-        _rs_hhv = calc_hhv
+if is_rust_available():
+    from stock_pandas_rs import (
+        calc_llv as _rs_llv,
+        calc_hhv as _rs_hhv,
+    )
 
 
 def set_attr(target: Any, key: str, value: Any) -> None:
@@ -176,16 +162,12 @@ def rolling_calc(
     Args:
         shift (:obj:`bool`, optional)
     """
-    # Import here to avoid circular import
-    from stock_pandas.backend import use_rust
-
     # Use Rust implementation for specific functions when available
     # Only use Rust when shift=True (backward rolling)
-    _ensure_rust_imports()
     if use_rust() and shift:
-        if func is min and _rs_llv is not None:
+        if func is min:
             return np.asarray(_rs_llv(array.astype(float), period))
-        if func is max and _rs_hhv is not None:
+        if func is max:
             return np.asarray(_rs_hhv(array.astype(float), period))
 
     length = len(array)
