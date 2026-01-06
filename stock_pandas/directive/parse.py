@@ -1,4 +1,4 @@
-from stock_pandas.backend import use_rust
+from stock_pandas.backend import use_rust, is_rust_available
 
 from .parser import Parser
 from .types import Directive
@@ -8,20 +8,9 @@ from .command import (
     Commands
 )
 
-# Lazy import for Rust parser
-_rs_parse_directive = None
-
-
-def _get_rs_parse_directive():
-    """Lazy load Rust parser to avoid circular imports."""
-    global _rs_parse_directive
-    if _rs_parse_directive is None:
-        try:
-            from stock_pandas_rs import parse_directive
-            _rs_parse_directive = parse_directive
-        except ImportError:
-            pass
-    return _rs_parse_directive
+# Import Rust parser if available
+if is_rust_available():
+    from stock_pandas_rs import parse_directive as _rs_parse_directive
 
 
 def parse(
@@ -50,14 +39,13 @@ def parse(
         return cached
 
     # Try to use Rust parser when available and enabled
-    rs_parse = _get_rs_parse_directive()
-    if use_rust() and rs_parse is not None:
+    if use_rust():
         try:
             # The Rust parser will:
             # 1. Tokenize and parse the directive string
             # 2. Create Python AST nodes
             # 3. Call .create() to get the final Directive object
-            directive = rs_parse(directive_str, commands)
+            directive = _rs_parse_directive(directive_str, commands)
             return cache.set(directive_str, directive)
         except Exception:
             # Fall back to Python parser if Rust fails

@@ -22,24 +22,28 @@ import numpy as np
 
 NDArrayAny = NDArray[Any]
 
-# Lazy imports for Rust implementations
+# Import Rust implementations if available
+# Import here is deferred to avoid circular import
 _rs_llv = None
 _rs_hhv = None
+_rust_checked = False
 
 
-def _init_rust():
-    """Lazy load Rust implementations."""
-    global _rs_llv, _rs_hhv
-    if _rs_llv is None:
-        try:
-            from stock_pandas_rs import (
-                calc_llv,
-                calc_hhv,
-            )
-            _rs_llv = calc_llv
-            _rs_hhv = calc_hhv
-        except ImportError:
-            pass
+def _ensure_rust_imports():
+    """Lazy load Rust implementations to avoid circular imports."""
+    global _rs_llv, _rs_hhv, _rust_checked
+    if _rust_checked:
+        return
+    _rust_checked = True
+
+    from stock_pandas.backend import is_rust_available
+    if is_rust_available():
+        from stock_pandas_rs import (
+            calc_llv,
+            calc_hhv,
+        )
+        _rs_llv = calc_llv
+        _rs_hhv = calc_hhv
 
 
 def set_attr(target: Any, key: str, value: Any) -> None:
@@ -177,7 +181,7 @@ def rolling_calc(
 
     # Use Rust implementation for specific functions when available
     # Only use Rust when shift=True (backward rolling)
-    _init_rust()
+    _ensure_rust_imports()
     if use_rust() and shift:
         if func is min and _rs_llv is not None:
             return np.asarray(_rs_llv(array.astype(float), period))

@@ -7,7 +7,7 @@ from typing import (
 
 import numpy as np
 
-from stock_pandas.backend import use_rust
+from stock_pandas.backend import use_rust, is_rust_available
 from stock_pandas.common import (
     rolling_calc,
     period_to_int,
@@ -34,43 +34,18 @@ from .common import (
     series_close
 )
 
-# Lazy imports for Rust implementations
-_rs_llv = None
-_rs_hhv = None
-_rs_rsv = None
-_rs_kdj_k = None
-_rs_kdj_d = None
-_rs_kdj_j = None
-_rs_rsi = None
-_rs_donchian = None
-
-
-def _init_rust():
-    """Lazy load Rust implementations."""
-    global _rs_llv, _rs_hhv, _rs_rsv, _rs_kdj_k, _rs_kdj_d, _rs_kdj_j, _rs_rsi
-    global _rs_donchian
-    if _rs_llv is None:
-        try:
-            from stock_pandas_rs import (
-                calc_llv,
-                calc_hhv,
-                calc_rsv,
-                calc_kdj_k,
-                calc_kdj_d,
-                calc_kdj_j,
-                calc_rsi,
-                calc_donchian
-            )
-            _rs_llv = calc_llv
-            _rs_hhv = calc_hhv
-            _rs_rsv = calc_rsv
-            _rs_kdj_k = calc_kdj_k
-            _rs_kdj_d = calc_kdj_d
-            _rs_kdj_j = calc_kdj_j
-            _rs_rsi = calc_rsi
-            _rs_donchian = calc_donchian
-        except ImportError:
-            pass
+# Import Rust implementations if available
+if is_rust_available():
+    from stock_pandas_rs import (
+        calc_llv as _rs_llv,
+        calc_hhv as _rs_hhv,
+        calc_rsv as _rs_rsv,
+        calc_kdj_k as _rs_kdj_k,
+        calc_kdj_d as _rs_kdj_d,
+        calc_kdj_j as _rs_kdj_j,
+        calc_rsi as _rs_rsi,
+        calc_donchian as _rs_donchian
+    )
 
 
 # llv & hhv
@@ -82,8 +57,7 @@ def llv(
 ) -> ReturnType:
     """Gets LLV (Lowest of Low Value)
     """
-    _init_rust()
-    if use_rust() and _rs_llv is not None:
+    if use_rust():
         return np.asarray(_rs_llv(column.astype(float), period))
 
     return rolling_calc(column, period, min)
@@ -104,8 +78,7 @@ def hhv(
 ) -> ReturnType:
     """Gets HHV (Highest of High Value)
     """
-    _init_rust()
-    if use_rust() and _rs_hhv is not None:
+    if use_rust():
         return np.asarray(_rs_hhv(column.astype(float), period))
 
     return rolling_calc(column, period, max)
@@ -130,8 +103,7 @@ def donchian(
 ) -> ReturnType:
     """Gets Donchian Channel
     """
-    _init_rust()
-    if use_rust() and _rs_donchian is not None:
+    if use_rust():
         return np.asarray(_rs_donchian(
             hhv_series.astype(float),
             llv_series.astype(float),
@@ -171,8 +143,7 @@ def rsv(
 ) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
-    _init_rust()
-    if use_rust() and _rs_rsv is not None:
+    if use_rust():
         return np.asarray(_rs_rsv(
             high_series.astype(float),
             low_series.astype(float),
@@ -244,8 +215,7 @@ def kdj_k(
 ) -> ReturnType:
     """Gets KDJ K
     """
-    _init_rust()
-    if use_rust() and _rs_kdj_k is not None:
+    if use_rust():
         return np.asarray(_rs_kdj_k(
             high_series.astype(float),
             low_series.astype(float),
@@ -269,8 +239,7 @@ def kdj_d(
     low_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
-    _init_rust()
-    if use_rust() and _rs_kdj_d is not None:
+    if use_rust():
         return np.asarray(_rs_kdj_d(
             high_series.astype(float),
             low_series.astype(float),
@@ -298,8 +267,7 @@ def kdj_j(
     low_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
-    _init_rust()
-    if use_rust() and _rs_kdj_j is not None:
+    if use_rust():
         return np.asarray(_rs_kdj_j(
             high_series.astype(float),
             low_series.astype(float),
@@ -393,8 +361,7 @@ def rsi(period: int, close_series: ReturnType) -> ReturnType:
 
     https://en.wikipedia.org/wiki/Relative_strength_index
     """
-    _init_rust()
-    if use_rust() and _rs_rsi is not None:
+    if use_rust():
         return np.asarray(_rs_rsi(close_series.astype(float), period))
 
     delta = np.diff(close_series, prepend=np.nan)

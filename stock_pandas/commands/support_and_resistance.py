@@ -6,7 +6,7 @@ from functools import partial
 
 import numpy as np
 
-from stock_pandas.backend import use_rust
+from stock_pandas.backend import use_rust, is_rust_available
 from stock_pandas.common import (
     period_to_int,
     times_to_float,
@@ -31,33 +31,15 @@ from .common import (
 )
 from .trend_following import ma
 
-# Lazy imports for Rust implementations
-_rs_boll = None
-_rs_boll_upper = None
-_rs_boll_lower = None
-_rs_bbw = None
-_rs_hv = None
-
-
-def _init_rust():
-    """Lazy load Rust implementations."""
-    global _rs_boll, _rs_boll_upper, _rs_boll_lower, _rs_bbw, _rs_hv
-    if _rs_boll is None:
-        try:
-            from stock_pandas_rs import (
-                calc_boll,
-                calc_boll_upper,
-                calc_boll_lower,
-                calc_bbw,
-                calc_hv
-            )
-            _rs_boll = calc_boll
-            _rs_boll_upper = calc_boll_upper
-            _rs_boll_lower = calc_boll_lower
-            _rs_bbw = calc_bbw
-            _rs_hv = calc_hv
-        except ImportError:
-            pass
+# Import Rust implementations if available
+if is_rust_available():
+    from stock_pandas_rs import (
+        calc_boll as _rs_boll,
+        calc_boll_upper as _rs_boll_upper,
+        calc_boll_lower as _rs_boll_lower,
+        calc_bbw as _rs_bbw,
+        calc_hv as _rs_hv
+    )
 
 
 # boll
@@ -69,8 +51,7 @@ def boll(
 ) -> ReturnType:
     """Gets the mid band of bollinger bands
     """
-    _init_rust()
-    if use_rust() and _rs_boll is not None:
+    if use_rust():
         return np.asarray(_rs_boll(series.astype(float), period))
 
     return ma(period, series)
@@ -87,11 +68,10 @@ def boll_band(
     Args:
         upper (bool): Get the upper band if True else the lower band
     """
-    _init_rust()
     if use_rust():
-        if upper and _rs_boll_upper is not None:
+        if upper:
             return np.asarray(_rs_boll_upper(series.astype(float), period, times))
-        elif not upper and _rs_boll_lower is not None:
+        else:
             return np.asarray(_rs_boll_lower(series.astype(float), period, times))
 
     # ma = df.exec(f'ma:{period},{column}')[s]
@@ -151,8 +131,7 @@ def bbw(
 ) -> ReturnType:
     """Gets the width of bollinger bands
     """
-    _init_rust()
-    if use_rust() and _rs_bbw is not None:
+    if use_rust():
         return np.asarray(_rs_bbw(series.astype(float), period))
 
     ma_series = ma(period, series)
@@ -184,8 +163,7 @@ def hv(
 ) -> ReturnType:
     """Gets the historical volatility of the stock
     """
-    _init_rust()
-    if use_rust() and _rs_hv is not None:
+    if use_rust():
         return np.asarray(_rs_hv(
             close.astype(float),
             period,

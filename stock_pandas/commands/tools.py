@@ -6,7 +6,7 @@ from functools import partial
 
 import numpy as np
 
-from stock_pandas.backend import use_rust
+from stock_pandas.backend import use_rust, is_rust_available
 from stock_pandas.common import (
     repeat_to_int,
     period_to_int,
@@ -33,30 +33,14 @@ from .common import (
     series_required
 )
 
-# Lazy imports for Rust implementations
-_rs_increase = None
-_rs_style = None
-_rs_repeat = None
-_rs_change = None
-
-
-def _init_rust():
-    """Lazy load Rust implementations."""
-    global _rs_increase, _rs_style, _rs_repeat, _rs_change
-    if _rs_increase is None:
-        try:
-            from stock_pandas_rs import (
-                calc_increase,
-                calc_style,
-                calc_repeat,
-                calc_change
-            )
-            _rs_increase = calc_increase
-            _rs_style = calc_style
-            _rs_repeat = calc_repeat
-            _rs_change = calc_change
-        except ImportError:
-            pass
+# Import Rust implementations if available
+if is_rust_available():
+    from stock_pandas_rs import (
+        calc_increase as _rs_increase,
+        calc_style as _rs_style,
+        calc_repeat as _rs_repeat,
+        calc_change as _rs_change
+    )
 
 
 POSITIVE_INFINITY = float('inf')
@@ -82,8 +66,7 @@ def increase(
     direction: int,
     series: ReturnType
 ) -> ReturnType:
-    _init_rust()
-    if use_rust() and _rs_increase is not None:
+    if use_rust():
         return np.asarray(_rs_increase(series.astype(float), repeat, direction))
 
     period = repeat + 1
@@ -123,8 +106,7 @@ def style(
     open_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
-    _init_rust()
-    if use_rust() and _rs_style is not None:
+    if use_rust():
         return np.asarray(_rs_style(
             style_name,
             open_series.astype(float),
@@ -153,8 +135,7 @@ def repeat(
     if repeat_count == 1:
         return series
 
-    _init_rust()
-    if use_rust() and _rs_repeat is not None:
+    if use_rust():
         # Convert to boolean for Rust function
         bool_series = series.astype(bool)
         return np.asarray(_rs_repeat(bool_series, repeat_count))
@@ -184,8 +165,7 @@ def change(
 ) -> ReturnType:
     """Get the percentage change for `on`
     """
-    _init_rust()
-    if use_rust() and _rs_change is not None:
+    if use_rust():
         return np.asarray(_rs_change(series.astype(float), period))
 
     shift = period - 1

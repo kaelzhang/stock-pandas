@@ -6,9 +6,7 @@ Run with:
     make benchmark-compare      # Compare Rust vs Python performance
 """
 
-import pytest
 import stock_pandas as sp
-from stock_pandas import StockDataFrame
 
 from .common import get_tencent
 

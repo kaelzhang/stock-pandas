@@ -4,32 +4,18 @@ This module provides moving average implementations that use the Rust backend
 for optimal performance, with fallback to pure Python implementations.
 """
 
-from stock_pandas.backend import use_rust
+from stock_pandas.backend import use_rust, is_rust_available
 from stock_pandas.common import rolling_calc
 
 import numpy as np
 
-# Lazy imports for Rust functions
-_rs_calc_ma = None
-_rs_calc_ewma = None
-_rs_calc_smma = None
-
-
-def _init_rust():
-    """Lazy load Rust implementations."""
-    global _rs_calc_ma, _rs_calc_ewma, _rs_calc_smma
-    if _rs_calc_ma is None:
-        try:
-            from stock_pandas_rs import (
-                calc_ma,
-                calc_ewma,
-                calc_smma
-            )
-            _rs_calc_ma = calc_ma
-            _rs_calc_ewma = calc_ewma
-            _rs_calc_smma = calc_smma
-        except ImportError:
-            pass
+# Import Rust implementations if available
+if is_rust_available():
+    from stock_pandas_rs import (
+        calc_ma as _rs_calc_ma,
+        calc_ewma as _rs_calc_ewma,
+        calc_smma as _rs_calc_smma
+    )
 
 
 def calc_ewma(
@@ -50,8 +36,7 @@ def calc_ewma(
     So:
         com = (period - 1.) / 2.
     """
-    _init_rust()
-    if use_rust() and _rs_calc_ewma is not None:
+    if use_rust():
         return np.asarray(_rs_calc_ewma(array.astype(float), period))
 
     # Pure Python fallback
@@ -91,8 +76,7 @@ def calc_smma(
 
     1. / period = 1. / (1. + com)
     """
-    _init_rust()
-    if use_rust() and _rs_calc_smma is not None:
+    if use_rust():
         return np.asarray(_rs_calc_smma(array.astype(float), period))
 
     # Pure Python fallback
@@ -127,8 +111,7 @@ def calc_ma(
 ) -> np.ndarray:
     """Calculates N-period Simple Moving Average
     """
-    _init_rust()
-    if use_rust() and _rs_calc_ma is not None:
+    if use_rust():
         return np.asarray(_rs_calc_ma(array.astype(float), period))
 
     return rolling_calc(array, period, np.mean)
