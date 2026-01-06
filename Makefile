@@ -137,10 +137,6 @@ publish:
 	make build-pkg
 	make upload
 
-# Report coverage
-report:
-	codecov
-
 # Development workflow: build and test
 dev: build test
 

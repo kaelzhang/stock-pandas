@@ -37,7 +37,6 @@ Homepage = "https://github.com/kaelzhang/stock-pandas"
 
 [project.optional-dependencies]
 dev = [
-  "codecov",
   "coverage",
   "ruff",
   "pytest",
