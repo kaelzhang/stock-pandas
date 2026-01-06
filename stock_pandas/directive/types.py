@@ -52,6 +52,10 @@ class Lookback:
     cumulative_lookback: int = field(init=False)
     _str: Optional[str] = field(init=False, repr=False)
 
+    # Use __str__ instead of __repr__,
+    # for better debugging experience
+    # - __str__ for user method invocation
+    # - __repr__ for internal debugging
     def __str__(self) -> str:
         return self._str
 
@@ -66,15 +70,14 @@ class Expression(Lookback):
     left: OperandType
     right: OperandType
 
-    # Use __str__ instead of __repr__,
-    # for better debugging experience
-    # - __str__ for user method invocation
-    # - __repr__ for internal debugging
     def _stringify(self) -> str:
         left_str = (
             f'({str(self.left)})'
             if (
                 isinstance(self.left, Expression)
+                # If the priority of the left expression's operator
+                # is lower than the current operator's priority,
+                # we need to wrap the left expression in parentheses
                 and self.left.operator.priority < self.operator.priority
 
             )

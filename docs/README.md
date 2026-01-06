@@ -255,7 +255,7 @@ Applies a 1-D function along the given column or directive `on`
 stock.rolling_calc(5, 'open', max)
 
 # Whose return value equals to
-stock['hhv:5,open'].to_numpy()
+stock['hhv:5@open'].to_numpy()
 ```
 
 ### stock.cumulate() -> StockDataFrame
@@ -442,11 +442,11 @@ stock[[
 ]]
 
 # Which means we use the default values of the first and the second parameters,
-# and specify the third parameter
-stock['macd:,,10']
+# and specify the third parameter (for macd.signal)
+stock['macd.signal:,,10']
 
 # We must wrap a parameter which is a nested command or directive
-stock['increase:(ma:20,close),3']
+stock['increase:3@(ma:20@close)']
 
 # stock-pandas has a powerful directive parser,
 # so we could even write directives like this:
@@ -484,7 +484,7 @@ So `stock-pandas` will use `ma` for simple moving average and `smma` for smoothe
 - **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
 
 ```py
-# which is equivalent to `stock['ma:5,close']`
+# which is equivalent to `stock['ma:5@close']`
 stock['ma:5']
 
 stock['ma:10@open']
@@ -494,33 +494,44 @@ Advanced usage
 
 ```py
 # The 5-period moving average for the upper bollinger band
-stock['ma:5@(boll.upper:21,2)']
+stock['ma:5@(boll.upper:21,2@close)']
 
 # The change rate of the series above ↑
-stock['change@(ma:5@(boll.upper:21,2))']
+stock['change@(ma:5@(boll.upper:21,2@close))']
 ```
 
 ### `ema`, Exponential Moving Average
 
 ```
-ema:<period>,<column>
+ema:<period>@<on>
 ```
 
 Gets the Exponential Moving Average, also known as the Exponential Weighted Moving Average.
 
 The arguments of this command is the same as `ma`.
 
+- **period** `int` (required)
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
+
+```py
+# which is equivalent to `stock['ema:5@close']`
+stock['ema:5']
+
+stock['ema:10@open']
+```
+
 ### `macd`, Moving Average Convergence Divergence
 
 ```
-macd:<fast_period>,<slow_period>
-macd.signal:<fast_period>,<slow_period>,<signal_period>
-macd.histogram:<fast_period>,<slow_period>,<signal_period>
+macd:<fast_period>,<slow_period>@<on>
+macd.signal:<fast_period>,<slow_period>,<signal_period>@<on>
+macd.histogram:<fast_period>,<slow_period>,<signal_period>@<on>
 ```
 
 - **fast_period?** `int=12` fast period (short period). Defaults to `12`.
 - **slow_period?** `int=26` slow period (long period). Defaults to `26`
 - **signal_period?** `int=9` signal period. Defaults to `9`
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
 
 ```py
 # macd
@@ -541,14 +552,14 @@ stock['macd.macd']
 ### `boll`, BOLLinger bands
 
 ```
-boll:<period>,<column>
-boll.upper:<period>,<times>,<column>
-boll.lower:<period>,<times>,<column>
+boll:<period>@<on>
+boll.upper:<period>,<times>@<on>
+boll.lower:<period>,<times>@<on>
 ```
 
 - **period?** `int=20`
 - **times?** `float=2.`
-- **column?** `str='close'`
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
 
 ```py
 # boll
@@ -566,11 +577,11 @@ stock['boll.l']
 ### `bbw`, Bollinger Band Width
 
 ```
-bbw:<period>,<column>
+bbw:<period>@<on>
 ```
 
 - **period?** `int=20`
-- **column?** `str='close'`
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
 
 ```py
 # Bollinger band width
@@ -580,16 +591,32 @@ stock['bbw:20']
 
 # , which are equivalent to
 (stock['boll.upper'] - stock['boll.lower']) / stock['boll']
+
+#, and are equivalent to
+stock['(boll.upper - boll.lower) / boll']
 ```
 
 
 ### `rsv`, Raw Stochastic Value
 
 ```
-rsv:<period>
+rsv:<period>@<high>,<low>,<close>
 ```
 
 Calculates the raw stochastic value which is often used to calculate KDJ
+
+- **period** `int` (required)
+- **high?** `str='high'` The column name for high prices. Defaults to `'high'`
+- **low?** `str='low'` The column name for low prices. Defaults to `'low'`
+- **close?** `str='close'` The column name for close prices. Defaults to `'close'`
+
+```py
+# Uses default columns (high, low, close)
+stock['rsv:9']
+
+# Specify custom columns
+stock['rsv:9@high,low,close']
+```
 
 ### `kdj`, a variety of stochastic oscillator
 
@@ -609,24 +636,27 @@ PAY ATTENTION that the calculation forumla is different from wikipedia, but it i
 **Directive Arguments**:
 
 ```
-kdj.k:<period_rsv>,<period_k>,<init_value>
-kdj.d:<period_rsv>,<period_k>,<period_d>,<init_value>
-kdj.j:<period_rsv>,<period_k>,<period_d>,<init_value>
+kdj.k:<period_rsv>,<period_k>,<init_value>@<high>,<low>,<close>
+kdj.d:<period_rsv>,<period_k>,<period_d>,<init_value>@<high>,<low>,<close>
+kdj.j:<period_rsv>,<period_k>,<period_d>,<init_value>@<high>,<low>,<close>
 ```
 
 - **period_rsv?** `int=9` The period for calculating RSV, which is used for K%
 - **period_k?** `int=3` The period for calculating the EMA of RSV, which is used for K%
 - **period_d?** `int=3` The period for calculating the EMA of K%, which is used for D%
 - **init_value?** `float=50.0` The initial value for calculating ema. Trading softwares of different companies usually use different initial values each of which is usually `0.0`, `50.0` or `100.0`.
+- **high?** `str='high'` The column name for high prices. Defaults to `'high'`
+- **low?** `str='low'` The column name for low prices. Defaults to `'low'`
+- **close?** `str='close'` The column name for close prices. Defaults to `'close'`
 
 ```py
 # The %D series of KDJ
 stock['kdj.d']
 # which is equivalent to
-stock['kdj.d:9,3,3,50.0']
+stock['kdj.d:9,3,3,50.0@high,low,close']
 
 # The KDJ serieses of with parameters 9, 9, and 9
-stock[['kdj.k:9,9', 'kdj.d:9,9,9', 'kdj.j:9,9,9']]
+stock[['kdj.k:9,9,50.0', 'kdj.d:9,9,9,50.0', 'kdj.j:9,9,9,50.0']]
 ```
 
 ### <s>`kdjc`, another variety of stochastic oscillator</s>
@@ -640,17 +670,26 @@ The arguments of `kdjc` are the same as `kdj`
 ### `rsi`, Relative Strength Index
 
 ```
-rsi:<period>
+rsi:<period>@<on>
 ```
 
 Calculates the N-period RSI (Relative Strength Index)
 
 - **period** `int` The period to calculate RSI. `period` should be an int which is larger than `1`
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
+
+```py
+# Uses default close column
+stock['rsi:14']
+
+# Calculate RSI on a different column
+stock['rsi:14@open']
+```
 
 ### `bbi`, Bull and Bear Index
 
 ```
-bbi:<a>,<b>,<c>,<d>
+bbi:<a>,<b>,<c>,<d>@<on>
 ```
 
 Calculates indicator BBI (Bull and Bear Index) which is the average of `ma:3`, `ma:6`, `ma:12`, `ma:24` by default
@@ -659,57 +698,99 @@ Calculates indicator BBI (Bull and Bear Index) which is the average of `ma:3`, `
 - **b?** `int=6`
 - **c?** `int=12`
 - **d?** `int=24`
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
+
+```py
+# Uses default parameters
+stock['bbi']
+
+# Custom parameters
+stock['bbi:5,10,20,30@close']
+```
 
 ### `atr`, the Average True Range
 
 ```
-atr:<period>
+atr:<period>@<high>,<low>,<close>
 ```
 
 Calculate the ATR (Average True Range)
 
 - **period** `int = 14` The period to calculate the moving average of the true ranges, defaults to `14`
+- **high?** `str='high'` The column name for high prices. Defaults to `'high'`
+- **low?** `str='low'` The column name for low prices. Defaults to `'low'`
+- **close?** `str='close'` The column name for close prices. Defaults to `'close'`
+
+```py
+# Uses default period and columns
+stock['atr']
+
+# Custom period
+stock['atr:20']
+```
 
 ### `llv`, Lowest of Low Values
 
 ```
-llv:<period>,<column>
+llv:<period>@<on>
 ```
 
 Gets the lowest of low prices in N periods
 
-- **period** `int`
-- **column?** `str='low'` Defaults to `'low'`. But you could also get the lowest value of close prices
+- **period** `int` (required)
+- **on?** `str='low'` Which column or directive should the calculation based on. Defaults to `'low'`
 
 ```py
 # The 10-period lowest prices
 stock['llv:10']
 
 # The 10-period lowest close prices
-stock['llv:10,close']
+stock['llv:10@close']
 ```
 
 ### `hhv`, Highest of High Values
 
 ```
-hhv:<period>,<column>
+hhv:<period>@<on>
 ```
 
 Gets the highest of high prices in N periods. The arguments of `hhv` is the same as `llv`
 
+- **period** `int` (required)
+- **on?** `str='high'` Which column or directive should the calculation based on. Defaults to `'high'`
+
+```py
+# The 10-period highest prices
+stock['hhv:10']
+
+# The 10-period highest close prices
+stock['hhv:10@close']
+```
+
 ### `donchian`, Donchian Channels
 
 ```
-donchian:<period>,<column_upper>,<column_lower>
-donchian.upper:<period>,<column_upper>
-donchian.lower:<period>,<column_lower>
+donchian:<period>@<high>,<low>
+donchian.upper:<period>@<high>
+donchian.lower:<period>@<low>
 ```
 
 Gets the Donchian channels, the historical view of price volatility by charting a security's highest and lowest prices over a set period
 
-- **period** `int`
-- **column_upper?** `str='high'` The column to calculate highest high values, defaults to `'high'`
-- **column_lower?** `str='low'` The column to calculate lowest low values, defaults to `'low'`
+- **period** `int` (required)
+- **high?** `str='high'` The column to calculate highest high values, defaults to `'high'`
+- **low?** `str='low'` The column to calculate lowest low values, defaults to `'low'`
+
+```py
+# Donchian middle channel with default columns
+stock['donchian:20']
+
+# Donchian upper channel
+stock['donchian.upper:20']
+
+# Donchian lower channel
+stock['donchian.lower:20']
+```
 
 ```py
 # Donchian middle channel
@@ -728,18 +809,22 @@ stock['donchian.l']
 ### `hv`, Historical Volatility
 
 ```
-hv:<period>,<time_frame>,<trading_days>
+hv:<period>,<time_frame>,<trading_days>@<on>
 ```
 
 Gets the historical volatility, the statistical measure of the dispersion of returns for a security or index over a period of time
 
-- **period** `int`
-- **time_frame** string type of `TimeFrame`, `'1m'`, `'3m'`, etc
-- **trading_days** `int=252` trading days in a year, defaults to `252`, for crypto currencies, `365` should be used.
+- **period** `int` (required)
+- **time_frame?** string type of `TimeFrame`, `'1m'`, `'3m'`, etc. Defaults to the time frame of the StockDataFrame
+- **trading_days?** `int=252` trading days in a year, defaults to `252`, for crypto currencies, `365` should be used.
+- **on?** `str='close'` Which column or directive should the calculation based on. Defaults to `'close'`
 
 ```py
 # 10-period historical volatility for 15-minute data based on 365 yearly trading days
 stock['hv:10,15m,365']
+
+# Uses default time_frame and trading_days
+stock['hv:10']
 ```
 
 
@@ -752,7 +837,7 @@ stock['hv:10,15m,365']
 ```py
 # A bool-type series indicates whether the current price is higher than the upper bollinger band
 
-# < 5.0.0
+# Before 5.0.0
 stock['column:close > boll.upper']
 
 # Since 5.0.0, we could just do as follows
@@ -769,7 +854,7 @@ Gets a `bool`-type series each item of which is `True` if the value of indicator
 
 - **repeat?** `int=1`
 - **direction?** `1 | -1` the direction of "increase". `-1` means decreasing
-- **on** `str` the command name of an indicator on what the calculation should be based
+- **on** `str | (Directive)` the directive of an indicator or the column name of the `StockDataFrame` on what the calculation should be based
 
 For example:
 
@@ -786,49 +871,64 @@ stock['increase:5,-1@close']
 ### `style`
 
 ```
-style:<style>
+style:<style>@<open>,<close>
 ```
 
 Gets a `bool`-type series whether the candlestick of a period is of `style` style
 
-- **style** `'bullish' | 'bearish'`
+- **style** `'bullish' | 'bearish'` (required)
+- **open?** `str='open'` The column name for open prices. Defaults to `'open'`
+- **close?** `str='close'` The column name for close prices. Defaults to `'close'`
 
 ```py
+# Uses default open and close columns
 stock['style:bullish']
+
+# Specify custom columns
+stock['style:bearish@open,close']
 ```
 
 ### `repeat`
 
 ```
-repeat:(<bool_directive>),<repeat>
+repeat:<repeat>@<bool_directive>
 ```
 
 The `repeat` command first gets the result of directive `bool_directive`, and detect whether `True` is repeated for `repeat` times
 
-- **bool_directive** `str` the directive which should returns a series of `bool`s. PAY ATTENTION, that the directive should be wrapped with parantheses as a parameter.
 - **repeat?** `int=1` which should be larger than `0`
+- **bool_directive** `str | (Directive)` the directive which should returns a series of `bool`s. Can be a column name or a directive wrapped in parentheses.
 
 ```py
 # Whether the bullish candlestick repeats for 3 periods (maybe 3 days)
 stock['repeat:3@(style:bullish)']
+
+# Repeat check on a column
+stock['repeat:5@(close > ma:20)']
 ```
 
 ### `change`
 
 ```
-change:<on>,<period>
+change:<period>@<on>
 ```
 
 Percentage change between the current and a prior element on a certain series
 
 Computes the percentage change from the immediately previous element by default. This is useful in comparing the percentage of change in a time series of prices.
 
-- **on** `str` the directive which returns a series of numbers, and the calculation will based on the series.
 - **period?** `int=2` `2` means we computes with the start value and the end value of a 2-period window.
+- **on** `str | (Directive)` the directive of an indicator or the column name of the `StockDataFrame` on what the calculation should be based
 
 ```py
 # Percentage change of 20-period simple moving average
-stock['change:(ma:20)']
+stock['change@(ma:20)']
+
+# Percentage change with custom period
+stock['change:5@close']
+
+# Percentage change of a column
+stock['change@close']
 ```
 
 ## Operators
@@ -887,11 +987,10 @@ Raises if there is a syntax error in the given directive.
 ```py
 stock['''
 repeat
-    :
-        (
-            column:close >> boll.upper
-        ),
-        5
+    :   5
+    @   (
+            close >> boll.upper
+        )
 ''']
 ```
 
@@ -901,14 +1000,13 @@ repeat
 File "<string>", line 5, column 26
 
    repeat
-       :
-           (
+       :   5
+       @   (
 >              column:close >> boll.upper
-           ),
-           5
+           )
 
                             ^
-DirectiveSyntaxError: ">>" is an invalid operator
+DirectiveSyntaxError: unexpected token ">>"
 ```
 
 ### `DirectiveValueError`
@@ -962,7 +1060,9 @@ StockDataFrame.define_command(
     CommandDefinition(
         preset=CommandPreset(
             formula=formula,
-            args=args_list
+            lookback=lookback_function,
+            args=args_list,
+            series=series_list
         ),
         sub_commands=sub_commands_dict,
         aliases=aliases_dict
@@ -972,17 +1072,19 @@ StockDataFrame.define_command(
 
 For a simple indicator, such as simple moving average, you could check the implementation [here](https://github.com/kaelzhang/stock-pandas/blob/master/stock_pandas/commands/trend_following.py#L60).
 
-### CommandFormula: formula(df, s, *args) -> ReturnType
+### CommandFormula: formula(*args, *series) -> ReturnType
 
-`formula` is a `Callable[[StockDataFrame, slice, ...], Tuple[ndarray, int]]`.
+`formula` is a `Callable[..., Tuple[ndarray, int]]`.
 
-- **df** `StockDataFrame` the first argument of `formula` is the stock dataframe itself
-- **s** `slice` sometimes, we don't need to calculate the whole dataframe but only part of it. This argument is passed into the formula by `stock_pandas` and should not be changed manually.
-- **args** `Tuple[CommandArgType]` the args of the indicator which is defined by the `args` list
+The formula receives arguments in the following order:
+1. Regular arguments (from `CommandPreset.args`) - these are specified with `:` in directive syntax
+2. Series arguments (from `CommandPreset.series`) - these are specified with `@` in directive syntax and can be column names or directives
 
 The formula returns `ReturnType`, which is `Tuple[ndarray, int]`:
 - The first item is the calculated result as a numpy ndarray.
 - The second item is the minimum periods needed to calculate the indicator.
+
+**Note:** The `df` and `s` parameters are no longer passed to the formula. Series arguments are automatically resolved to numpy arrays before being passed to the formula.
 
 ### CommandArg: Defining Command Arguments
 
@@ -1001,11 +1103,19 @@ CommandArg(
 **Example:**
 
 ```py
-from stock_pandas.common import period_to_int
-
+# Regular arguments (specified with `:` in directive syntax)
 args_ma = [
     # Required period argument with type coercion
-    CommandArg(coerce=period_to_int),
+    CommandArg(
+        # Setting `default` to `None` indicates a required argument
+        default=None,
+        # with type coercion
+        coerce=period_to_int
+    )
+]
+
+# Series arguments (specified with `@` in directive syntax)
+series_ma = [
     # Optional 'on' argument with default value
     CommandArg(default='close')
 ]
@@ -1033,10 +1143,25 @@ CommandDefinition(
 StockDataFrame.define_command(
     'macd',
     CommandDefinition(
-        preset=CommandPreset(macd_formula, args_macd),
+        preset=CommandPreset(
+            formula=macd_formula,
+            lookback=lookback_macd,
+            args=args_macd,
+            series=series_close
+        ),
         sub_commands=dict(
-            signal=CommandPreset(macd_signal_formula, args_macd_all),
-            histogram=CommandPreset(macd_histogram_formula, args_macd_all)
+            signal=CommandPreset(
+                formula=macd_signal_formula,
+                lookback=lookback_macd_signal,
+                args=args_macd_all,
+                series=series_close
+            ),
+            histogram=CommandPreset(
+                formula=macd_histogram_formula,
+                lookback=lookback_macd_signal,
+                args=args_macd_all,
+                series=series_close
+            )
         ),
         aliases=dict(
             s='signal',       # macd.s is alias for macd.signal
