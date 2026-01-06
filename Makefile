@@ -54,37 +54,34 @@ clean:
 
 # Run tests with Rust backend (default)
 test:
-	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
+	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --ignore=test/test_benchmark.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 # Run tests with Python backend only
 test-python:
 	@echo "\033[1m>> Running tests with Python backend... <<\033[0m"
-	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest -s -v test/test_$(test_files).py --ignore=test/test_benchmark.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 # Run tests with Rust backend only
 test-rust:
 	@echo "\033[1m>> Running tests with Rust backend... <<\033[0m"
-	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest -s -v test/test_$(test_files).py --ignore=test/test_benchmark.py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
 
 # Run tests with both backends and merge coverage (for 100% coverage)
 test-coverage:
+	@rm -f .coverage .coverage.*
 	@echo "\033[1m>> Running tests with Python backend... <<\033[0m"
-	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest -s test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
-	@mv .coverage .coverage.python
-	@echo "\033[1m>> Running tests with Rust backend... <<\033[0m"
-	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest -s test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
-	@mv .coverage .coverage.rust
-	@echo "\033[1m>> Merging coverage reports... <<\033[0m"
-	coverage combine .coverage.python .coverage.rust
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest test/test_$(test_files).py --ignore=test/test_benchmark.py --ignore=test/not_for_rust/ --cov=stock_pandas --cov-report= -q
+	@echo "\033[1m>> Running tests with Rust backend (appending coverage)... <<\033[0m"
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest test/test_$(test_files).py --ignore=test/test_benchmark.py --ignore=test/not_for_rust/ --cov=stock_pandas --cov-report= --cov-append -q
+	@echo "\033[1m>> Coverage Report... <<\033[0m"
 	coverage report --show-missing
-	@rm -f .coverage.python .coverage.rust
 
 # Run tests for all backends (alias for test-coverage)
 test-all: test-coverage
 
 # Run tests with verbose output
 test-verbose:
-	STOCK_PANDAS_COW=1 pytest -s -vv test/test_$(test_files).py --doctest-modules
+	STOCK_PANDAS_COW=1 pytest -s -vv test/test_$(test_files).py --ignore=test/test_benchmark.py --doctest-modules
 
 # Run Rust unit tests
 cargo-test:

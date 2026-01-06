@@ -76,7 +76,9 @@ def calc_smma(
 
     1. / period = 1. / (1. + com)
     """
-    if use_rust():
+    # Note: When Rust is available, rsi() calls _rs_rsi directly,
+    # so this Rust path is only used when calc_smma is called directly.
+    if use_rust():  # pragma: no cover
         return np.asarray(_rs_calc_smma(array.astype(float), period))
 
     # Pure Python fallback

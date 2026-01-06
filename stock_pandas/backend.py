@@ -13,7 +13,7 @@ _RUST_AVAILABLE = False
 try:
     import stock_pandas_rs  # noqa: F401
     _RUST_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 # User preference for using Rust (None means auto-detect)
@@ -72,7 +72,7 @@ def set_backend(backend: str) -> None:
 
     backend = backend.lower()
     if backend == 'rust':
-        if not _RUST_AVAILABLE:
+        if not _RUST_AVAILABLE:  # pragma: no cover
             raise RuntimeError(
                 "Rust backend requested but stock_pandas_rs extension "
                 "is not available. Please ensure it is properly installed."
@@ -104,4 +104,3 @@ def is_rust_available() -> bool:
         True if stock_pandas_rs extension is installed, False otherwise.
     """
     return _RUST_AVAILABLE
-

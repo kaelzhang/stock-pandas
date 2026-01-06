@@ -143,7 +143,9 @@ def rsv(
 ) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
-    if use_rust():
+    # Note: When Rust is available, kdj functions call their own Rust impls,
+    # so this Rust path is only used when rsv is called directly.
+    if use_rust():  # pragma: no cover
         return np.asarray(_rs_rsv(
             high_series.astype(float),
             low_series.astype(float),

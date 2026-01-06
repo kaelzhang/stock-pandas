@@ -24,7 +24,7 @@ jobs:
         make install
         echo ">> Building extension ..."
         make build-ext
-        make test
+        make test-coverage
         make report
       env:
         CI: true

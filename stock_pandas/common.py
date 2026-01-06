@@ -20,16 +20,7 @@ from numpy.typing import (
 
 import numpy as np
 
-from stock_pandas.backend import use_rust, is_rust_available
-
 NDArrayAny = NDArray[Any]
-
-# Import Rust implementations if available
-if is_rust_available():
-    from stock_pandas_rs import (
-        calc_llv as _rs_llv,
-        calc_hhv as _rs_hhv,
-    )
 
 
 def set_attr(target: Any, key: str, value: Any) -> None:
@@ -162,13 +153,8 @@ def rolling_calc(
     Args:
         shift (:obj:`bool`, optional)
     """
-    # Use Rust implementation for specific functions when available
-    # Only use Rust when shift=True (backward rolling)
-    if use_rust() and shift:
-        if func is min:
-            return np.asarray(_rs_llv(array.astype(float), period))
-        if func is max:
-            return np.asarray(_rs_hhv(array.astype(float), period))
+    # Note: For min/max operations (llv/hhv), the Rust implementation is
+    # called directly in the respective command functions, not through here.
 
     length = len(array)
 

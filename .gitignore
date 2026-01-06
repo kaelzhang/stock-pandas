@@ -2,6 +2,7 @@
 *.cpp
 *.so
 
+.benchmarks
 /talib
 
 # Pandoc

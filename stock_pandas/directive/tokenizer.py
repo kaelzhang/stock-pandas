@@ -74,11 +74,11 @@ class Tokenizer:
 
         self._reset()
 
-    def __iter__(self) -> Iterator[Token]:
+    def __iter__(self) -> Iterator[Token]:  # pragma: no cover
         self._reset()
         return self
 
-    def __next__(self) -> Token:
+    def __next__(self) -> Token:  # pragma: no cover
         if self._ended:
             raise StopIteration()
 

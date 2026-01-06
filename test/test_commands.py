@@ -186,3 +186,30 @@ def test_change(stock):
 
 def test_atr(stock):
     assert 9.8 < stock['atr:14']['2020-03-06'] < 9.9
+
+
+def test_ema(stock):
+    """Test EMA (Exponential Moving Average) calculation."""
+    ema20 = stock['ema:20']
+
+    # EMA should have values after enough data points
+    assert not np.isnan(ema20.iloc[-1])
+
+    # EMA should be close to the price
+    close = stock['close'].iloc[-1]
+    assert abs(ema20.iloc[-1] - close) < close * 0.1  # Within 10%
+
+
+def test_ma(stock):
+    """Test MA (Simple Moving Average) calculation."""
+    ma20 = stock['ma:20']
+
+    # MA should have NaN for the first 19 values
+    assert all(np.isnan(ma20.iloc[:19]))
+
+    # MA should have values from index 19 onwards
+    assert not np.isnan(ma20.iloc[19])
+
+    # MA of last 20 values should equal the actual average
+    close_last_20 = stock['close'].iloc[-20:].mean()
+    assert to_fixed(ma20.iloc[-1]) == to_fixed(close_last_20)
