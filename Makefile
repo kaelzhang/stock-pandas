@@ -4,7 +4,7 @@ test_files = *
 # test_files = commands
 # test_files = cum_append
 
-.PHONY: test lint fix install report build clean build-pkg build-ext build-doc upload publish install-rust
+.PHONY: test lint fix install report build clean build-pkg build-ext build-doc upload publish install-rust test-rust test-python test-all test-coverage benchmark
 
 # Install all dependencies (Python + Rust)
 install:
@@ -48,16 +48,47 @@ clean:
 	rm -rf *.egg-info
 	rm -rf .eggs
 	rm -rf __pycache__
+	rm -rf .coverage .coverage.* htmlcov
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 
-# Run tests
+# Run tests with Rust backend (default)
 test:
 	STOCK_PANDAS_COW=1 pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report term-missing
+
+# Run tests with Python backend only
+test-python:
+	@echo "\033[1m>> Running tests with Python backend... <<\033[0m"
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
+
+# Run tests with Rust backend only
+test-rust:
+	@echo "\033[1m>> Running tests with Rust backend... <<\033[0m"
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest -s -v test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
+
+# Run tests with both backends and merge coverage (for 100% coverage)
+test-coverage:
+	@echo "\033[1m>> Running tests with Python backend... <<\033[0m"
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest -s test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
+	@mv .coverage .coverage.python
+	@echo "\033[1m>> Running tests with Rust backend... <<\033[0m"
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest -s test/test_$(test_files).py --doctest-modules --cov stock_pandas --cov-config=.coveragerc --cov-report=
+	@mv .coverage .coverage.rust
+	@echo "\033[1m>> Merging coverage reports... <<\033[0m"
+	coverage combine .coverage.python .coverage.rust
+	coverage report --show-missing
+	@rm -f .coverage.python .coverage.rust
+
+# Run tests for all backends (alias for test-coverage)
+test-all: test-coverage
 
 # Run tests with verbose output
 test-verbose:
 	STOCK_PANDAS_COW=1 pytest -s -vv test/test_$(test_files).py --doctest-modules
+
+# Run Rust unit tests
+cargo-test:
+	cargo test
 
 # Run linter
 lint:
@@ -82,9 +113,19 @@ check:
 	cargo check
 	cargo clippy
 
-# Run Rust tests
-test-rust:
-	cargo test
+# Run benchmark tests
+benchmark:
+	@echo "\033[1m>> Running benchmarks... <<\033[0m"
+	STOCK_PANDAS_COW=1 pytest test/test_benchmark.py -v --benchmark-only --benchmark-columns=mean,stddev,median,ops
+
+# Run benchmark comparing Rust vs Python
+benchmark-compare:
+	@echo "\033[1m>> Benchmarking Python backend... <<\033[0m"
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest test/test_benchmark.py -v --benchmark-only --benchmark-save=python --benchmark-columns=mean,stddev,median,ops
+	@echo "\033[1m>> Benchmarking Rust backend... <<\033[0m"
+	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest test/test_benchmark.py -v --benchmark-only --benchmark-save=rust --benchmark-columns=mean,stddev,median,ops
+	@echo "\033[1m>> Comparing results... <<\033[0m"
+	pytest-benchmark compare .benchmarks/*python* .benchmarks/*rust* --columns=mean,stddev,median,ops
 
 # Build documentation
 build-doc:
@@ -107,4 +148,4 @@ report:
 dev: build test
 
 # Full CI check
-ci: lint test-rust test
+ci: lint cargo-test test-coverage

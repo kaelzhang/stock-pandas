@@ -30,4 +30,11 @@ from .meta.cumulator import (
     SubjectsToAppend
 )
 
+from .backend import (
+    set_backend,
+    get_backend,
+    is_rust_available,
+    use_rust
+)
+
 __version__ = '4.1.0'

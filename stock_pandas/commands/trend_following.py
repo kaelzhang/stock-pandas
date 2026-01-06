@@ -4,6 +4,7 @@
 
 import numpy as np
 
+from stock_pandas.backend import use_rust
 from stock_pandas.common import (
     period_to_int,
 )
@@ -28,18 +29,33 @@ from .common import (
     create_series_args
 )
 
-# Try to import Rust implementations for better performance
-try:
-    from stock_pandas_rs import (
-        calc_macd as _rs_macd,
-        calc_macd_signal as _rs_macd_signal,
-        calc_macd_histogram as _rs_macd_histogram,
-        calc_bbi as _rs_bbi,
-        calc_atr as _rs_atr
-    )
-    _USE_RUST = True
-except ImportError:
-    _USE_RUST = False
+# Lazy imports for Rust implementations
+_rs_macd = None
+_rs_macd_signal = None
+_rs_macd_histogram = None
+_rs_bbi = None
+_rs_atr = None
+
+
+def _init_rust():
+    """Lazy load Rust implementations."""
+    global _rs_macd, _rs_macd_signal, _rs_macd_histogram, _rs_bbi, _rs_atr
+    if _rs_macd is None:
+        try:
+            from stock_pandas_rs import (
+                calc_macd,
+                calc_macd_signal,
+                calc_macd_histogram,
+                calc_bbi,
+                calc_atr
+            )
+            _rs_macd = calc_macd
+            _rs_macd_signal = calc_macd_signal
+            _rs_macd_histogram = calc_macd_histogram
+            _rs_bbi = calc_bbi
+            _rs_atr = calc_atr
+        except ImportError:
+            pass
 
 
 # ma
@@ -103,7 +119,8 @@ def macd(
     slow_period: int,
     series: ReturnType
 ) -> ReturnType:
-    if _USE_RUST:
+    _init_rust()
+    if use_rust() and _rs_macd is not None:
         return np.asarray(_rs_macd(series.astype(float), fast_period, slow_period))
 
     fast = ema(fast_period, series)
@@ -121,7 +138,8 @@ def macd_signal(
     signal_period: int,
     series: ReturnType
 ) -> ReturnType:
-    if _USE_RUST:
+    _init_rust()
+    if use_rust() and _rs_macd_signal is not None:
         return np.asarray(_rs_macd_signal(
             series.astype(float), fast_period, slow_period, signal_period
         ))
@@ -145,7 +163,8 @@ def macd_histogram(
     signal_period: int,
     series: ReturnType
 ) -> ReturnType:
-    if _USE_RUST:
+    _init_rust()
+    if use_rust() and _rs_macd_histogram is not None:
         return np.asarray(_rs_macd_histogram(
             series.astype(float), fast_period, slow_period, signal_period
         ))
@@ -217,7 +236,8 @@ def bbi(
     """Calculates BBI (Bull and Bear Index) which is the average of
     ma:3, ma:6, ma:12, ma:24 by default
     """
-    if _USE_RUST:
+    _init_rust()
+    if use_rust() and _rs_bbi is not None:
         return np.asarray(_rs_bbi(close_series.astype(float), a, b, c, d))
 
     return (
@@ -258,7 +278,8 @@ def atr(
 ) -> ReturnType:
     """Calculates TR (True Range)
     """
-    if _USE_RUST:
+    _init_rust()
+    if use_rust() and _rs_atr is not None:
         return np.asarray(_rs_atr(
             high.astype(float),
             low.astype(float),

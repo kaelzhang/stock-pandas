@@ -28,14 +28,17 @@ TIME_KEY = 'time_key'
 FORMAT = '%Y-%m-%d %H:%M:%S'
 COLUMNS = ['open', 'high', 'low', 'close', 'volume']
 
-
-csv = (Path(__file__).parent.parent / 'example' / 'tencent.csv').resolve()
+_example_dir = Path(__file__).parent.parent / 'example'
 
 
 def get_tencent(
     date_col: bool = True,
-    stock: bool = True
+    stock: bool = True,
+    filename: str = 'tencent.csv'
 ) -> Union[StockDataFrame, DataFrame]:
+
+    csv = (_example_dir / filename).resolve()
+
     if not stock:
         return read_csv(csv)
 

@@ -42,6 +42,7 @@ dev = [
   "ruff",
   "pytest",
   "pytest-cov",
+  "pytest-benchmark",
   "twine",
   "numpy>=2.0.0",
   "mypy",
