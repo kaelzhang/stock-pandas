@@ -1,20 +1,10 @@
 [build-system]
-# Minimum requirements for the build system to execute.
-# See https://github.com/scipy/scipy/pull/12940 for the AIX issue.
-
-# Should sync to [project.optional-dependencies]
-requires = [
-    "Cython~=3.0.5",
-    "numpy>=2.0.0rc1",
-    "setuptools",
-    "build"
-]
-
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
 
 [project]
 name = 'stock-pandas'
-dynamic = ['version']
+version = '4.1.0'
 description='The production-ready subclass of `pandas.DataFrame` to support stock statistics and indicators.'
 readme = 'docs/README.md'
 authors = [
@@ -24,15 +14,15 @@ license = 'MIT'
 license-files = ['LICENSE']
 requires-python = '>=3.10'
 dependencies = [
-  "numpy",
-  "pandas >= 1.0.0",
-  "TA-Lib"
+  "numpy>=2.0.0",
+  "pandas >= 1.0.0"
 ]
 classifiers=[
     'Programming Language :: Python',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Rust',
     'Programming Language :: Python :: Implementation :: CPython',
     'Natural Language :: English',
     'Intended Audience :: Developers',
@@ -53,20 +43,20 @@ dev = [
   "pytest",
   "pytest-cov",
   "twine",
-  "Cython~=3.0.5",
-  "numpy>=2.0.0rc1",
-  "setuptools>=77.0.0",
+  "numpy>=2.0.0",
   "mypy",
-  "build"
+  "maturin>=1.4"
 ]
 
-[tool.setuptools.dynamic]
-version = {attr = "stock_pandas.__version__"}
-
-[tool.setuptools.package-data]
-stock_pandas = [
-  "py.typed"
-]
+[tool.maturin]
+# Module name (the Rust crate creates stock_pandas_rs module)
+module-name = "stock_pandas_rs"
+# Binding type
+binding = "pyo3"
+# Features to activate
+features = ["pyo3/extension-module"]
+# Python package to include
+python-packages = ["stock_pandas"]
 
 [tool.mypy]
 warn_return_any = true

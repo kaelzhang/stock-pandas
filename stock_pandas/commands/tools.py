@@ -32,6 +32,18 @@ from .common import (
     series_required
 )
 
+# Try to import Rust implementations for better performance
+try:
+    from stock_pandas_rs import (
+        calc_increase as _rs_increase,
+        calc_style as _rs_style,
+        calc_repeat as _rs_repeat,
+        calc_change as _rs_change
+    )
+    _USE_RUST = True
+except ImportError:
+    _USE_RUST = False
+
 
 POSITIVE_INFINITY = float('inf')
 NEGATIVE_INFINITY = float('-inf')
@@ -56,6 +68,9 @@ def increase(
     direction: int,
     series: ReturnType
 ) -> ReturnType:
+    if _USE_RUST:
+        return np.asarray(_rs_increase(series.astype(float), repeat, direction))
+
     period = repeat + 1
 
     current = NEGATIVE_INFINITY if direction == 1 else POSITIVE_INFINITY
@@ -89,11 +104,18 @@ styles = dict(
 
 
 def style(
-    style: str,
+    style_name: str,
     open_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
-    return styles[style](close_series, open_series)
+    if _USE_RUST:
+        return np.asarray(_rs_style(
+            style_name,
+            open_series.astype(float),
+            close_series.astype(float)
+        ))
+
+    return styles[style_name](close_series, open_series)
 
 
 BUILTIN_COMMANDS['style'] = CommandDefinition(
@@ -109,15 +131,20 @@ BUILTIN_COMMANDS['style'] = CommandDefinition(
 
 
 def repeat(
-    repeat: int,
+    repeat_count: int,
     series: ReturnType
 ) -> ReturnType:
-    if repeat == 1:
+    if repeat_count == 1:
         return series
+
+    if _USE_RUST:
+        # Convert to boolean for Rust function
+        bool_series = series.astype(bool)
+        return np.asarray(_rs_repeat(bool_series, repeat_count))
 
     return rolling_calc(
         series,
-        repeat,
+        repeat_count,
         np.all,
         False,
         1
@@ -140,6 +167,8 @@ def change(
 ) -> ReturnType:
     """Get the percentage change for `on`
     """
+    if _USE_RUST:
+        return np.asarray(_rs_change(series.astype(float), period))
 
     shift = period - 1
 

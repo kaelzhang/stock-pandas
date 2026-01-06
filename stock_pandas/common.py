@@ -1,3 +1,8 @@
+"""Common utilities for stock-pandas.
+
+This module provides shared utilities and functions used across the package.
+"""
+
 from functools import partial
 from typing import (
     Callable,
@@ -16,6 +21,16 @@ from numpy.typing import (
 import numpy as np
 
 NDArrayAny = NDArray[Any]
+
+# Try to import Rust implementations for performance
+try:
+    from stock_pandas_rs import (
+        calc_llv as _rs_llv,
+        calc_hhv as _rs_hhv,
+    )
+    _USE_RUST = True
+except ImportError:
+    _USE_RUST = False
 
 
 def set_attr(target: Any, key: str, value: Any) -> None:
@@ -69,13 +84,6 @@ style_enums: ReturnStr = partial(create_enum, [
     'bullish',
     'bearish'
 ], 'style')
-
-# column_enums: ReturnStr = partial(create_enum, [
-#     'open',
-#     'high',
-#     'low',
-#     'close'
-# ], 'column')
 
 
 def to_direction(value: int) -> int:
@@ -155,6 +163,13 @@ def rolling_calc(
     Args:
         shift (:obj:`bool`, optional)
     """
+    # Use Rust implementation for specific functions when available
+    # Only use Rust when shift=True (backward rolling)
+    if _USE_RUST and shift:
+        if func is min:
+            return np.asarray(_rs_llv(array.astype(float), period))
+        if func is max:
+            return np.asarray(_rs_hhv(array.astype(float), period))
 
     length = len(array)
 

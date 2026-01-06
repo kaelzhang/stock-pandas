@@ -88,3 +88,11 @@ tmp/
 .project
 .classpath
 /gradle
+
+# Rust
+/target
+Cargo.lock
+
+# Maturin
+*.pyd
+*.dll

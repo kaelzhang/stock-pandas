@@ -28,6 +28,19 @@ from .common import (
     create_series_args
 )
 
+# Try to import Rust implementations for better performance
+try:
+    from stock_pandas_rs import (
+        calc_macd as _rs_macd,
+        calc_macd_signal as _rs_macd_signal,
+        calc_macd_histogram as _rs_macd_histogram,
+        calc_bbi as _rs_bbi,
+        calc_atr as _rs_atr
+    )
+    _USE_RUST = True
+except ImportError:
+    _USE_RUST = False
+
 
 # ma
 # ----------------------------------------------------
@@ -90,6 +103,9 @@ def macd(
     slow_period: int,
     series: ReturnType
 ) -> ReturnType:
+    if _USE_RUST:
+        return np.asarray(_rs_macd(series.astype(float), fast_period, slow_period))
+
     fast = ema(fast_period, series)
     slow = ema(slow_period, series)
 
@@ -105,6 +121,11 @@ def macd_signal(
     signal_period: int,
     series: ReturnType
 ) -> ReturnType:
+    if _USE_RUST:
+        return np.asarray(_rs_macd_signal(
+            series.astype(float), fast_period, slow_period, signal_period
+        ))
+
     macd_series = macd(fast_period, slow_period, series)
 
     return calc_ewma(macd_series, signal_period)
@@ -124,6 +145,11 @@ def macd_histogram(
     signal_period: int,
     series: ReturnType
 ) -> ReturnType:
+    if _USE_RUST:
+        return np.asarray(_rs_macd_histogram(
+            series.astype(float), fast_period, slow_period, signal_period
+        ))
+
     macd_series = macd(fast_period, slow_period, series)
     macd_signal_series = macd_signal(
         fast_period, slow_period, signal_period, series
@@ -191,6 +217,9 @@ def bbi(
     """Calculates BBI (Bull and Bear Index) which is the average of
     ma:3, ma:6, ma:12, ma:24 by default
     """
+    if _USE_RUST:
+        return np.asarray(_rs_bbi(close_series.astype(float), a, b, c, d))
+
     return (
         ma(a, close_series)
         + ma(b, close_series)
@@ -229,6 +258,13 @@ def atr(
 ) -> ReturnType:
     """Calculates TR (True Range)
     """
+    if _USE_RUST:
+        return np.asarray(_rs_atr(
+            high.astype(float),
+            low.astype(float),
+            close.astype(float),
+            period
+        ))
 
     prev_close = np.roll(close, 1)
     prev_close[0] = np.nan

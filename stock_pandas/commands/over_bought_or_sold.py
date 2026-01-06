@@ -33,6 +33,22 @@ from .common import (
     series_close
 )
 
+# Try to import Rust implementations for better performance
+try:
+    from stock_pandas_rs import (
+        calc_llv as _rs_llv,
+        calc_hhv as _rs_hhv,
+        calc_rsv as _rs_rsv,
+        calc_kdj_k as _rs_kdj_k,
+        calc_kdj_d as _rs_kdj_d,
+        calc_kdj_j as _rs_kdj_j,
+        calc_rsi as _rs_rsi,
+        calc_donchian as _rs_donchian
+    )
+    _USE_RUST = True
+except ImportError:
+    _USE_RUST = False
+
 
 # llv & hhv
 # ----------------------------------------------------
@@ -43,6 +59,8 @@ def llv(
 ) -> ReturnType:
     """Gets LLV (Lowest of Low Value)
     """
+    if _USE_RUST:
+        return np.asarray(_rs_llv(column.astype(float), period))
 
     return rolling_calc(column, period, min)
 
@@ -62,6 +80,8 @@ def hhv(
 ) -> ReturnType:
     """Gets HHV (Highest of High Value)
     """
+    if _USE_RUST:
+        return np.asarray(_rs_hhv(column.astype(float), period))
 
     return rolling_calc(column, period, max)
 
@@ -85,6 +105,12 @@ def donchian(
 ) -> ReturnType:
     """Gets Donchian Channel
     """
+    if _USE_RUST:
+        return np.asarray(_rs_donchian(
+            hhv_series.astype(float),
+            llv_series.astype(float),
+            period
+        ))
 
     return (hhv(period, hhv_series) + llv(period, llv_series)) / 2
 
@@ -119,6 +145,13 @@ def rsv(
 ) -> ReturnType:
     """Gets RSV (Raw Stochastic Value)
     """
+    if _USE_RUST:
+        return np.asarray(_rs_rsv(
+            high_series.astype(float),
+            low_series.astype(float),
+            close_series.astype(float),
+            period
+        ))
 
     llv_series = llv(period, low_series)
     hhv_series = hhv(period, high_series)
@@ -184,6 +217,15 @@ def kdj_k(
 ) -> ReturnType:
     """Gets KDJ K
     """
+    if _USE_RUST:
+        return np.asarray(_rs_kdj_k(
+            high_series.astype(float),
+            low_series.astype(float),
+            close_series.astype(float),
+            period_rsv,
+            period_k,
+            init
+        ))
 
     rsv_series = rsv(period_rsv, high_series, low_series, close_series)
 
@@ -199,6 +241,17 @@ def kdj_d(
     low_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
+    if _USE_RUST:
+        return np.asarray(_rs_kdj_d(
+            high_series.astype(float),
+            low_series.astype(float),
+            close_series.astype(float),
+            period_rsv,
+            period_k,
+            period_d,
+            init
+        ))
+
     k_series = kdj_k(
         period_rsv, period_k, init,
         high_series, low_series, close_series
@@ -216,6 +269,17 @@ def kdj_j(
     low_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
+    if _USE_RUST:
+        return np.asarray(_rs_kdj_j(
+            high_series.astype(float),
+            low_series.astype(float),
+            close_series.astype(float),
+            period_rsv,
+            period_k,
+            period_d,
+            init
+        ))
+
     k_series = kdj_k(
         period_rsv, period_k, init,
         high_series, low_series, close_series
@@ -299,6 +363,8 @@ def rsi(period: int, close_series: ReturnType) -> ReturnType:
 
     https://en.wikipedia.org/wiki/Relative_strength_index
     """
+    if _USE_RUST:
+        return np.asarray(_rs_rsi(close_series.astype(float), period))
 
     delta = np.diff(close_series, prepend=np.nan)
 

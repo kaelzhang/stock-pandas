@@ -30,6 +30,19 @@ from .common import (
 )
 from .trend_following import ma
 
+# Try to import Rust implementations for better performance
+try:
+    from stock_pandas_rs import (
+        calc_boll as _rs_boll,
+        calc_boll_upper as _rs_boll_upper,
+        calc_boll_lower as _rs_boll_lower,
+        calc_bbw as _rs_bbw,
+        calc_hv as _rs_hv
+    )
+    _USE_RUST = True
+except ImportError:
+    _USE_RUST = False
+
 
 # boll
 # ----------------------------------------------------
@@ -40,6 +53,9 @@ def boll(
 ) -> ReturnType:
     """Gets the mid band of bollinger bands
     """
+    if _USE_RUST:
+        return np.asarray(_rs_boll(series.astype(float), period))
+
     return ma(period, series)
 
 
@@ -54,8 +70,11 @@ def boll_band(
     Args:
         upper (bool): Get the upper band if True else the lower band
     """
-
-    # prices = df.get_column(column)[s].to_numpy()
+    if _USE_RUST:
+        if upper:
+            return np.asarray(_rs_boll_upper(series.astype(float), period, times))
+        else:
+            return np.asarray(_rs_boll_lower(series.astype(float), period, times))
 
     # ma = df.exec(f'ma:{period},{column}')[s]
     ma_series = ma(period, series)
@@ -114,6 +133,8 @@ def bbw(
 ) -> ReturnType:
     """Gets the width of bollinger bands
     """
+    if _USE_RUST:
+        return np.asarray(_rs_bbw(series.astype(float), period))
 
     ma_series = ma(period, series)
     mstd = rolling_calc(series, period, np.std)
@@ -144,6 +165,13 @@ def hv(
 ) -> ReturnType:
     """Gets the historical volatility of the stock
     """
+    if _USE_RUST:
+        return np.asarray(_rs_hv(
+            close.astype(float),
+            period,
+            minutes,
+            trading_days
+        ))
 
     shifted = np.roll(close, 1)
     shifted[0] = np.nan
