@@ -12,7 +12,7 @@ pub mod indicators;
 pub mod errors;
 pub mod simd;
 
-use directive::{PyDirectiveCache, parse_directive, directive_stringify};
+use directive::{parse_directive, directive_stringify};
 use indicators::register_indicators;
 
 /// A Python module implemented in Rust for stock-pandas
@@ -22,12 +22,8 @@ fn stock_pandas_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_directive, m)?)?;
     m.add_function(wrap_pyfunction!(directive_stringify, m)?)?;
 
-    // Register cache class
-    m.add_class::<PyDirectiveCache>()?;
-
     // Register indicator calculation functions
     register_indicators(m)?;
 
     Ok(())
 }
-

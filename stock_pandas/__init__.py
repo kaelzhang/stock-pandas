@@ -14,6 +14,7 @@ from .directive.types import (
     NumberType,
     CommandPreset,
     CommandArg,
+    CommandArgInputType
 )
 from .directive.cache import DirectiveCache
 

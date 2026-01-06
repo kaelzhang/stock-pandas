@@ -9,14 +9,9 @@ from .command import (
 # Try to import Rust-based parser for better performance
 try:
     from stock_pandas_rs import parse_directive as _rs_parse_directive
-    from stock_pandas_rs import PyDirectiveCache as _RsDirectiveCache
     _USE_RUST = True
 except ImportError:
     _USE_RUST = False
-
-
-# Rust cache for directive parsing (shared across instances)
-_RS_CACHE = _RsDirectiveCache() if _USE_RUST else None
 
 
 def parse(
@@ -39,19 +34,19 @@ def parse(
     """
     directive_str = directive_str.strip()
 
-    # Check Python cache first (this is always used for the final result)
+    # Check cache first
     cached = cache.get(directive_str)
     if cached is not None:
         return cached
 
     # Try to use Rust parser when available
-    if _USE_RUST and _RS_CACHE is not None:
+    if _USE_RUST:
         try:
             # The Rust parser will:
             # 1. Tokenize and parse the directive string
             # 2. Create Python AST nodes
             # 3. Call .create() to get the final Directive object
-            directive = _rs_parse_directive(directive_str, _RS_CACHE, commands)
+            directive = _rs_parse_directive(directive_str, commands)
             return cache.set(directive_str, directive)
         except Exception:
             # Fall back to Python parser if Rust fails
