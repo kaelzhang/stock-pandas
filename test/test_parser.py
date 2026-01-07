@@ -79,6 +79,11 @@ def test_stringify():
         ('a +- b', 'a+-b', 'special operator case'),
         ('a + - b', 'a+-b', 'special operator case'),
         ('a +~ b', 'a+~b', 'special operator case'),
+        (
+            'kdj.j:9,3,2,100@high,close,close',
+            'kdj.j:,,2,100.0@,close',
+            'default arguments'
+        ),
     ]
 
     for i, (input, stringified, desc) in enumerate(cases):

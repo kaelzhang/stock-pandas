@@ -321,7 +321,12 @@ The classmethod to get the full name of the `directive` which is also the actual
 
 ```py
 StockDataFrame.directive_stringify('kdj.j')
-# "kdj.j:9,3,3,50.0"
+# "kdj.j"
+
+StockDataFrame.directive_stringify('kdj.j:9,3,2,100@high,close,close')
+# "kdj.j:,,2,100.0@,close"
+
+# <- default args are obmitted to save space
 ```
 
 ### StockDataFrame.define_command(...) -> None
