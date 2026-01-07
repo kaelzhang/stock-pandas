@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = 'stock-pandas'
-version = '5.0.0'
+dynamic = ["version"]
 description='The production-ready subclass of `pandas.DataFrame` to support stock statistics and indicators.'
 readme = 'docs/README.md'
 authors = [

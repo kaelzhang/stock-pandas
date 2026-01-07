@@ -2,6 +2,7 @@
 
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
+use pyo3::IntoPyObject;
 
 use super::tokenizer::Loc;
 
@@ -15,12 +16,13 @@ pub enum Primitive {
 }
 
 impl Primitive {
-    pub fn to_python(&self, py: Python<'_>) -> PyObject {
+    pub fn to_python(&self, py: Python<'_>) -> PyResult<PyObject> {
         match self {
-            Primitive::Int(i) => i.into_py(py),
-            Primitive::Float(f) => f.into_py(py),
-            Primitive::String(s) => s.into_py(py),
-            Primitive::Bool(b) => b.into_py(py),
+            Primitive::Int(i) => Ok(i.into_pyobject(py)?.into_any().unbind()),
+            Primitive::Float(f) => Ok(f.into_pyobject(py)?.into_any().unbind()),
+            Primitive::String(s) => Ok(s.into_pyobject(py)?.into_any().unbind()),
+            // Bool returns a Borrowed reference, need to convert to owned
+            Primitive::Bool(b) => Ok(b.into_pyobject(py)?.to_owned().into_any().unbind()),
         }
     }
 }
@@ -90,7 +92,7 @@ impl CommandNode {
 
         // Create the sub ScalarNode if present
         let sub_node: PyObject = if let Some(ref sub) = self.sub {
-            scalar_node_class.call1((self.loc, sub))?.into_py(py)
+            scalar_node_class.call1((self.loc, sub))?.unbind()
         } else {
             py.None()
         };
@@ -99,8 +101,8 @@ impl CommandNode {
         let args_list = PyList::empty(py);
         for arg in &self.args {
             let value: PyObject = if let Some(ref v) = arg.value {
-                let scalar = scalar_node_class.call1((arg.loc, v.to_python(py)))?;
-                scalar.into_py(py)
+                let scalar = scalar_node_class.call1((arg.loc, v.to_python(py)?))?;
+                scalar.unbind()
             } else {
                 py.None()
             };
@@ -114,14 +116,14 @@ impl CommandNode {
             let value: PyObject = match series {
                 SeriesArgumentNode::Column(loc, name) => {
                     let scalar = scalar_node_class.call1((*loc, name))?;
-                    series_argument_node_class.call1((*loc, scalar))?.into_py(py)
+                    series_argument_node_class.call1((*loc, scalar))?.unbind()
                 }
                 SeriesArgumentNode::Directive(loc, expr) => {
                     let directive = expr.to_python(py, commands)?;
-                    series_argument_node_class.call1((*loc, directive))?.into_py(py)
+                    series_argument_node_class.call1((*loc, directive))?.unbind()
                 }
                 SeriesArgumentNode::Empty(loc) => {
-                    series_argument_node_class.call1((*loc, py.None()))?.into_py(py)
+                    series_argument_node_class.call1((*loc, py.None()))?.unbind()
                 }
             };
             series_list.append(value)?;
@@ -149,7 +151,7 @@ impl CommandNode {
         let context = context_class.call1((input_str, cache, commands))?;
 
         let result = node.call_method1("create", (context,))?;
-        Ok(result.into_py(py))
+        Ok(result.unbind())
     }
 }
 
@@ -207,7 +209,7 @@ impl ExpressionNode {
     pub fn to_python(&self, py: Python<'_>, commands: &Bound<'_, PyDict>) -> PyResult<PyObject> {
         match self {
             ExpressionNode::Scalar(scalar) => {
-                Ok(scalar.value.to_python(py))
+                scalar.value.to_python(py)
             }
             ExpressionNode::Command(cmd) => {
                 cmd.to_python(py, commands)
@@ -236,7 +238,7 @@ impl ExpressionNode {
                 // Create context and call create()
                 let context = create_context(py, commands, &format!("{}", self))?;
                 let result = node.call_method1("create", (context,))?;
-                Ok(result.into_py(py))
+                Ok(result.unbind())
             }
             ExpressionNode::Unary { loc, operator, expression } => {
                 let node_module = py.import("stock_pandas.directive.node")?;
@@ -261,7 +263,7 @@ impl ExpressionNode {
                 // Create context and call create()
                 let context = create_context(py, commands, &format!("{}", self))?;
                 let result = node.call_method1("create", (context,))?;
-                Ok(result.into_py(py))
+                Ok(result.unbind())
             }
         }
     }
@@ -282,7 +284,7 @@ impl std::fmt::Display for ExpressionNode {
     }
 }
 
-fn get_operator_formula(py: Python<'_>, op_module: &Bound<'_, pyo3::types::PyModule>, name: &str) -> PyResult<PyObject> {
+fn get_operator_formula(_py: Python<'_>, op_module: &Bound<'_, pyo3::types::PyModule>, name: &str) -> PyResult<PyObject> {
     // Map operator names to their formula functions
     let operators = [
         ("MULTIPLICATION_OPERATORS", &["*", "/"][..]),
@@ -304,7 +306,7 @@ fn get_operator_formula(py: Python<'_>, op_module: &Bound<'_, pyo3::types::PyMod
                     if !entry.is_none() {
                         // Entry is (formula, priority) tuple
                         let formula = entry.get_item(0)?;
-                        return Ok(formula.into_py(py));
+                        return Ok(formula.unbind());
                     }
                 }
                 Err(_) => continue,
@@ -318,13 +320,13 @@ fn get_operator_formula(py: Python<'_>, op_module: &Bound<'_, pyo3::types::PyMod
     )))
 }
 
-fn get_unary_operator_formula(py: Python<'_>, op_module: &Bound<'_, pyo3::types::PyModule>, name: &str) -> PyResult<PyObject> {
+fn get_unary_operator_formula(_py: Python<'_>, op_module: &Bound<'_, pyo3::types::PyModule>, name: &str) -> PyResult<PyObject> {
     let dict = op_module.getattr("UNARY_OPERATORS")?;
     match dict.call_method1("get", (name,)) {
         Ok(entry) => {
             if !entry.is_none() {
                 let formula = entry.get_item(0)?;
-                return Ok(formula.into_py(py));
+                return Ok(formula.unbind());
             }
         }
         Err(_) => {}
@@ -345,5 +347,5 @@ fn create_context(py: Python<'_>, commands: &Bound<'_, PyDict>, input: &str) -> 
     let cache = cache_class.call0()?;
 
     let context = context_class.call1((input, cache, commands))?;
-    Ok(context.into_py(py))
+    Ok(context.unbind())
 }

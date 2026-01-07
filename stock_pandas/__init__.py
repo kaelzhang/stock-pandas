@@ -37,4 +37,5 @@ from .backend import (
     use_rust
 )
 
-__version__ = '5.0.0'
+from importlib.metadata import version as _get_version
+__version__ = _get_version('stock-pandas')
