@@ -2,7 +2,6 @@
 [![](https://codecov.io/gh/kaelzhang/stock-pandas/branch/master/graph/badge.svg)](https://codecov.io/gh/kaelzhang/stock-pandas)
 [![](https://img.shields.io/pypi/v/stock-pandas.svg)](https://pypi.org/project/stock-pandas/)
 [![Conda version](https://img.shields.io/conda/vn/conda-forge/stock-pandas)](https://anaconda.org/conda-forge/stock-pandas)
-[![](https://img.shields.io/pypi/l/stock-pandas.svg)](https://github.com/kaelzhang/stock-pandas)
 
 
 [ma]: #ma-simple-moving-averages
