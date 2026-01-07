@@ -744,6 +744,8 @@ stock['atr:20']
 
 ### `tr`, the True Range
 
+> New in 5.1.0
+
 ```
 tr@<high>,<low>,<close>
 ```
