@@ -40,7 +40,7 @@
   - For more indicators, welcome to [request a proposal](https://github.com/kaelzhang/stock-pandas/issues/new?assignees=&labels=feature&template=FEATURE_REQUEST.md&title=), or fork and send me a pull request, or extend stock-pandas yourself. You might read the [Advanced Sections](https://github.com/kaelzhang/stock-pandas#advanced-sections) below.
 - To [cumulate][cumulation] kline data based on a given time frame, so that it could easily handle real-time data updates.
 - To manage calculation lookback, always use least necessary data frames to calculate an indicator, and automatically fulfill indicators for new-appended data frames if needed.
-- Caculation and parser re-implemented in **Rust** with a maximum **4.8x** performance boost.
+- Calculation and parser re-implemented in **Rust** with a maximum **4.8x** performance boost.
 
 `stock-pandas` makes automated trading much easier. `stock-pandas` requires
 - Python >= **3.10**
@@ -667,9 +667,17 @@ stock[['kdj.k:9,9,50.0', 'kdj.d:9,9,9,50.0', 'kdj.j:9,9,9,50.0']]
 
 > Removed in 4.x
 
-Unlike `kdj`, `kdjc` uses **close** value instead of high and low value to calculate `rsv`, which makes the indicator more sensitive than `kdj`
+Unlike `kdj`, `kdjc` uses **close** value instead of high and low value to calculate `rsv`, which makes the indicator more sensitive than `kdj` ~~
 
-The arguments of `kdjc` are the same as `kdj`
+~~ The arguments of `kdjc` are the same as `kdj` ~~
+
+```py
+# after 5.0.0
+stock['kdj.j@close,close']
+
+# which is equivalent to
+stock['kdj.d:9,3,3,50.0@close,close,close']
+```
 
 ### `rsi`, Relative Strength Index
 
@@ -1006,10 +1014,10 @@ File "<string>", line 5, column 26
    repeat
        :   5
        @   (
->              column:close >> boll.upper
+>              close >> boll.upper
            )
 
-                            ^
+                     ^
 DirectiveSyntaxError: unexpected token ">>"
 ```
 
