@@ -42,12 +42,12 @@ repeat
         5
 
     @   (
-            column@close >> boll.upper
+            close >> boll.upper
         )
 ''').parse()
     except Exception as e:
         assert e.line == 7, 'line'
-        assert e.column == 26, 'column'
+        assert e.column == 19, 'column'
         print()
         print(e)
 
