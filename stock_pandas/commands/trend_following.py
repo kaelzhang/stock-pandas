@@ -48,8 +48,6 @@ def ma(period: int, on: ReturnType) -> ReturnType:
     """Gets simple moving average
 
     Args:
-        df (StockDataFrame): the stock data frame itself
-        s (slice): the slice object
         period (int): size of the moving period
         on (str): the target that is based on to calculate
 
@@ -102,7 +100,9 @@ def macd(
     series: ReturnType
 ) -> ReturnType:
     if use_rust():
-        return np.asarray(_rs_macd(series.astype(float), fast_period, slow_period))
+        return np.asarray(
+            _rs_macd(series.astype(float), fast_period, slow_period)
+        )
 
     fast = ema(fast_period, series)
     slow = ema(slow_period, series)
@@ -254,7 +254,7 @@ def atr(
     low: ReturnType,
     close: ReturnType
 ) -> ReturnType:
-    """Calculates TR (True Range)
+    """Calculates ATR (Average True Range)
     """
     if use_rust():
         return np.asarray(_rs_atr(

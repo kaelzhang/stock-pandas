@@ -101,7 +101,9 @@ def donchian(
     hhv_series: ReturnType,
     llv_series: ReturnType
 ) -> ReturnType:
-    """Gets Donchian Channel
+    """
+    Gets Donchian Channel
+    https://en.wikipedia.org/wiki/Donchian_channel
     """
     if use_rust():
         return np.asarray(_rs_donchian(
@@ -215,7 +217,10 @@ def kdj_k(
     low_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
-    """Gets KDJ K
+    """
+    Gets KDJ K
+
+    https://docs.anychart.com/Stock_Charts/Technical_Indicators/Mathematical_Description#kdj
     """
     if use_rust():
         return np.asarray(_rs_kdj_k(
@@ -241,6 +246,10 @@ def kdj_d(
     low_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
+    """
+    Gets KDJ D
+    """
+
     if use_rust():
         return np.asarray(_rs_kdj_d(
             high_series.astype(float),
@@ -269,6 +278,10 @@ def kdj_j(
     low_series: ReturnType,
     close_series: ReturnType
 ) -> ReturnType:
+    """
+    Gets KDJ J
+    """
+
     if use_rust():
         return np.asarray(_rs_kdj_j(
             high_series.astype(float),

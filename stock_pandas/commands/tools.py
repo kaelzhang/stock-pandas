@@ -67,7 +67,9 @@ def increase(
     series: ReturnType
 ) -> ReturnType:
     if use_rust():
-        return np.asarray(_rs_increase(series.astype(float), repeat, direction))
+        return np.asarray(
+            _rs_increase(series.astype(float), repeat, direction)
+        )
 
     period = repeat + 1
 
@@ -132,12 +134,17 @@ def repeat(
     repeat_count: int,
     series: ReturnType
 ) -> ReturnType:
+    """
+    Check if the series will repeat `repeat_count` times.
+    """
+
     if repeat_count == 1:
         return series
 
+    # Convert to boolean for Rust function
+    bool_series = series.astype(bool)
+
     if use_rust():
-        # Convert to boolean for Rust function
-        bool_series = series.astype(bool)
         return np.asarray(_rs_repeat(bool_series, repeat_count))
 
     return rolling_calc(
@@ -163,7 +170,7 @@ def change(
     period: int,
     series: ReturnType
 ) -> ReturnType:
-    """Get the percentage change for `on`
+    """Get the percentage change for `series`
     """
     if use_rust():
         return np.asarray(_rs_change(series.astype(float), period))

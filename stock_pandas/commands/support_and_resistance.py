@@ -70,9 +70,13 @@ def boll_band(
     """
     if use_rust():
         if upper:
-            return np.asarray(_rs_boll_upper(series.astype(float), period, times))
+            return np.asarray(
+                _rs_boll_upper(series.astype(float), period, times)
+            )
         else:
-            return np.asarray(_rs_boll_lower(series.astype(float), period, times))
+            return np.asarray(
+                _rs_boll_lower(series.astype(float), period, times)
+            )
 
     # ma = df.exec(f'ma:{period},{column}')[s]
     ma_series = ma(period, series)
@@ -161,7 +165,10 @@ def hv(
     trading_days: int,
     close: ReturnType
 ) -> ReturnType:
-    """Gets the historical volatility of the stock
+    """
+    Gets the historical volatility of the stock
+
+    https://toslc.thinkorswim.com/center/reference/Tech-Indicators/studies-library/G-L/HistoricalVolatility
     """
     if use_rust():
         return np.asarray(_rs_hv(
