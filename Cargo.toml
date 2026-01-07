@@ -1,6 +1,6 @@
 [package]
 name = "stock_pandas_rs"
-version = "5.0.1"
+version = "5.1.0"
 edition = "2021"
 authors = ["Kael Zhang <i+pypi@kael.me>"]
 description = "High-performance Rust implementation for stock-pandas indicators and directive parsing"

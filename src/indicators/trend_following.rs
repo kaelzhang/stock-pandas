@@ -139,21 +139,13 @@ pub fn calc_bbi<'py>(
     Ok(result.into_pyarray(py))
 }
 
-/// Calculate ATR (Average True Range)
-#[pyfunction]
-pub fn calc_atr<'py>(
-    py: Python<'py>,
-    high: PyReadonlyArray1<'py, f64>,
-    low: PyReadonlyArray1<'py, f64>,
-    close: PyReadonlyArray1<'py, f64>,
-    period: usize,
-) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    let high = high.as_array();
-    let low = low.as_array();
-    let close = close.as_array();
+/// Internal function for True Range calculation
+fn tr_internal(
+    high: ArrayView1<f64>,
+    low: ArrayView1<f64>,
+    close: ArrayView1<f64>,
+) -> Array1<f64> {
     let n = high.len();
-
-    // Calculate True Range
     let mut tr = Array1::from_elem(n, f64::NAN);
 
     if n > 0 {
@@ -167,6 +159,40 @@ pub fn calc_atr<'py>(
         let lc = (low[i] - prev_close).abs();
         tr[i] = hl.max(hc).max(lc);
     }
+
+    tr
+}
+
+/// Calculate TR (True Range)
+#[pyfunction]
+pub fn calc_tr<'py>(
+    py: Python<'py>,
+    high: PyReadonlyArray1<'py, f64>,
+    low: PyReadonlyArray1<'py, f64>,
+    close: PyReadonlyArray1<'py, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let high = high.as_array();
+    let low = low.as_array();
+    let close = close.as_array();
+    let result = tr_internal(high, low, close);
+    Ok(result.into_pyarray(py))
+}
+
+/// Calculate ATR (Average True Range)
+#[pyfunction]
+pub fn calc_atr<'py>(
+    py: Python<'py>,
+    high: PyReadonlyArray1<'py, f64>,
+    low: PyReadonlyArray1<'py, f64>,
+    close: PyReadonlyArray1<'py, f64>,
+    period: usize,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let high = high.as_array();
+    let low = low.as_array();
+    let close = close.as_array();
+
+    // Calculate True Range using internal function
+    let tr = tr_internal(high, low, close);
 
     // Calculate MA of TR
     let result = simd::sma(tr.view(), period);

@@ -24,6 +24,7 @@ from .base import BUILTIN_COMMANDS
 
 from .common import (
     arg_period,
+    arg_period_14,
     lookback_period,
     series_close,
     create_series_args
@@ -36,6 +37,7 @@ if is_rust_available():
         calc_macd_signal as _rs_macd_signal,
         calc_macd_histogram as _rs_macd_histogram,
         calc_bbi as _rs_bbi,
+        calc_tr as _rs_tr,
         calc_atr as _rs_atr
     )
 
@@ -244,9 +246,51 @@ BUILTIN_COMMANDS['bbi'] = CommandDefinition(
 )
 
 
-# atr
+# tr & atr
 # Ref: https://www.investopedia.com/terms/a/atr.asp
 # ----------------------------------------------------
+
+series_hlc = create_series_args(['high', 'low', 'close'])
+
+
+def tr(
+    high: ReturnType,
+    low: ReturnType,
+    close: ReturnType
+) -> ReturnType:
+    """Calculates TR (True Range)
+
+    True Range is the greatest of:
+    - Current high - current low
+    - |Current high - previous close|
+    - |Current low - previous close|
+    """
+    if use_rust():
+        return np.asarray(_rs_tr(
+            high.astype(float),
+            low.astype(float),
+            close.astype(float)
+        ))
+
+    prev_close = np.roll(close, 1)
+    prev_close[0] = np.nan
+
+    return np.maximum.reduce([
+        np.absolute(high - low),
+        np.absolute(high - prev_close),
+        np.absolute(low - prev_close),
+    ])
+
+
+BUILTIN_COMMANDS['tr'] = CommandDefinition(
+    CommandPreset(
+        formula=tr,
+        lookback=lambda: 1,
+        args=[],
+        series=series_hlc
+    )
+)
+
 
 def atr(
     period: int,
@@ -264,17 +308,7 @@ def atr(
             period
         ))
 
-    prev_close = np.roll(close, 1)
-    prev_close[0] = np.nan
-
-    # True range
-    tr = np.maximum.reduce([
-        np.absolute(high - low),
-        np.absolute(high - prev_close),
-        np.absolute(low - prev_close),
-    ])
-
-    return calc_ma(tr, period)
+    return calc_ma(tr(high, low, close), period)
 
 
 def lookback_atr(period: int) -> int:
@@ -285,9 +319,7 @@ BUILTIN_COMMANDS['atr'] = CommandDefinition(
     CommandPreset(
         formula=atr,
         lookback=lookback_atr,
-        args=[
-            CommandArg(14, period_to_int)
-        ],
-        series=create_series_args(['high', 'low', 'close'])
+        args=[arg_period_14],
+        series=series_hlc
     )
 )

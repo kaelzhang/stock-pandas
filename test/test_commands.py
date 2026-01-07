@@ -184,6 +184,27 @@ def test_change(stock):
     assert to_fixed(boll_change3.iloc[-1]) == '-0.0030'
 
 
+def test_tr(stock):
+    """Test TR (True Range) calculation."""
+    tr = stock['tr']
+
+    # TR should have all values (except first may be NaN in some edge cases)
+    assert not np.isnan(tr.iloc[-1])
+
+    # Verify TR is calculated correctly for a specific row
+    # TR = max(high - low, |high - prev_close|, |low - prev_close|)
+    idx = 10  # Pick a row to verify
+    high = stock['high'].iloc[idx]
+    low = stock['low'].iloc[idx]
+    prev_close = stock['close'].iloc[idx - 1]
+    expected_tr = max(
+        high - low,
+        abs(high - prev_close),
+        abs(low - prev_close)
+    )
+    assert to_fixed(tr.iloc[idx], 4) == to_fixed(expected_tr, 4)
+
+
 def test_atr(stock):
     assert 9.8 < stock['atr:14']['2020-03-06'] < 9.9
 

@@ -25,6 +25,7 @@ pub fn register_indicators(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(calc_macd_signal, m)?)?;
     m.add_function(wrap_pyfunction!(calc_macd_histogram, m)?)?;
     m.add_function(wrap_pyfunction!(calc_bbi, m)?)?;
+    m.add_function(wrap_pyfunction!(calc_tr, m)?)?;
     m.add_function(wrap_pyfunction!(calc_atr, m)?)?;
 
     // Support and resistance indicators

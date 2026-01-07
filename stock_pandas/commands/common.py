@@ -6,6 +6,7 @@ from stock_pandas.directive.types import CommandArg
 
 
 arg_period = CommandArg(coerce=period_to_int)
+arg_period_14 = CommandArg(14, coerce=period_to_int)
 arg_required = CommandArg()
 
 

@@ -16,6 +16,7 @@
 [rsi]: #rsi-relative-strength-index
 [bbi]: #bbi-bull-and-bear-index
 [atr]: #atr-the-average-true-range
+[tr]: #tr-the-true-range
 [llv]: #llv-lowest-of-low-values
 [hhv]: #hhv-highest-of-high-values
 [hv]: #hv-historical-volatility
@@ -33,7 +34,7 @@
 **stock-pandas** inherits and extends `pandas.DataFrame` to support:
 - Stock Statistics
 - Stock Indicators, including:
-  - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi], [**ATR**][atr], [**HV**][hv]
+  - Trend-following momentum indicators, such as [**MA**][ma], [**EMA**][ema], [**MACD**][macd], [**BBI**][bbi], [**TR**][tr], [**ATR**][atr], [**HV**][hv]
   - Dynamic support and resistance indicators, such as [**BOLL**][boll], [**BBW**][bbw]
   - Over-bought / over-sold indicators, such as [**KDJ**][kdj], [**RSI**][rsi]
   - Other indicators, such as [**LLV**][llv], [**HHV**][hhv]
@@ -739,6 +740,25 @@ stock['atr']
 
 # Custom period
 stock['atr:20']
+```
+
+### `tr`, the True Range
+
+```
+tr@<high>,<low>,<close>
+```
+
+Calculate the TR (True Range).
+
+```py
+# the True Range
+stock['tr']
+
+# Actually atr:14 is the 14-period moving average of tr
+stock['atr:14']
+
+# , which is equivalent to
+stock['ma:14@(tr)']
 ```
 
 ### `llv`, Lowest of Low Values

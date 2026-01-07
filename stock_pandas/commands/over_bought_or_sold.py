@@ -28,6 +28,7 @@ from .base import BUILTIN_COMMANDS
 
 from .common import (
     arg_period,
+    arg_period_14,
     lookback_period,
     lookback_a_lot,
     create_series_args,
@@ -401,7 +402,7 @@ BUILTIN_COMMANDS['rsi'] = CommandDefinition(
     CommandPreset(
         formula=rsi,
         lookback=lookback_rsi,
-        args=[arg_period],
+        args=[arg_period_14],
         series=series_close
     )
 )
