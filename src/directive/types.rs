@@ -79,7 +79,7 @@ pub struct CommandNode {
 impl CommandNode {
     pub fn to_python(&self, py: Python<'_>, commands: &Bound<'_, PyDict>) -> PyResult<PyObject> {
         // Import the Python CommandNode class to create instances
-        let stock_pandas = py.import_bound("stock_pandas.directive.node")?;
+        let stock_pandas = py.import("stock_pandas.directive.node")?;
         let command_node_class = stock_pandas.getattr("CommandNode")?;
         let scalar_node_class = stock_pandas.getattr("ScalarNode")?;
         let argument_node_class = stock_pandas.getattr("ArgumentNode")?;
@@ -96,7 +96,7 @@ impl CommandNode {
         };
 
         // Create argument nodes
-        let args_list = PyList::empty_bound(py);
+        let args_list = PyList::empty(py);
         for arg in &self.args {
             let value: PyObject = if let Some(ref v) = arg.value {
                 let scalar = scalar_node_class.call1((arg.loc, v.to_python(py)))?;
@@ -109,7 +109,7 @@ impl CommandNode {
         }
 
         // Create series argument nodes
-        let series_list = PyList::empty_bound(py);
+        let series_list = PyList::empty(py);
         for series in &self.series {
             let value: PyObject = match series {
                 SeriesArgumentNode::Column(loc, name) => {
@@ -137,10 +137,10 @@ impl CommandNode {
         ))?;
 
         // Call create() to get the actual Command object
-        let context_module = py.import_bound("stock_pandas.directive.command")?;
+        let context_module = py.import("stock_pandas.directive.command")?;
         let context_class = context_module.getattr("Context")?;
 
-        let cache_module = py.import_bound("stock_pandas.directive.cache")?;
+        let cache_module = py.import("stock_pandas.directive.cache")?;
         let cache_class = cache_module.getattr("DirectiveCache")?;
         let cache = cache_class.call0()?;
 
@@ -213,7 +213,7 @@ impl ExpressionNode {
                 cmd.to_python(py, commands)
             }
             ExpressionNode::Binary { loc, operator, left, right } => {
-                let node_module = py.import_bound("stock_pandas.directive.node")?;
+                let node_module = py.import("stock_pandas.directive.node")?;
                 let expr_node_class = node_module.getattr("ExpressionNode")?;
                 let op_node_class = node_module.getattr("OperatorNode")?;
 
@@ -221,7 +221,7 @@ impl ExpressionNode {
                 let right_py = right.to_python(py, commands)?;
 
                 // Get the operator formula from the operator module
-                let op_module = py.import_bound("stock_pandas.directive.operator")?;
+                let op_module = py.import("stock_pandas.directive.operator")?;
                 let formula = get_operator_formula(py, &op_module, &operator.name)?;
 
                 let op_node = op_node_class.call1((
@@ -239,14 +239,14 @@ impl ExpressionNode {
                 Ok(result.into_py(py))
             }
             ExpressionNode::Unary { loc, operator, expression } => {
-                let node_module = py.import_bound("stock_pandas.directive.node")?;
+                let node_module = py.import("stock_pandas.directive.node")?;
                 let unary_node_class = node_module.getattr("UnaryExpressionNode")?;
                 let op_node_class = node_module.getattr("OperatorNode")?;
 
                 let expr_py = expression.to_python(py, commands)?;
 
                 // Get the unary operator formula
-                let op_module = py.import_bound("stock_pandas.directive.operator")?;
+                let op_module = py.import("stock_pandas.directive.operator")?;
                 let formula = get_unary_operator_formula(py, &op_module, &operator.name)?;
 
                 let op_node = op_node_class.call1((
@@ -337,10 +337,10 @@ fn get_unary_operator_formula(py: Python<'_>, op_module: &Bound<'_, pyo3::types:
 }
 
 fn create_context(py: Python<'_>, commands: &Bound<'_, PyDict>, input: &str) -> PyResult<PyObject> {
-    let context_module = py.import_bound("stock_pandas.directive.command")?;
+    let context_module = py.import("stock_pandas.directive.command")?;
     let context_class = context_module.getattr("Context")?;
 
-    let cache_module = py.import_bound("stock_pandas.directive.cache")?;
+    let cache_module = py.import("stock_pandas.directive.cache")?;
     let cache_class = cache_module.getattr("DirectiveCache")?;
     let cache = cache_class.call0()?;
 

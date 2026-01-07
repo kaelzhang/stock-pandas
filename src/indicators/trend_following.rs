@@ -21,7 +21,7 @@ pub fn calc_ma<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let data = data.as_array();
     let result = simd::sma(data, period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate Exponential Weighted Moving Average (for EMA calculation)
@@ -35,7 +35,7 @@ pub fn calc_ewma<'py>(
     // EMA uses com = (period - 1) / 2
     let com = (period as f64 - 1.0) / 2.0;
     let result = simd::ewma_com(data, com, true, false, period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate Exponential Moving Average
@@ -57,7 +57,7 @@ pub fn calc_smma<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let data = data.as_array();
     let result = simd::smma(data, period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Internal function for MACD calculation
@@ -81,7 +81,7 @@ pub fn calc_macd<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let data = data.as_array();
     let result = macd_internal(data, fast_period, slow_period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate MACD Signal line (DEA)
@@ -97,7 +97,7 @@ pub fn calc_macd_signal<'py>(
     let macd = macd_internal(data, fast_period, slow_period);
     let com_signal = (signal_period as f64 - 1.0) / 2.0;
     let result = simd::ewma_com(macd.view(), com_signal, true, false, signal_period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate MACD Histogram
@@ -116,7 +116,7 @@ pub fn calc_macd_histogram<'py>(
 
     // Histogram = 2 * (MACD - Signal)
     let result = 2.0 * (&macd - &signal);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate BBI (Bull and Bear Index)
@@ -136,7 +136,7 @@ pub fn calc_bbi<'py>(
     let ma_d = simd::sma(data, d);
 
     let result = (&ma_a + &ma_b + &ma_c + &ma_d) / 4.0;
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate ATR (Average True Range)
@@ -170,7 +170,7 @@ pub fn calc_atr<'py>(
 
     // Calculate MA of TR
     let result = simd::sma(tr.view(), period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 #[cfg(test)]

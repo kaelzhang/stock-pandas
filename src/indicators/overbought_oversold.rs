@@ -22,7 +22,7 @@ pub fn calc_llv<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let data = data.as_array();
     let result = simd::rolling_min(data, period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate HHV (Highest of High Values)
@@ -34,7 +34,7 @@ pub fn calc_hhv<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let data = data.as_array();
     let result = simd::rolling_max(data, period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate RSV (Raw Stochastic Value)
@@ -65,7 +65,7 @@ pub fn calc_rsv<'py>(
         }
     }
 
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// EWMA with initial value (for KDJ calculation)
@@ -121,7 +121,7 @@ pub fn calc_kdj_k<'py>(
 
     // Calculate K using EWMA with init
     let result = ewma_with_init(rsv.view(), period_k, init);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate KDJ D line
@@ -158,7 +158,7 @@ pub fn calc_kdj_d<'py>(
 
     // Calculate D using EWMA with init
     let result = ewma_with_init(k.view(), period_d, init);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate KDJ J line
@@ -196,7 +196,7 @@ pub fn calc_kdj_j<'py>(
 
     // J = 3K - 2D
     let result = 3.0 * &k - 2.0 * &d;
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate RSI (Relative Strength Index)
@@ -243,7 +243,7 @@ pub fn calc_rsi<'py>(
         }
     }
 
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate Donchian Channel middle line
@@ -261,6 +261,6 @@ pub fn calc_donchian<'py>(
     let llv = simd::rolling_min(low, period);
 
     let result = (&hhv + &llv) / 2.0;
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 

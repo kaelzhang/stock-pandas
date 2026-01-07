@@ -19,7 +19,7 @@ pub fn calc_boll<'py>(
 ) -> PyResult<Bound<'py, PyArray1<f64>>> {
     let data = data.as_array();
     let result = simd::sma(data, period);
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate Bollinger Bands upper band
@@ -34,7 +34,7 @@ pub fn calc_boll_upper<'py>(
     let ma = simd::sma(data, period);
     let std = simd::rolling_std(data, period, 0); // ddof=0 for population std
     let result = &ma + times * &std;
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate Bollinger Bands lower band
@@ -49,7 +49,7 @@ pub fn calc_boll_lower<'py>(
     let ma = simd::sma(data, period);
     let std = simd::rolling_std(data, period, 0);
     let result = &ma - times * &std;
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate Bollinger Band Width
@@ -65,7 +65,7 @@ pub fn calc_bbw<'py>(
 
     // BBW = 4 * std / ma
     let result = 4.0 * &std / &ma;
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate Historical Volatility
@@ -96,6 +96,6 @@ pub fn calc_hv<'py>(
     let annualization = ((trading_days as f64) * day_minutes / (minutes as f64)).sqrt();
     let result = &rolling_std * annualization;
 
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 

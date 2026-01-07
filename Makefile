@@ -31,8 +31,8 @@ build: clean
 # Build release package (wheel and sdist)
 build-pkg: clean
 	@echo "\033[1m>> Building release package... <<\033[0m"
-	@maturin build --release
-	@echo "\033[1m>> Package built in target/wheels/ <<\033[0m"
+	@maturin build --release --sdist -o dist
+	@echo "\033[1m>> Package built in dist/ <<\033[0m"
 
 # Build the Rust extension only (development mode)
 build-ext:
@@ -42,7 +42,7 @@ build-ext:
 # Clean build artifacts
 clean:
 	rm -rf dist build target/wheels
-	rm -rf stock_pandas/*.so
+	rm -rf stock_pandas/*.so stock_pandas_rs/*.so
 	rm -rf stock_pandas/math/*.so
 	rm -rf stock_pandas/math/*.cpp
 	rm -rf *.egg-info
@@ -124,13 +124,9 @@ benchmark-compare:
 	@echo "\033[1m>> Comparing results... <<\033[0m"
 	pytest-benchmark compare .benchmarks/*python* .benchmarks/*rust* --columns=mean,stddev,median,ops
 
-# Build documentation
-build-doc:
-	sphinx-build -b html docs build_docs
-
 # Upload to PyPI
 upload:
-	twine upload --config-file ~/.pypirc -r pypi target/wheels/*
+	twine upload --config-file ~/.pypirc -r pypi dist/*
 
 # Publish (build + upload)
 publish:

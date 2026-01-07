@@ -24,7 +24,7 @@ pub fn calc_increase<'py>(
     let mut result = Array1::from_elem(n, false);
 
     if period > n {
-        return Ok(result.into_pyarray_bound(py));
+        return Ok(result.into_pyarray(py));
     }
 
     for i in (period - 1)..n {
@@ -48,7 +48,7 @@ pub fn calc_increase<'py>(
         result[i] = is_increasing;
     }
 
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate candlestick style (bullish or bearish)
@@ -83,7 +83,7 @@ pub fn calc_style<'py>(
         }
     }
 
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Check if a boolean condition repeats for n periods
@@ -99,13 +99,13 @@ pub fn calc_repeat<'py>(
     if repeat == 1 {
         // Just return a copy
         let result: Array1<bool> = data.to_owned();
-        return Ok(result.into_pyarray_bound(py));
+        return Ok(result.into_pyarray(py));
     }
 
     let mut result = Array1::from_elem(n, false);
 
     if repeat > n {
-        return Ok(result.into_pyarray_bound(py));
+        return Ok(result.into_pyarray(py));
     }
 
     for i in (repeat - 1)..n {
@@ -119,7 +119,7 @@ pub fn calc_repeat<'py>(
         result[i] = all_true;
     }
 
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 
 /// Calculate percentage change
@@ -142,6 +142,6 @@ pub fn calc_change<'py>(
         }
     }
 
-    Ok(result.into_pyarray_bound(py))
+    Ok(result.into_pyarray(py))
 }
 

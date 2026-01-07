@@ -37,4 +37,4 @@ from .backend import (
     use_rust
 )
 
-__version__ = '4.1.0'
+__version__ = '5.0.0'

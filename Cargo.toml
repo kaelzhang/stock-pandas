@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Kael Zhang <i+pypi@kael.me>"]
 description = "High-performance Rust implementation for stock-pandas indicators and directive parsing"
+license = "MIT"
+homepage = "https://github.com/kaelzhang/stock-pandas"
+repository = "https://github.com/kaelzhang/stock-pandas"
 
 [lib]
 name = "stock_pandas_rs"
