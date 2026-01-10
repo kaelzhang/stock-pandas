@@ -33,6 +33,10 @@ ReturnFloat = Callable[..., float]
 ReturnStr = Callable[..., str]
 
 
+def is_number(value: Any) -> bool:
+    return isinstance(value, (int, float))
+
+
 def to_number(
     type_ctr: Type[T],
     type_name: str,

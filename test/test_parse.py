@@ -1,5 +1,9 @@
+import warnings
 
-from stock_pandas import DirectiveValueError
+from stock_pandas import (
+    DirectiveValueError,
+    DirectiveNonSenseWarning
+)
 
 from .common import parse
 
@@ -49,4 +53,30 @@ def test_value_error():
                 assert isinstance(e, DirectiveValueError)
                 continue
 
-            raise Exception(f'{i}: {directive_str} -> {err_msg}')
+            raise Exception(
+                f'{i}: `{directive_str}` should raise error: {err_msg}'
+            )
+
+
+def test_directive_warning():
+    warnings.simplefilter('error', DirectiveNonSenseWarning)
+
+    CASES = [
+        ('1 > 2', 1, 1),
+        ('''(
+    close > boll.upper
+) & (
+    0 > -1
+)''', 4, 5)
+    ]
+
+    for i, (directive_str, line, column) in enumerate(CASES):
+        try:
+            parse(directive_str)
+        except DirectiveNonSenseWarning as e:
+            assert 'it is a non-sense directive without any command' in str(e)
+            assert e.line == line
+            assert e.column == column
+        else:
+            raise Exception(f'{i}: `{directive_str}` should raise DirectiveNonSenseWarning')
+

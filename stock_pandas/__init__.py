@@ -2,7 +2,8 @@ from .dataframe import StockDataFrame
 
 from .exceptions import (
     DirectiveSyntaxError,
-    DirectiveValueError
+    DirectiveValueError,
+    DirectiveNonSenseWarning
 )
 
 from .directive.command import (

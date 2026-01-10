@@ -6,10 +6,15 @@ from typing import (
     Union
 )
 from dataclasses import dataclass
+import warnings
 
-from stock_pandas.exceptions import DirectiveValueError
+from stock_pandas.exceptions import (
+    DirectiveValueError,
+    DirectiveNonSenseWarning
+)
 from stock_pandas.common import (
-    command_full_name
+    command_full_name,
+    is_number
 )
 
 from .types import (
@@ -48,11 +53,25 @@ class ExpressionNode:
         self,
         context: Context
     ) -> Expression:
-        return Expression(
+        expression = Expression(
             operator=self.operator.create(context),
             left=self.left.create(context),
             right=self.right.create(context)
         )
+
+        if (
+            is_number(expression.left)
+            and is_number(expression.right)
+        ):
+            warnings.warn(
+                DirectiveNonSenseWarning(
+                    context.input,
+                    self.loc
+                ),
+                stacklevel=2
+            )
+
+        return expression
 
 
 @dataclass(frozen=True, slots=True)

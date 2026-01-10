@@ -227,6 +227,13 @@ class StockDataFrame(MetaDataFrame):
 
         return series
 
+    def lookback(self, directive_str: str, /) -> int:
+        """
+        Gets the lookback period of the given directive
+        """
+
+        return self._parse_directive(directive_str).cumulative_lookback
+
     def alias(
         self,
         as_name: str,
