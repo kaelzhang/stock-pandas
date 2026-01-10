@@ -5,38 +5,6 @@
 
 use ndarray::{Array1, ArrayView1};
 
-/// SIMD-optimized rolling sum calculation (handles NaN values)
-#[inline]
-pub fn rolling_sum(data: ArrayView1<f64>, period: usize) -> Array1<f64> {
-    let n = data.len();
-    let mut result = Array1::from_elem(n, f64::NAN);
-
-    if period > n || period == 0 {
-        return result;
-    }
-
-    // Use a simple rolling calculation that handles NaN properly
-    for i in (period - 1)..n {
-        let window = data.slice(ndarray::s![i + 1 - period..=i]);
-        let mut sum = 0.0;
-        let mut valid_count = 0;
-
-        for &val in window.iter() {
-            if !val.is_nan() {
-                sum += val;
-                valid_count += 1;
-            }
-        }
-
-        // Only set result if all values in the window are valid
-        if valid_count == period {
-            result[i] = sum;
-        }
-    }
-
-    result
-}
-
 /// SIMD-optimized simple moving average (handles NaN values)
 #[inline]
 pub fn sma(data: ArrayView1<f64>, period: usize) -> Array1<f64> {
@@ -64,49 +32,6 @@ pub fn sma(data: ArrayView1<f64>, period: usize) -> Array1<f64> {
         if valid_count == period {
             result[i] = sum / period as f64;
         }
-    }
-
-    result
-}
-
-/// SIMD-optimized exponential weighted moving average
-#[inline]
-pub fn ewma(data: ArrayView1<f64>, period: usize) -> Array1<f64> {
-    let n = data.len();
-    let mut result = Array1::from_elem(n, f64::NAN);
-
-    if n == 0 || period == 0 {
-        return result;
-    }
-
-    // Calculate alpha from period: alpha = 2 / (period + 1)
-    let alpha = 2.0 / (period as f64 + 1.0);
-    let one_minus_alpha = 1.0 - alpha;
-
-    // Find first non-NaN value
-    let mut start_idx = 0;
-    let mut ewma_val = f64::NAN;
-
-    for (i, &val) in data.iter().enumerate() {
-        if !val.is_nan() {
-            ewma_val = val;
-            result[i] = val;
-            start_idx = i + 1;
-            break;
-        }
-    }
-
-    // Calculate EWMA for remaining values
-    for i in start_idx..n {
-        let val = data[i];
-        if !val.is_nan() {
-            if ewma_val.is_nan() {
-                ewma_val = val;
-            } else {
-                ewma_val = alpha * val + one_minus_alpha * ewma_val;
-            }
-        }
-        result[i] = ewma_val;
     }
 
     result
@@ -283,27 +208,6 @@ pub fn diff(data: ArrayView1<f64>) -> Array1<f64> {
     for i in 1..n {
         if !data[i].is_nan() && !data[i - 1].is_nan() {
             result[i] = data[i] - data[i - 1];
-        }
-    }
-
-    result
-}
-
-/// SIMD-optimized shift operation
-#[inline]
-pub fn shift(data: ArrayView1<f64>, periods: i64) -> Array1<f64> {
-    let n = data.len();
-    let mut result = Array1::from_elem(n, f64::NAN);
-
-    if periods >= 0 {
-        let shift = periods as usize;
-        for i in shift..n {
-            result[i] = data[i - shift];
-        }
-    } else {
-        let shift = (-periods) as usize;
-        for i in 0..(n.saturating_sub(shift)) {
-            result[i] = data[i + shift];
         }
     }
 

@@ -38,16 +38,6 @@ pub fn calc_ewma<'py>(
     Ok(result.into_pyarray(py))
 }
 
-/// Calculate Exponential Moving Average
-#[pyfunction]
-pub fn calc_ema<'py>(
-    py: Python<'py>,
-    data: PyReadonlyArray1<'py, f64>,
-    period: usize,
-) -> PyResult<Bound<'py, PyArray1<f64>>> {
-    calc_ewma(py, data, period)
-}
-
 /// Calculate Smoothed Moving Average
 #[pyfunction]
 pub fn calc_smma<'py>(

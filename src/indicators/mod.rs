@@ -18,7 +18,6 @@ pub use tools::*;
 pub fn register_indicators(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Trend-following indicators
     m.add_function(wrap_pyfunction!(calc_ma, m)?)?;
-    m.add_function(wrap_pyfunction!(calc_ema, m)?)?;
     m.add_function(wrap_pyfunction!(calc_ewma, m)?)?;
     m.add_function(wrap_pyfunction!(calc_smma, m)?)?;
     m.add_function(wrap_pyfunction!(calc_macd, m)?)?;

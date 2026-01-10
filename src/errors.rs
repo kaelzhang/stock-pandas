@@ -43,25 +43,5 @@ impl From<DirectiveError> for PyErr {
     }
 }
 
-/// Errors that can occur during indicator calculation
-#[derive(Error, Debug)]
-pub enum IndicatorError {
-    #[error("Invalid period: {0}")]
-    InvalidPeriod(String),
-
-    #[error("Array too short: expected at least {expected} elements, got {got}")]
-    ArrayTooShort { expected: usize, got: usize },
-
-    #[error("Invalid argument: {0}")]
-    InvalidArgument(String),
-}
-
-impl From<IndicatorError> for PyErr {
-    fn from(err: IndicatorError) -> PyErr {
-        PyValueError::new_err(err.to_string())
-    }
-}
-
 pub type DirectiveResult<T> = Result<T, DirectiveError>;
-pub type IndicatorResult<T> = Result<T, IndicatorError>;
 

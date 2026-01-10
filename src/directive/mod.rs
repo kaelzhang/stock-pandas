@@ -33,11 +33,3 @@ pub fn parse_directive(
     // Convert AST to Python Directive object
     ast.to_python(py, commands)
 }
-
-/// Stringify a parsed directive back to its canonical form
-#[pyfunction]
-pub fn directive_stringify(directive: &Bound<'_, PyAny>) -> PyResult<String> {
-    // Call the __str__ method on the directive
-    let s = directive.str()?;
-    Ok(s.to_string())
-}

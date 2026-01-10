@@ -12,15 +12,14 @@ pub mod indicators;
 pub mod errors;
 pub mod simd;
 
-use directive::{parse_directive, directive_stringify};
+use directive::parse_directive;
 use indicators::register_indicators;
 
 /// A Python module implemented in Rust for stock-pandas
 #[pymodule]
 fn stock_pandas_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    // Register directive parsing functions
+    // Register directive parsing function
     m.add_function(wrap_pyfunction!(parse_directive, m)?)?;
-    m.add_function(wrap_pyfunction!(directive_stringify, m)?)?;
 
     // Register indicator calculation functions
     register_indicators(m)?;

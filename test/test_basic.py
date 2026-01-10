@@ -217,6 +217,11 @@ def test_lookback(stock):
         # Tools
         ('increase:1@close', 0), ('style:bullish', 0),
         ('repeat:2@(style:bullish)', 1), ('change:2@close', 1),
+        # Compound directives: lookback = base_lb + series_lb
+        # repeat:5@(close > boll.upper) = (5-1) + max(0, 20-1) = 4 + 19 = 23
+        ('repeat:5@(close > boll.upper)', 23),
+        # repeat:3@(ma:10 > ma:20) = (3-1) + max(10-1, 20-1) = 2 + 19 = 21
+        ('repeat:3@(ma:10 > ma:20)', 21),
         # --- Additional cases with varying parameters ---
         # MA/EMA: lookback = period - 1 (need N points for N-period average)
         ('ma:10', 9), ('ma:20', 19), ('ema:12', 11), ('ema:26', 25),
@@ -236,5 +241,5 @@ def test_lookback(stock):
     ]
     for directive, expected in cases:
         assert (
-            StockDataFrame.lookback(directive) == expected
+            StockDataFrame.directive_lookback(directive) == expected
         ), f'{directive} lookback mismatch'

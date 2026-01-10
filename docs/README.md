@@ -329,6 +329,30 @@ StockDataFrame.directive_stringify('kdj.j:9,3,2,100@high,close,close')
 # <- default args are obmitted to save space
 ```
 
+### StockDataFrame.directive_lookback(directive: str) -> int
+
+> New in 5.2.0
+
+The classmethod to get the lookback period of a `directive`, which indicates the minimum number of data points required to calculate the indicator.
+
+This is useful for:
+- Determining how much historical data is needed before an indicator produces valid results
+- Understanding the data requirements when combining multiple indicators
+
+```py
+StockDataFrame.directive_lookback('ma:20')
+# 19
+
+StockDataFrame.directive_lookback('boll')
+# 19 (default period 20)
+
+# Compound directive: lookback accumulates across nested expressions
+# repeat:5 needs 4 extra points, boll.upper (period=20) needs 19
+# Total: 4 + 19 = 23
+StockDataFrame.directive_lookback('repeat:5@(close > boll.upper)')
+# 23
+```
+
 ### StockDataFrame.define_command(...) -> None
 
 ```py
