@@ -89,6 +89,16 @@ class StockDataFrame(MetaDataFrame):
         return str(parse(directive_str, cls.DIRECTIVES_CACHE, cls.COMMANDS))
 
     @classmethod
+    def directive_lookback(cls, directive_str: str, /) -> int:
+        """
+        Gets the lookback period of the given directive
+        """
+
+        return parse(
+            directive_str, cls.DIRECTIVES_CACHE, cls.COMMANDS
+        ).cumulative_lookback
+
+    @classmethod
     def define_command(
         cls,
         name: str,
@@ -226,13 +236,6 @@ class StockDataFrame(MetaDataFrame):
             self._stock_create_column = original_create_column
 
         return series
-
-    def lookback(self, directive_str: str, /) -> int:
-        """
-        Gets the lookback period of the given directive
-        """
-
-        return self._parse_directive(directive_str).cumulative_lookback
 
     def alias(
         self,

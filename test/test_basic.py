@@ -191,3 +191,50 @@ def test_date_col_pollution_issue_21():
         csv['time_key']
     except Exception as e:
         raise RuntimeError(f'date_col should not change the original dataframe, error: {e}')
+
+
+def test_lookback(stock):
+    # (directive, expected_lookback)
+    cases = [
+        # Trend-following: ma, ema (lookback = period - 1)
+        ('ma:5', 4), ('ema:5', 4),
+        # MACD variants
+        ('macd', 25), ('macd.signal', 33), ('macd.histogram', 33),
+        # BBI (lookback = max of all periods)
+        ('bbi', 24),
+        # TR & ATR
+        ('tr', 1), ('atr', 14),
+        # LLV, HHV, Donchian (lookback = period - 1)
+        ('llv:5', 4), ('hhv:5', 4), ('donchian:5', 4),
+        # RSV & KDJ
+        ('rsv:9', 8), ('kdj.k', 27), ('kdj.d', 27), ('kdj.j', 27),
+        # RSI (lookback = period, due to diff + SMMA warmup)
+        ('rsi', 14),
+        # Bollinger Bands (lookback = period - 1)
+        ('boll', 19), ('boll.upper', 19), ('boll.lower', 19), ('bbw', 19),
+        # Historical Volatility (lookback = period, due to log return)
+        ('hv:20', 20),
+        # Tools
+        ('increase:1@close', 0), ('style:bullish', 0),
+        ('repeat:2@(style:bullish)', 1), ('change:2@close', 1),
+        # --- Additional cases with varying parameters ---
+        # MA/EMA: lookback = period - 1 (need N points for N-period average)
+        ('ma:10', 9), ('ma:20', 19), ('ema:12', 11), ('ema:26', 25),
+        # MACD: lookback = max(fast, slow) - 1
+        # MACD.signal: lookback = max(fast, slow) + signal - 2
+        ('macd:5,10', 9), ('macd.signal:5,10,3', 11), ('macd.histogram:8,17,5', 20),
+        # BBI: lookback = max(a, b, c, d), all MAs must be valid
+        ('bbi:5,10,15,20', 20),
+        # ATR/RSI: lookback = period (TR needs prev close; RSI needs SMMA warmup)
+        ('atr:7', 7), ('rsi:7', 7),
+        # Bollinger: lookback = period - 1 (MA + std need N points)
+        ('boll:10', 9), ('boll.upper:30,2.5', 29),
+        # KDJ: lookback = period * 3 (EWMA needs longer warmup for stability)
+        ('kdj.k:5,3,50', 15), ('kdj.d:14,5,5,50', 42),
+        # HV: lookback = period (log returns need period price changes)
+        ('hv:10', 10), ('hv:30', 30),
+    ]
+    for directive, expected in cases:
+        assert (
+            StockDataFrame.lookback(directive) == expected
+        ), f'{directive} lookback mismatch'
