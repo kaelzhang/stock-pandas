@@ -4,7 +4,6 @@ from typing import (
     Any,
     Callable,
     Tuple,
-    Type,
     Union,
     List,
     Optional
@@ -112,20 +111,6 @@ class StockDataFrame(MetaDataFrame):
             definition (CommandDefinition): the definition of the command
         """
         cls.COMMANDS[name] = definition
-
-    # Methods that used by pandas and sub classes
-    # --------------------------------------------------------------------
-
-    @property
-    def _constructor(self) -> Type['StockDataFrame']:
-        """
-        This method overrides `DataFrame._constructor`
-        which ensures the return type of several DataFrame methods
-        """
-
-        # Use `self.__class__` instead of `StockDataFrame`
-        # so that it also works for sub classes
-        return self.__class__
 
     # --------------------------------------------------------------------
 

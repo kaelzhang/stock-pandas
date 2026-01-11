@@ -20,6 +20,7 @@ from numpy.typing import (
 
 import numpy as np
 
+
 NDArrayAny = NDArray[Any]
 
 

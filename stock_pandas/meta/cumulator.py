@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import (
     Any,
     Callable,
@@ -5,7 +6,10 @@ from typing import (
     List,
     Optional,
     Tuple,
-    Union
+    Union,
+    Self,
+    Type,
+    TypeVar
 )
 
 from numpy import ndarray
@@ -44,6 +48,8 @@ ToAppend = List[Series]
 
 SubjectToAppend = Union[DataFrame, Series, dict]
 SubjectsToAppend = Union[SubjectToAppend, List[SubjectToAppend]]
+
+MetaDataFrameType = TypeVar('MetaDataFrameType', bound='MetaDataFrame')
 
 
 def first(array: ndarray) -> float:
@@ -85,9 +91,9 @@ def cum_append_type_error(date_col: Optional[str] = None) -> ValueError:
 
 
 def cum_append(
-    df: 'MetaDataFrame',
+    df: MetaDataFrameType,
     other: ToAppend
-) -> Tuple[DataFrame, 'MetaDataFrame']:
+) -> Tuple[DataFrame, MetaDataFrameType]:
     """
     Returns:
         Tuple[DataFrame, StockDataFrame]: this method does not ensure that the return type is MetaDataFrame due to the limitation of DataFrame.append
@@ -110,8 +116,8 @@ def cum_append(
 
 def ensure_type(
     df: DataFrame,
-    source: 'MetaDataFrame'
-) -> 'MetaDataFrame':
+    source: MetaDataFrameType
+) -> MetaDataFrameType:
     if isinstance(df, MetaDataFrame):
         df._cumulator.update(df, source)
         copy_stock_metas(source, df)
@@ -135,7 +141,7 @@ class _Cumulator:
 
     def update(
         self,
-        df: 'MetaDataFrame',
+        df: MetaDataFrameType,
         source: Any,
         source_cumulator: Optional['_Cumulator'] = None,
         date_col: Optional[str] = None,
@@ -216,8 +222,8 @@ class _Cumulator:
     def _copy_unclosed(
         self,
         source_cumulator: '_Cumulator',
-        df: 'MetaDataFrame',
-        source: 'MetaDataFrame'
+        df: MetaDataFrameType,
+        source: MetaDataFrameType
     ) -> None:
         unclosed = source_cumulator._unclosed
 
@@ -240,9 +246,9 @@ class _Cumulator:
 
     def cum_append(
         self,
-        to: 'MetaDataFrame',
+        to: MetaDataFrameType,
         other: DataFrame
-    ) -> Tuple[DataFrame, Optional[DataFrame], 'MetaDataFrame']:
+    ) -> Tuple[DataFrame, Optional[DataFrame], MetaDataFrameType]:
         """
         Returns:
             Tuple[DataFrame, Optional[DataFrame], MetaDataFrame]: the new cumulated and concated data frame, the unclosed rows (data frame), and the source
@@ -428,7 +434,7 @@ class MetaDataFrame(DataFrame):
         # however, let's keep them for forward compatibility
         *args: Any,
         **kwargs: Any
-    ) -> 'MetaDataFrame':
+    ) -> Self:
         """
         Propagate metadata from other to self.
 
@@ -460,7 +466,18 @@ class MetaDataFrame(DataFrame):
 
         return self
 
-    def _slice(self, slice_obj: slice, axis: int = 0) -> 'MetaDataFrame':
+    @property
+    def _constructor(self) -> Type[Self]:
+        """
+        This method overrides `DataFrame._constructor`
+        which ensures the return type of several DataFrame methods
+        """
+
+        # Use `self.__class__` instead of `StockDataFrame`
+        # so that it also works for sub classes
+        return self.__class__
+
+    def _slice(self, slice_obj: slice, axis: int = 0) -> Self:
         """
         This method is called in several cases, self.iloc[slice] for example
 
@@ -490,7 +507,7 @@ class MetaDataFrame(DataFrame):
         to_datetime_kwargs: Dict[str, Any] = {},
         time_frame: Optional[TimeFrameArg] = None,
         cumulators: Optional[Cumulators] = None,
-        source: Optional['MetaDataFrame'] = None,
+        source: Optional[Self] = None,
         *args: Any,
         **kwargs: Any
     ) -> None:
@@ -568,7 +585,7 @@ class MetaDataFrame(DataFrame):
     # Public Methods of stock-pandas
     # --------------------------------------------------------------------
 
-    def cumulate(self) -> 'MetaDataFrame':
+    def cumulate(self) -> Self:
         """
         Cumulate the current data frame by its time frame, and returns a new object
 
@@ -581,8 +598,8 @@ class MetaDataFrame(DataFrame):
     def append(
         self,
         other: SubjectsToAppend,
-        *args: Any, **kwargs: Any
-    ) -> 'MetaDataFrame':
+        *args, **kwargs
+    ) -> Self:
         """
         Appends row(s) of other to the end of caller, applying date_col to the newly-appended row(s) if possible, and returning a new object
 
@@ -598,7 +615,7 @@ class MetaDataFrame(DataFrame):
     def cum_append(
         self,
         other: SubjectsToAppend
-    ) -> 'MetaDataFrame':
+    ) -> Self:
         """
         Appends row(s) of other to the end of caller, applies cumulation to these rows, and returns a new object
 

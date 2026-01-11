@@ -20,19 +20,19 @@ def stock():
     return create_stock()
 
 
-def test_directive_stringify(stock: StockDataFrame):
+def test_directive_stringify():
     assert StockDataFrame.directive_stringify('boll') == 'boll'
     assert StockDataFrame.directive_stringify('boll:30@close') == 'boll:30'
 
 
-def test_exec(stock):
+def test_exec(stock: StockDataFrame):
     result = stock.exec('close')
     close = stock['close'].to_numpy()
 
     assert np.all(result == close)
 
 
-def test_get_column(stock):
+def test_get_column(stock: StockDataFrame):
     stock = stock.rename(columns={
         'open': 'Open',
         'close': 'Close',
@@ -63,7 +63,7 @@ def test_get_column(stock):
     stock.get_column('close')
 
 
-def test_copy(stock):
+def test_copy(stock: StockDataFrame):
     stock['ma:2']
 
     def ma_size(stock):
@@ -72,7 +72,7 @@ def test_copy(stock):
     assert ma_size(stock) == ma_size(stock.copy())
 
 
-def test_astype(stock):
+def test_astype(stock: StockDataFrame):
     stock = stock.astype({
         'open': 'float',
         'close': 'float'
@@ -88,7 +88,7 @@ def test_indexing_by_callable(stock):
     assert isinstance(stock[lambda df: 'open'], pd.Series)
 
 
-def test_ma(stock):
+def test_ma(stock: StockDataFrame):
     stock.alias('Open', 'open')
 
     ma = stock['ma:2']
@@ -126,7 +126,7 @@ COMMANDS = [
 ]
 
 
-def test_period_larger_than_size(stock):
+def test_period_larger_than_size(stock: StockDataFrame):
     period = len(stock) + 1
 
     for command in COMMANDS:
@@ -138,7 +138,7 @@ def test_period_larger_than_size(stock):
         ), directive_str
 
 
-def test_aliases(stock):
+def test_aliases(stock: StockDataFrame):
     stock.alias('Open', 'open')
 
     assert list(stock['Open']) == simple_list
@@ -153,7 +153,7 @@ def test_aliases(stock):
         stock.alias('open', 'close')
 
 
-def test_invalid_indexing(stock):
+def test_invalid_indexing(stock: StockDataFrame):
     with pytest.raises(KeyError, match='None'):
         stock[[1]]
 
@@ -193,7 +193,7 @@ def test_date_col_pollution_issue_21():
         raise RuntimeError(f'date_col should not change the original dataframe, error: {e}')
 
 
-def test_lookback(stock):
+def test_lookback():
     # (directive, expected_lookback)
     cases = [
         # Trend-following: ma, ema (lookback = period - 1)
