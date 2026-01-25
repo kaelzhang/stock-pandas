@@ -69,9 +69,11 @@ test-rust:
 # Run tests with both backends and merge coverage (for 100% coverage)
 test-coverage:
 	@rm -f .coverage .coverage.*
+
 	@echo "\033[1m>> Running tests with Python backend... <<\033[0m"
 	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=python pytest test/test_$(test_files).py --ignore=test/test_benchmark.py --ignore=test/not_for_rust/ --cov=stock_pandas --cov-report= -q
 	@echo "\033[1m>> Running tests with Rust backend (appending coverage)... <<\033[0m"
+
 	STOCK_PANDAS_COW=1 STOCK_PANDAS_BACKEND=rust pytest test/test_$(test_files).py --ignore=test/test_benchmark.py --ignore=test/not_for_rust/ --cov=stock_pandas --cov-report= --cov-append -q
 	@echo "\033[1m>> Coverage Report... <<\033[0m"
 	coverage report --show-missing
