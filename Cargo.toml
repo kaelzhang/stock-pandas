@@ -13,8 +13,8 @@ name = "stock_pandas_rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.24.1", features = ["extension-module"] }
-numpy = "0.24"
+pyo3 = { version = "0.25", features = ["extension-module"] }
+numpy = "0.25"
 ndarray = "0.16"
 thiserror = "1.0"
 regex = "1.10"
@@ -32,4 +32,3 @@ extension-module = ["pyo3/extension-module"]
 lto = true
 codegen-units = 1
 opt-level = 3
-

@@ -79,7 +79,7 @@ class StockDataFrame(MetaDataFrame):
         Usage::
 
             StockDataFrame.directive_stringify('boll')
-            # It gets "boll:20,close"
+            # It gets "boll:20@close"
 
         Returns:
             str
