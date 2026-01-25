@@ -38,9 +38,20 @@ jobs:
       run: |
         maturin develop --release
 
-    - name: Run tests with coverage
+    - name: Run tests with coverage (pandas 1.x/2.x/3.x)
       run: |
-        make test-coverage
+        set -euo pipefail
+        rm -rf coverage
+        mkdir -p coverage
+        for major in 1 2 3; do
+          next=$((major + 1))
+          echo ">> Installing pandas >=${major},<${next}"
+          pip install --upgrade "pandas>=${major},<${next}"
+          python -c "import pandas as pd; print('pandas', pd.__version__)"
+          COVERAGE_FILE="coverage/.coverage.pandas${major}" make test-coverage
+        done
+        coverage combine coverage
+        coverage report --show-missing
       env:
         STOCK_PANDAS_COW: "1"
 
