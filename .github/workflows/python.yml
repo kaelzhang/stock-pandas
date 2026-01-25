@@ -38,12 +38,12 @@ jobs:
       run: |
         maturin develop --release
 
-    - name: Run tests with coverage (pandas 1.x/2.x/3.x)
+    - name: Run tests with coverage (pandas 2.x/3.x)
       run: |
         set -euo pipefail
         rm -rf coverage
         mkdir -p coverage
-        for major in 1 2 3; do
+        for major in 2 3; do
           next=$((major + 1))
           echo ">> Installing pandas >=${major},<${next}"
           pip install --upgrade "pandas>=${major},<${next}"
