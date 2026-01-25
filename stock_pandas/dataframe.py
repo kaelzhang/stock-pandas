@@ -171,10 +171,14 @@ class StockDataFrame(MetaDataFrame):
         error_name: Optional[str] = None
     ) -> Series:
         try:
-            return self._get_item_cache(name)
+            return self._unsafe_get_item(name)
         except KeyError:
             error_name = error_name or name
             raise KeyError(f'column "{error_name}" not found')
+
+    def _unsafe_get_item(self, name: str) -> Series:
+        loc = self.columns.get_loc(name)
+        return self._ixs(loc, axis=1)
 
     _stock_create_column: bool = False
 
@@ -445,6 +449,11 @@ class StockDataFrame(MetaDataFrame):
         )
 
         return series
+
+
+if hasattr(StockDataFrame, '_get_item_cache'):
+    # For pandas < 3.x or earlier versions
+    StockDataFrame._unsafe_get_item = StockDataFrame._get_item_cache
 
 
 METHODS_TO_ENSURE_RETURN_TYPE = [

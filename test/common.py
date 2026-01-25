@@ -9,7 +9,8 @@ import numpy as np
 from pandas import (
     DataFrame,
     Series,
-    read_csv
+    read_csv,
+    __version__ as pandas_version
 )
 
 from stock_pandas import StockDataFrame
@@ -19,6 +20,9 @@ from stock_pandas.directive.parse import (
 )
 from stock_pandas.commands.base import BUILTIN_COMMANDS
 from stock_pandas.directive.cache import DirectiveCache
+
+
+print('Pandas version:', pandas_version)
 
 
 simple_list = [2, 3, 4, 5, 6, 7]
