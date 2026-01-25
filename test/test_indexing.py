@@ -27,3 +27,9 @@ def test_loc(stock):
     assert isinstance(stock, StockDataFrame)
 
     assert stock.iloc[0].name == 'b'
+
+
+def test_indexing_with_column_list(stock):
+    stock = stock[['close', 'open']]
+    assert isinstance(stock, StockDataFrame)
+    assert list(stock.columns) == ['close', 'open']
