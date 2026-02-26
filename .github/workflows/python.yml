@@ -15,6 +15,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         include:
           - python-version: "3.11"
