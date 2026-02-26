@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 
 from typing import Union
+from pandas import Timestamp
 
 from stock_pandas import (
     StockDataFrame,
@@ -17,6 +18,7 @@ from .common import (
 
 def test_time_frame_str():
     assert str(TimeFrame.m1) == '1m'
+    assert str(TimeFrame.s1) == '1s'
     assert str(TimeFrame.D1) == '1d'
     assert str(TimeFrame.M1) == '1M'
     assert f'{TimeFrame.m5}' == '5m'
@@ -57,3 +59,8 @@ def _test_redefine_time_frame(time_frame: Union[str, TimeFrame]):
 def test_redefine_time_frame():
     _test_redefine_time_frame('5m')
     _test_redefine_time_frame(TimeFrame.m5)
+
+
+def test_time_frame_unify_second():
+    date = Timestamp('2020-01-02 03:04:05')
+    assert TimeFrame.s1.unify(date) == 20200102030405

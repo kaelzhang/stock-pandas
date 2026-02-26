@@ -63,6 +63,16 @@ def test_get_column(stock: StockDataFrame):
     stock.get_column('close')
 
 
+def test_get_column_fallback_path(monkeypatch):
+    stock = StockDataFrame({
+        'close': [1, 2],
+        'open': [3, 4]
+    })
+    result = stock.get_column('close')
+    assert result.to_list() == [1, 2]
+    assert result.name == 'close'
+
+
 def test_copy(stock: StockDataFrame):
     stock['ma:2']
 

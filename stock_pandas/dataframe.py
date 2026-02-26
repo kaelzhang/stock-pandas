@@ -43,6 +43,7 @@ from .meta.cumulator import (
 
 
 _cow = os.environ.get('STOCK_PANDAS_COW', '').lower()
+_use_get_item_cache = hasattr(pd.DataFrame, '_get_item_cache')
 
 # #27
 if _cow in ('1', 'on', 'true'):
@@ -177,6 +178,10 @@ class StockDataFrame(MetaDataFrame):
             raise KeyError(f'column "{error_name}" not found')
 
     def _unsafe_get_item(self, name: str) -> Series:
+        # For pandas < 3.x, keep using the legacy cached path.
+        if _use_get_item_cache:
+            return self._get_item_cache(name)  # type: ignore[attr-defined]
+
         loc = self.columns.get_loc(name)
         return self._ixs(loc, axis=1)
 
@@ -449,12 +454,6 @@ class StockDataFrame(MetaDataFrame):
         )
 
         return series
-
-
-if hasattr(StockDataFrame, '_get_item_cache'):
-    # For pandas < 3.x or earlier versions
-    StockDataFrame._unsafe_get_item = StockDataFrame._get_item_cache
-
 
 METHODS_TO_ENSURE_RETURN_TYPE = [
     # TODO:
