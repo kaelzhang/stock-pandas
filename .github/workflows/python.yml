@@ -13,30 +13,37 @@ jobs:
         include:
           - python-version: "3.11"
             pandas-line: "1.x"
+            numpy-install: 'pip install --upgrade "numpy<2"'
             pandas-install: 'pip install --upgrade "pandas>=1,<2"'
             upload-coverage: "false"
           - python-version: "3.11"
             pandas-line: "2.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade "pandas>=2,<3"'
             upload-coverage: "false"
           - python-version: "3.12"
             pandas-line: "2.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade "pandas>=2,<3"'
             upload-coverage: "true"
           - python-version: "3.13"
             pandas-line: "2.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade "pandas>=2,<3"'
             upload-coverage: "false"
           - python-version: "3.11"
             pandas-line: "3.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade --pre "pandas>=3,<4"'
             upload-coverage: "false"
           - python-version: "3.12"
             pandas-line: "3.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade --pre "pandas>=3,<4"'
             upload-coverage: "false"
           - python-version: "3.13"
             pandas-line: "3.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade --pre "pandas>=3,<4"'
             upload-coverage: "false"
 
@@ -68,11 +75,12 @@ jobs:
       run: |
         maturin develop --release
 
-    - name: Install pandas ${{ matrix.pandas-line }}
+    - name: Install NumPy and pandas ${{ matrix.pandas-line }}
       run: |
         set -euo pipefail
+        ${{ matrix.numpy-install }}
         ${{ matrix.pandas-install }}
-        python -c "import pandas as pd; print('pandas', pd.__version__)"
+        python -c "import numpy as np; import pandas as pd; print('numpy', np.__version__); print('pandas', pd.__version__)"
 
     - name: Run tests with coverage
       run: |
