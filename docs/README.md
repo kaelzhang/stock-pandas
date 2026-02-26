@@ -44,6 +44,7 @@
 
 `stock-pandas` makes automated trading much easier. `stock-pandas` requires
 - Python >= **3.10**
+- CI tested on CPython **3.11**, **3.12**, **3.13** and **3.14**
 - and Pandas >= **1.0.0**(for now)
 
 With the help of `stock-pandas` and mplfinance, we could easily draw something like:
@@ -1312,7 +1313,7 @@ StrategyB_DataFrame.define_command('custom_b', definition_b)
 First, install conda (recommended), and generate a conda environment for this project
 
 ```sh
-conda create -n stock-pandas python=3.12
+conda create -n stock-pandas python=3.14
 
 conda activate stock-pandas
 

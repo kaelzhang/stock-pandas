@@ -37,6 +37,11 @@ jobs:
             numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade "pandas>=2,<3"'
             upload-coverage: "false"
+          - python-version: "3.14"
+            pandas-line: "2.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
+            pandas-install: 'pip install --upgrade "pandas>=2,<3"'
+            upload-coverage: "false"
           - python-version: "3.11"
             pandas-line: "3.x"
             numpy-install: 'pip install --upgrade "numpy>=2"'
@@ -48,6 +53,11 @@ jobs:
             pandas-install: 'pip install --upgrade --pre "pandas>=3,<4"'
             upload-coverage: "false"
           - python-version: "3.13"
+            pandas-line: "3.x"
+            numpy-install: 'pip install --upgrade "numpy>=2"'
+            pandas-install: 'pip install --upgrade --pre "pandas>=3,<4"'
+            upload-coverage: "false"
+          - python-version: "3.14"
             pandas-line: "3.x"
             numpy-install: 'pip install --upgrade "numpy>=2"'
             pandas-install: 'pip install --upgrade --pre "pandas>=3,<4"'
