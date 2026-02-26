@@ -146,6 +146,7 @@ Which prints the 2-period simple moving average on column `"close"`.
 - **date_col** `Optional[str] = None` If set, then the column named `date_col` will convert and set as [`DateTimeIndex`](datetimeindex) of the data frame
 - **to_datetime_kwargs** `dict = {}` the keyworded arguments to be passed to `pandas.to_datetime()`. It only takes effect if `date_col` is specified.
 - **time_frame** `str | TimeFrame | None = None` time frame of the stock. For now, only the following time frames are supported:
+    - `'1s'`  or `TimeFrame.s1`
     - `'1m'` or `TimeFrame.m1`
     - `'3m'` or `TimeFrame.m3`
     - `'5m'` or `TimeFrame.m5`

@@ -103,6 +103,8 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/stock-pandas
+    env:
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
     steps:
       - name: Download wheel artifacts
@@ -121,12 +123,14 @@ jobs:
       - name: Check artifacts
         run: ls -lh dist
 
-      - name: Publish to PyPI (token)
-        if: ${{ secrets.PYPI_API_TOKEN != '' }}
+      - name: Ensure PYPI_API_TOKEN is configured
+        run: |
+          if [ -z "${PYPI_API_TOKEN}" ]; then
+            echo "PYPI_API_TOKEN secret is required for publishing."
+            exit 1
+          fi
+
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-
-      - name: Publish to PyPI (trusted publishing)
-        if: ${{ secrets.PYPI_API_TOKEN == '' }}
-        uses: pypa/gh-action-pypi-publish@release/v1
+          password: ${{ env.PYPI_API_TOKEN }}
