@@ -41,8 +41,8 @@ CommandAliases = Dict[
 PT = TypeVar('PT', bound=PrimativeType)
 
 # TODO:
-# In Python 3.10, we can't use slots=True with Generic,
-# add slots=True if we drop support for Python 3.10 in the future
+# Revisit slots=True for this Generic dataclass after validating it across
+# every supported Python version.
 @dataclass(frozen=True)
 class ScalarNode(Generic[PT]):
     loc: Loc

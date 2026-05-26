@@ -26,8 +26,8 @@ UnaryOperatorFormula = Callable[[ReturnType], ReturnType]
 
 OF = TypeVar('OF', OperatorFormula, UnaryOperatorFormula)
 
-# Python 3.10 compatible generic type alias
-# Using Generic instead of 'type' keyword (which requires Python 3.12+)
+# Python 3.11 compatible generic type alias.
+# Use Generic instead of the `type` statement, which requires Python 3.12+.
 OperatorMap = Dict[
     str,
     Tuple[

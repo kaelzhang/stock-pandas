@@ -43,7 +43,7 @@
 - The calculation engine and parser re-implemented in **Rust**, delivering up to a **4.8×** performance improvement versus running the same metric computations directly in `Pandas`.
 
 `stock-pandas` makes automated trading much easier. `stock-pandas` requires
-- Python >= **3.10**
+- Python >= **3.11**
 - CI tested on CPython **3.11**, **3.12**, **3.13** and **3.14**
 - and Pandas >= **1.0.0**(for now)
 
@@ -73,12 +73,12 @@ xcode-select --install
 If you use docker with `Dockerfile` and use python image,
 
 ```Dockerfile
-FROM python:3.9
+FROM python:3.11
 
 ...
 ```
 
-The default `python:3.9` image already contains g++, so we do not install g++ additionally.
+The default `python:3.11` image already contains g++, so we do not install g++ additionally.
 
 #### Install `stock-pandas`
 
