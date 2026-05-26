@@ -40,10 +40,7 @@ CommandAliases = Dict[
 
 PT = TypeVar('PT', bound=PrimativeType)
 
-# TODO:
-# Revisit slots=True for this Generic dataclass after validating it across
-# every supported Python version.
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class ScalarNode(Generic[PT]):
     loc: Loc
     value: PT

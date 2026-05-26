@@ -221,10 +221,7 @@ class Command(Lookback):
         return self.preset.formula(*self.args, *arrays)
 
 
-# TODO:
-# Revisit slots=True for this Generic dataclass after validating it across
-# every supported Python version.
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Operator(Generic[OF]):
     name: str
     formula: OF = field(repr=False)

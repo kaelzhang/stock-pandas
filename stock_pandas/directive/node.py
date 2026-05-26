@@ -276,10 +276,7 @@ class SeriesArgumentNode:
         return self.value.create(context)
 
 
-# TODO:
-# Revisit slots=True for this Generic dataclass after validating it across
-# every supported Python version.
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OperatorNode(Generic[OF]):
     loc: Loc
     name: str
