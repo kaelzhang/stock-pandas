@@ -194,7 +194,7 @@ class StockDataFrame(MetaDataFrame):
 
         Args:
             directive_str (str): directive
-            create_column (:obj:`bool`, optional): whether we should create a column for the calculated series.
+            create_column (`bool`, optional): whether we should create a column for the calculated series.
 
         Returns:
             ndarray
