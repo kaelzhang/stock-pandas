@@ -1,8 +1,10 @@
+# About `volas`
+
 [**`volas`**](https://github.com/kaelzhang/volas) is the successor to `stock-pandas`, completely rebuilt using Rust, with a pandas-compatible API and full support for stock indicators aligned with TA-Lib.
 
 `volas`'s stock indicator calculation performance is up to 140x faster than `pandas` (or `stock-pandas` < 5.0.0), tens of times faster than `stock-pandas`, and its overall performance even surpasses TA-Lib (the C++ technical analysis library) on 146 of all 158 indicators.
 
-====
+****
 
 [![](https://github.com/kaelzhang/stock-pandas/actions/workflows/python.yml/badge.svg)](https://github.com/kaelzhang/stock-pandas/actions/workflows/python.yml)
 [![](https://codecov.io/gh/kaelzhang/stock-pandas/branch/master/graph/badge.svg)](https://codecov.io/gh/kaelzhang/stock-pandas)
