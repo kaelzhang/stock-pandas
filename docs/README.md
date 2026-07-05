@@ -36,7 +36,7 @@
 [datetimeindex]: https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html
 
 
-# [stock-pandas](https://github.com/kaelzhang/stock-pandas) => [**volas**](https://github.com/kaelzhang/volas) is recommended for new users
+# [stock-pandas](https://github.com/kaelzhang/stock-pandas) -> [**volas**](https://github.com/kaelzhang/volas) is recommended for new users
 
 **stock-pandas** inherits and extends `pandas.DataFrame` to support:
 - Stock Statistics
